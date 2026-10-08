@@ -216,6 +216,29 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
         user: PROMPTS.choose.user({ dish: raw.title, category, items: itemsText, concepts: conceptsText, research: researchText }),
       });
 
+      // Under load the model sometimes names the right substitute but drops its id ("sojino mlijeko", null).
+      // Recover the id from the label: exact id match first, then word-stem overlap with the candidates.
+      const stems = (t: string) => new Set(norm(t).split("_").filter((w) => w.length > 2).map((w) => w.slice(0, 4)));
+      const recoverConcept = (label: string, slug: string | null): string | null => {
+        const direct = norm(label);
+        if (concepts.has(direct)) return direct;
+        const want = stems(label);
+        if (!want.size) return null;
+        const pool = (rules ?? []).filter((r) => r.ingredient_slug === slug).map((r) => r.concept_id!);
+        const ids = pool.length ? [...new Set(pool)] : [...concepts.keys()];
+        let best: { id: string; score: number } | null = null;
+        for (const id of ids) {
+          const have = stems(`${id} ${concepts.get(id)?.name_hr ?? ""}`);
+          const score = [...want].filter((w) => have.has(w)).length / want.size;
+          if (score >= 0.6 && (!best || score > best.score)) best = { id, score };
+        }
+        return best?.id ?? null;
+      };
+      for (const it of r.data.items) {
+        const slug = risky.find((x) => x.index === it.index)?.slug ?? null;
+        for (const a of it.alternatives) if (!a.concept_id || !concepts.has(a.concept_id)) a.concept_id = recoverConcept(a.label_hr, slug) ?? a.concept_id;
+      }
+
       // never trust ids or facet values the model returns: keep only what exists in the DB
       const allFacetOptions = await loadFacetOptions([...new Set(r.data.items.flatMap((it) => it.alternatives.map((a) => a.concept_id).filter(Boolean) as string[]))]);
       const items = risky.map((i) => {
@@ -232,10 +255,10 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
             return { ...a, concept_id: conceptId, facets, ratio: Math.min(Math.max(a.ratio || 1, 0.01), 5) };
           })
           .filter((a, idx, arr) => !a.concept_id || arr.findIndex((b) => b.concept_id === a.concept_id && JSON.stringify(b.facets) === JSON.stringify(a.facets)) === idx);
-        // safety net: if the model skipped an ingredient, fall back to the top rule
-        if (!alternatives.length) {
+        // safety net: if nothing is shoppable but curated rules exist, add the top rule as an option
+        if (!alternatives.some((a) => a.concept_id)) {
           const rule = (rules ?? []).find((x) => x.ingredient_slug === i.slug);
-          if (rule)
+          if (rule && alternatives.length < 3)
             alternatives.push({
               concept_id: rule.concept_id!, label_hr: rule.concept_name!, facets: (rule.prefer as Facets) ?? {}, ratio: Number(rule.ratio) || 1,
               reasoning_hr: rule.notes_hr ?? "", confidence: 0.5,
