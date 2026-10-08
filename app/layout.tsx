@@ -22,8 +22,8 @@ export const viewport: Viewport = { themeColor: "#f4f0e8" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="hr" className={`${nunito.variable} ${grandstander.variable} ${spaceMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
+    <html lang="hr" className={`${nunito.variable} ${grandstander.variable} ${spaceMono.variable} h-full overflow-x-clip antialiased`}>
+      <body className="flex min-h-full flex-col overflow-x-clip">
         <Sprites />
         <SiteHeader />
         <div className="flex-1 pb-28 sm:pb-16">{children}</div>

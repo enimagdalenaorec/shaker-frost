@@ -33,8 +33,8 @@ async function Search({ searchParams }: { searchParams: PageProps<"/trazi">["sea
 function SearchSkeleton() {
   return (
     <>
-      <div className="h-12 animate-pulse rounded-2xl bg-oat-50 ring-1 ring-cocoa-900/[0.08]" />
-      <ul className="mt-5 space-y-2.5">
+      <div className="h-14 animate-pulse rounded-full border-2 border-ink/20 bg-paper" />
+      <ul className="mt-5 rounded-[24px] border-[1.5px] border-ink/20 bg-paper p-2">
         {[0, 1, 2].map((i) => (
           <ProductRowSkeleton key={i} />
         ))}

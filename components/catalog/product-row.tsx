@@ -10,9 +10,9 @@ import { storeOffersAction } from "@/app/actions/catalog";
 import { AddButton } from "./add-button";
 import { ChainBadge } from "./chain-badge";
 import { DiscountBadge, PriceTag } from "./price-tag";
-import { ProductIcon } from "./product-icon";
+import { categoryLabel } from "./product-card";
 
-/** Compact search result. Tap the store line to see every store's price. */
+/** Search result row (team "price list" style). Tap the store line for every store's price. */
 export function ProductRow({ product: p }: { product: ProductSummary }) {
   const [open, setOpen] = useState(false);
   const [offers, setOffers] = useState<StoreOffer[] | null>(null);
@@ -25,36 +25,29 @@ export function ProductRow({ product: p }: { product: ProductSummary }) {
   };
 
   return (
-    <li className="rounded-[20px] bg-card p-1.5 ring-1 ring-cocoa-900/[0.06]">
-      <div className="flex items-center gap-3 pr-1.5">
-        <div className="relative">
-          <ProductIcon group={p.conceptGroup} name={p.name} className="size-[4.5rem] rounded-[15px]" iconClassName="size-7" />
-          {p.isAkcija && <DiscountBadge pct={p.discountPct} className="absolute -left-1 -top-1" />}
-        </div>
-        <div className="min-w-0 flex-1 py-1">
-          <h3 className="line-clamp-2 font-sans text-[14px] font-semibold leading-[1.25] text-cocoa-900">{p.name}</h3>
-          <button
-            type="button"
-            onClick={toggle}
-            aria-expanded={open}
-            className="mt-1.5 inline-flex items-center gap-1.5 rounded-full py-0.5 text-xs"
-          >
+    <li className={cn("rounded-[18px] px-3 py-3", p.isAkcija ? "bg-blush/60" : "odd:bg-cream")}>
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="micro text-rind">{categoryLabel(p.conceptGroup, p.name)}</p>
+            {p.isAkcija && <DiscountBadge pct={p.discountPct} />}
+          </div>
+          <h3 className="mt-0.5 line-clamp-2 font-sans text-[15px] font-extrabold leading-[1.25] text-ink">{p.name}</h3>
+          <button type="button" onClick={toggle} aria-expanded={open} className="mt-1.5 inline-flex items-center gap-1.5">
             <ChainBadge code={p.chainCode} name={p.chainName} kind={p.chainKind} />
             {more > 0 && (
-              <span className="tabular rounded-full bg-oat-200 px-1.5 py-px text-[10px] font-bold text-cocoa-500">
-                {hr.search.moreStores(more)}
-              </span>
+              <span className="tabular rounded-full border border-ink/30 px-1.5 py-px text-[10px] font-black text-ink">{hr.search.moreStores(more)}</span>
             )}
-            <ChevronDown className={cn("size-3.5 text-cocoa-400 transition-transform", open && "rotate-180")} />
+            <ChevronDown className={cn("size-3.5 text-rind transition-transform", open && "rotate-180")} />
           </button>
-          {p.provjeri && <p className="mt-1 text-[11px] font-semibold text-honey-700">{hr.search.provjeri}</p>}
+          {p.provjeri && <p className="mt-1 text-[12px] font-extrabold text-honey-700">{hr.search.provjeri}</p>}
         </div>
         <PriceTag price={p.price} regularPrice={p.regularPrice} isAkcija={p.isAkcija} unitPrice={p.unitPrice} unit={p.sizeUnit} />
         <AddButton product={p} source="search" />
       </div>
 
       {open && (
-        <div className="mx-1.5 mb-1.5 mt-2 rounded-2xl bg-oat-100 p-3">
+        <div className="mt-3 rounded-2xl border-[1.5px] border-dashed border-ink/30 bg-paper p-3">
           {pending || !offers ? (
             <div className="space-y-2">
               {[0, 1].map((i) => (
@@ -71,7 +64,6 @@ export function ProductRow({ product: p }: { product: ProductSummary }) {
 }
 
 function StoreOfferList({ offers, productUrl }: { offers: StoreOffer[]; productUrl: string | null }) {
-  // One line per chain; store-level rows of the same chain collapse into one.
   const byChain = new Map<string, StoreOffer[]>();
   for (const o of offers) byChain.set(o.chainCode, [...(byChain.get(o.chainCode) ?? []), o]);
   const chains = [...byChain.values()].sort((a, b) => a[0].price - b[0].price);
@@ -80,7 +72,7 @@ function StoreOfferList({ offers, productUrl }: { offers: StoreOffer[]; productU
   return (
     <>
       <ul className="space-y-2">
-        {chains.map((group) => {
+        {chains.map((group, n) => {
           const o = group[0];
           const where =
             o.chainKind === "webshop" ? hr.product.online
@@ -88,21 +80,22 @@ function StoreOfferList({ offers, productUrl }: { offers: StoreOffer[]; productU
             : group.map((g) => g.storeAddress).filter(Boolean).join(", ");
           return (
             <li key={o.chainCode} className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
                 <ChainBadge code={o.chainCode} name={o.chainName} kind={o.chainKind} />
-                <p className="truncate pl-3.5 text-[11px] text-cocoa-400">{where}</p>
+                <span className="truncate text-xs text-rind">{where}</span>
               </div>
-              <span className={cn("tabular text-sm font-bold", o.isAkcija ? "text-apricot-700" : "text-cocoa-900")}>
-                {formatPrice(o.price)}
+              <span className="flex items-center gap-2">
+                {n === 0 && chains.length > 1 && <em className="micro rounded-full bg-rind px-2 py-0.5 not-italic text-cream">najjeftinije</em>}
+                <span className={cn("tabular font-heading text-base font-black", o.isAkcija ? "text-guava-deep" : "text-ink")}>{formatPrice(o.price)}</span>
               </span>
             </li>
           );
         })}
       </ul>
-      <div className="mt-2.5 flex items-center justify-between border-t border-cocoa-900/5 pt-2 text-[11px] text-cocoa-400">
+      <div className="mt-2.5 flex items-center justify-between border-t border-ink/10 pt-2 text-[11px] font-semibold text-rind">
         {date && <span>{hr.product.lastPrice} {date}</span>}
         {productUrl && (
-          <a href={productUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-mint-700">
+          <a href={productUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-ink">
             web <ExternalLink className="size-3" />
           </a>
         )}
@@ -113,12 +106,10 @@ function StoreOfferList({ offers, productUrl }: { offers: StoreOffer[]; productU
 
 export function ProductRowSkeleton() {
   return (
-    <li className="flex items-center gap-3 rounded-[20px] bg-card p-1.5 ring-1 ring-cocoa-900/[0.06]">
-      <div className="size-[4.5rem] animate-pulse rounded-[15px] bg-oat-200" />
-      <div className="flex-1 space-y-2">
-        <div className="h-3.5 w-3/5 animate-pulse rounded bg-oat-200" />
-        <div className="h-3 w-1/3 animate-pulse rounded bg-oat-200" />
-      </div>
+    <li className="rounded-[18px] bg-cream px-3 py-3">
+      <div className="h-3 w-1/4 animate-pulse rounded bg-oat-200" />
+      <div className="mt-2 h-4 w-3/5 animate-pulse rounded bg-oat-200" />
+      <div className="mt-2 h-5 w-14 animate-pulse rounded bg-oat-200" />
     </li>
   );
 }

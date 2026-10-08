@@ -47,7 +47,7 @@ export function SearchResults({
   if (!results.length) {
     return (
       <div className="mt-12 text-center">
-        <p className="font-heading text-2xl font-bold text-cocoa-900">{hr.search.empty(query)}</p>
+        <p className="font-heading text-3xl font-black text-ink">{hr.search.empty(query)}</p>
         <Popular />
       </div>
     );
@@ -61,13 +61,13 @@ export function SearchResults({
           aria-pressed={onlyAkcija}
           onClick={() => setOnlyAkcija((v) => !v)}
           className={cn(
-            "inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-bold transition-colors",
-            onlyAkcija ? "bg-apricot-500 text-white" : "bg-apricot-100 text-apricot-700",
+            "inline-flex h-9 shrink-0 items-center gap-1 rounded-full border-[1.5px] border-ink px-3.5 text-[13px] font-extrabold text-ink transition-colors",
+            onlyAkcija ? "bg-guava" : "bg-blush hover:bg-guava-light",
           )}
         >
           <Percent className="size-3.5" /> {hr.search.onlyAkcija}
         </button>
-        <span className="mx-1 h-5 w-px shrink-0 bg-cocoa-900/10" />
+        <span className="mx-1 h-5 w-px shrink-0 bg-ink/15" />
         {SORTS.map((s) => (
           <button
             key={s.id}
@@ -75,16 +75,16 @@ export function SearchResults({
             aria-pressed={sort === s.id}
             onClick={() => setSort(s.id)}
             className={cn(
-              "h-8 shrink-0 rounded-full px-3 text-xs font-semibold transition-colors",
-              sort === s.id ? "bg-cocoa-900 text-oat-50" : "text-cocoa-500 hover:bg-oat-200",
+              "h-9 shrink-0 rounded-full border-[1.5px] px-3.5 text-[13px] font-extrabold transition-colors",
+              sort === s.id ? "border-ink bg-ink text-cream" : "border-ink/35 text-ink hover:border-ink hover:bg-ink hover:text-cream",
             )}
           >
             {s.label}
           </button>
         ))}
-        <span className="tabular ml-auto shrink-0 pl-3 text-xs font-medium text-cocoa-400">{list.length}</span>
+        <span className="micro ml-auto shrink-0 pl-3 text-rind">{list.length}</span>
       </div>
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-3 rounded-[24px] border-[1.5px] border-ink bg-paper p-2">
         {list.map((p) => (
           <ProductRow key={p.itemId} product={p} />
         ))}
@@ -96,13 +96,13 @@ export function SearchResults({
 function Popular() {
   return (
     <div className="mt-6">
-      <p className="text-xs font-bold uppercase tracking-wider text-cocoa-400">{hr.search.popular}</p>
+      <p className="micro text-rind">{hr.search.popular}</p>
       <div className="mt-2.5 flex flex-wrap gap-2">
         {EXAMPLE_SEARCHES.map((q) => (
           <Link
             key={q}
             href={`/trazi?q=${encodeURIComponent(q)}`}
-            className="rounded-full bg-oat-50 px-3.5 py-2 text-sm font-medium text-cocoa-700 ring-1 ring-cocoa-900/[0.08] transition-colors hover:bg-mint-50 hover:text-mint-700"
+            className="rounded-full border-[1.5px] border-ink/40 px-3.5 py-1.5 text-sm font-extrabold text-ink transition-colors hover:border-ink hover:bg-ink hover:text-cream"
           >
             {q}
           </Link>
