@@ -1,9 +1,8 @@
 import "server-only";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { generateJson } from "@/lib/ai/llm";
 import { ExtractedRecipe } from "@/lib/ai/schemas";
 import { PROMPTS } from "@/lib/ai/prompts";
+import { EXAMPLE_FIXTURES } from "./examples-data";
 
 // Stage 0 (CLAUDE.md §8): turn a URL / pasted text / example into one RawRecipe.
 // Order: index.hr API → schema.org JSON-LD (coolinarika and most recipe sites) → LLM extraction.
@@ -46,10 +45,9 @@ export async function ingestText(text: string): Promise<RawRecipe> {
 
 /** Example chips use saved real pages (fixtures/recipes), so the demo also works offline. */
 export async function ingestExample(slug: string): Promise<RawRecipe> {
-  if (!/^[a-z-]+$/.test(slug)) throw new IngestError("Nepoznat primjer.");
-  const file = await readFile(path.join(process.cwd(), "fixtures", "recipes", `${slug}.json`), "utf8").catch(() => null);
-  if (!file) throw new IngestError("Nepoznat primjer.");
-  const { url, jsonld } = JSON.parse(file) as { url: string; jsonld: Record<string, unknown> };
+  const fixture = EXAMPLE_FIXTURES[slug];
+  if (!fixture) throw new IngestError("Nepoznat primjer.");
+  const { url, jsonld } = fixture;
   const recipe = mapJsonLdRecipe(jsonld, url);
   if (!recipe) throw new IngestError("Primjer nije ispravan.");
   return recipe;
