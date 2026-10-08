@@ -1,0 +1,32 @@
+| # | Dish | Recipe page | 
+|---:|---|---|
+| 1 | sarma s pire krumpirom | https://www.coolinarika.com/recept/savrsena-sarma-d42027a8-6386-11eb-901e-0242ac12003d and side dish https://www.coolinarika.com/recept/pire-krumpir-db889c3c-6183-11eb-8bcb-0242ac120034 |
+| 2 | palačinke | https://www.coolinarika.com/recept/palacinke-osnovni-recept-b498b35a-63b3-11eb-bee3-0242ac120060 |
+| 3 | bolonjez | https://www.coolinarika.com/recept/bolognese-bolonjez-umak-321ee21c-6496-11eb-a950-0242ac120034 |
+| 4 | francuska salata | https://www.coolinarika.com/recept/prava-francuska-salata-d3c2d7d0-6433-11eb-9b51-0242ac1200c7 |
+| 5 | štrukli | https://www.coolinarika.com/recept/zapeceni-zagorski-strukli-c33711e6-6489-11eb-8716-0242ac1200bb |
+| 6 | musaka | https://www.coolinarika.com/recepti/musaka-od-krumpira-i-mljevenog-mesa-d8970bb8-6448-11eb-bf58-0242ac1200bc |
+| 7 | rižoto | https://www.coolinarika.com/recept/milanski-rizoto-cc652460-6182-11eb-835a-0242ac120012 |
+| 8 | grah s kobasicom | https://www.coolinarika.com/recept/grah-s-kobasicama-c2d67c26-6387-11eb-94a9-0242ac120069 |
+| 9 | kolač s jajima | https://www.coolinarika.com/recept/potispanja-lutma-nutma-socni-tradicionalni-kolac-sa-jajima-d1034076-6388-11eb-b652-0242ac12004a |
+| 10 | omlet | https://www.coolinarika.com/recept/omlet-sa-sirom-cc0b386a-6182-11eb-89b9-0242ac120047 |
+| 11 | punjene paprike | https://www.coolinarika.com/recept/punjena-paprika-najbolja-e5ea8136-6390-11eb-a733-0242ac120036 |
+| 12 | goveđi gulaš | https://www.coolinarika.com/recept/govedji-gulas-b476ce74-64a4-11eb-8464-0242ac120099 |
+| 13 | pašticada | https://www.coolinarika.com/recept/pasticada-4862f8e2-6487-11eb-9b1c-0242ac120024 |
+| 14 | čobanac | https://www.coolinarika.com/recept/ljuti-slavonski-cobanac-cf0d4d28-6182-11eb-9426-0242ac120049 |
+| 15 | krafne | https://www.coolinarika.com/recept/prave-krafne/ | krafne.json |
+| 16 | lazanje | https://www.coolinarika.com/recept/lazanje-7cdc79e4-63cf-11eb-940f-0242ac120043 |
+| 17 | špageti carbonara | https://www.coolinarika.com/recept/spageti-carbonara-54a1b722-63d5-11eb-acda-0242ac12003d |
+| 18 | bečki odrezak | https://www.coolinarika.com/recept/becki-odrezak-d7f5f6de-63f2-11eb-afb3-0242ac120060 |
+| 19 | riblji brudet | https://www.coolinarika.com/recept/dalmatinski-brudet-s-palentom-26420f48-6381-11eb-8e05-0242ac120030 |
+| 20 | tiramisu | https://www.coolinarika.com/recept/tiramisu-original-recept-8e86aa5e-63cd-11eb-9da2-0242ac12004d |
+| 21 | cheesecake | https://www.coolinarika.com/recept/cheesecake-1e480338-6390-11eb-9af6-0242ac12002a | cheesecake.json |
+| 22 | pita sa sirom | https://www.coolinarika.com/recept/pita-sa-sirom-98c376a8-6488-11eb-b2e8-0242ac12001f |
+| 23 | kremšnite | https://www.coolinarika.com/recept/odlicne-kremsnite-fcf700ba-63fa-11eb-b71d-0242ac120038 |
+| 24 | pizza margherita | https://www.coolinarika.com/recept/pizza-margherita--c9c0c51c-6483-11eb-a6b1-0242ac12007e |
+| 25 | juha od gljiva | https://www.coolinarika.com/recept/izvrsna-domaca-juha-od-gljiva-da242dfc-63e0-11eb-98e8-0242ac120040 |
+| 26 | fritule | https://www.coolinarika.com/recept/jogurt-fritule-d04b25f6-643f-11eb-b75a-0242ac1200be |
+| 27 | piletina u curry umaku | https://www.coolinarika.com/recept/piletina-u-curry-i-kurkuma-umaku-986fc2a8-6445-11eb-86e7-0242ac1200ba |
+| 28 | panna cotta | https://www.coolinarika.com/recept/panna-cotta-93c296c4-63cb-11eb-911f-0242ac120024 |
+| 29 | medenjaci | https://www.coolinarika.com/recept/mekani-medenjaci/ |
+| 30 | tjestenina s tunom | https://www.coolinarika.com/recept/tjestenina-s-tunom-21c9426e-648b-11eb-919e-0242ac12006d |
