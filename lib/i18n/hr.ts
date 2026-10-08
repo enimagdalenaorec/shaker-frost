@@ -44,6 +44,9 @@ export const hr = {
     online: "online",
     lastPrice: "Cijena od",
   },
+  recipe: {
+    stepsPending: "Prilagođavam korake zamjenama…",
+  },
   basket: {
     title: "Košarica",
     empty: "Prazna košarica",

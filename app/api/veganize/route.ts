@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { z } from "zod";
 import { runPipeline, type PipelineEvent } from "@/lib/ai/pipeline";
 import { currentUserId } from "@/lib/db/server";
@@ -20,10 +21,15 @@ export async function POST(request: Request) {
 
   const userId = await currentUserId();
   const encoder = new TextEncoder();
+  // the step rewrite runs after the stream closes, so the result page opens ~5 s sooner
+  let deferred: (() => Promise<void>) | null = null;
+  after(async () => {
+    await deferred?.();
+  });
   const stream = new ReadableStream({
     async start(controller) {
       const send = (e: PipelineEvent) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(e)}\n\n`));
-      await runPipeline({ ...parsed.data, userId }, send);
+      await runPipeline({ ...parsed.data, userId, defer: (task) => (deferred = task) }, send);
       controller.close();
     },
   });

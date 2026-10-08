@@ -16,7 +16,11 @@ export type PipelineEvent =
   | { type: "done"; recipeId: string; ms: number }
   | { type: "error"; stage?: StageName; message: string };
 
-export type PipelineInput = { url?: string; text?: string; example?: string; excludeTags?: string[]; userId?: string | null };
+export type PipelineInput = {
+  url?: string; text?: string; example?: string; excludeTags?: string[]; userId?: string | null;
+  /** Runs work after the response (the route passes Next's after()); without it the work runs inline. */
+  defer?: (task: () => Promise<void>) => void;
+};
 
 type StepLog = { stage: StageName; ms: number; model?: string; prompt_version?: string; input?: unknown; output?: unknown; tokensIn?: number; tokensOut?: number };
 type Facets = Record<string, string>;
@@ -26,7 +30,15 @@ const PLAIN = "bez okusa / natur";
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
-export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent) => void): Promise<string | null> {
+export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEvent) => void): Promise<string | null> {
+  // after "done" the client has left and the stream may be closed: events are best effort
+  const emit = (e: PipelineEvent) => {
+    try {
+      rawEmit(e);
+    } catch {
+      /* stream closed */
+    }
+  };
   const db = adminDb();
   const started = Date.now();
   const logs: StepLog[] = [];
@@ -113,21 +125,27 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
     const keyOf = (i: (typeof risky)[number]) => `${i.slug ?? norm(i.name_hr)}|${i.role}|${norm(category)}`;
 
     // 2 ── research (cached per ingredient × role × dish category) ──────────────────────────
+    // Speed: ingredients with curated rules already carry the knowledge (ratio, notes), so only ingredients
+    // WITHOUT rules are researched; cached notes are still used for all. Dish notes alone never trigger a call.
     const research = await stage("research", async () => {
       const keys = [...new Set(risky.map(keyOf))];
       const dishKey = norm(raw.title);
-      const [{ data: cached }, { data: dishCached }] = await Promise.all([
+      const riskySlugs = [...new Set(risky.map((i) => i.slug).filter(Boolean) as string[])];
+      const [{ data: cached }, { data: dishCached }, { data: ruled }] = await Promise.all([
         keys.length ? db.from("substitution_research").select("*").in("key", keys) : Promise.resolve({ data: [] as never[] }),
         db.from("dish_research").select("*").eq("key", dishKey).maybeSingle(),
+        riskySlugs.length ? db.from("substitution_rules").select("ingredient_slug").in("ingredient_slug", riskySlugs) : Promise.resolve({ data: [] as never[] }),
       ]);
+      const hasRules = new Set((ruled ?? []).map((r) => r.ingredient_slug));
       const byKey = new Map((cached ?? []).map((c) => [c.key, c]));
-      const missing = keys.filter((k) => !byKey.has(k));
+      const missing = keys.filter((k) => !byKey.has(k) && !risky.some((i) => keyOf(i) === k && i.slug && hasRules.has(i.slug)));
+      const byRules = keys.filter((k) => !byKey.has(k)).length - missing.length;
       let dishNotes = dishCached?.notes_hr ?? null;
       let sources: Source[] = (dishCached?.sources as Source[] | null) ?? [];
       let grounded = false;
       let model: string | undefined;
 
-      if (risky.length && (missing.length || !dishNotes)) {
+      if (missing.length) {
         const items = missing.map((k) => {
           const i = risky.find((x) => keyOf(x) === k)!;
           return { key: k, name: i.name_hr, role: i.role };
@@ -162,12 +180,12 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
           await db.from("dish_research").upsert({ key: dishKey, dish: raw.title, notes_hr: dishNotes, sources: r.sources, method, model: r.model });
         }
       }
-      const fromCache = keys.length - missing.length;
+      const fromCache = keys.length - missing.length - byRules;
       return {
         value: { byKey, dishNotes, sources },
-        summary: !risky.length ? "Nije potrebno" : grounded ? `${sources.length} izvora s weba` : fromCache === keys.length ? "Iz memorije" : `${missing.length} novih bilješki${fromCache ? `, ${fromCache} iz memorije` : ""}`,
+        summary: !risky.length ? "Nije potrebno" : !missing.length && byRules ? "Pravila dovoljna" : grounded ? `${sources.length} izvora s weba` : fromCache === keys.length ? "Iz memorije" : `${missing.length} novih bilješki${fromCache ? `, ${fromCache} iz memorije` : ""}`,
         detail: { notes: [...byKey.values()].map((v) => ({ ingredient: v.ingredient, notes: v.notes_hr })), dishNotes },
-        log: { model, prompt_version: PROMPTS.research.version, output: { missing, fromCache, grounded } },
+        log: { model, prompt_version: PROMPTS.research.version, output: { missing, fromCache, byRules, grounded } },
       };
     });
 
@@ -309,7 +327,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
       };
     });
 
-    // 4 ── offers ∥ 5 ── rewrite ─────────────────────────────────────────────────────────────
+    // 4 ── offers → 5 save → done; 6 ── rewrite runs after the user already sees the result ──
     const chosenConcepts = [...new Set(choice.items.flatMap((it) => it.alternatives.map((a) => a.concept_id).filter(Boolean) as string[]))];
     const swapsText = choice.items
       .map((it) => {
@@ -320,8 +338,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
       .filter(Boolean)
       .join("\n");
 
-    const [offerStats, rewrite] = await Promise.all([
-      stage("offers", async () => {
+    const offerStats = await stage("offers", async () => {
         if (!chosenConcepts.length) return { value: new Map<string, number>(), summary: "Nije potrebno" };
         const { data } = await db.rpc("get_offers", { p_concept_ids: chosenConcepts, p_exclude_tags: input.excludeTags ?? [] });
         const perConcept = new Map<string, number>();
@@ -337,25 +354,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
           summary: `${products.size} proizvoda u ${chains.size} trgovina`,
           detail: { products: products.size, chains: [...chains] },
         };
-      }),
-      stage("rewrite", async () => {
-        if (!risky.length) return { value: null, summary: "Bez izmjena" };
-        const r = await generateJson({
-          schema: Rewrite,
-          tier: "fast",
-          system: PROMPTS.rewrite.system,
-          user: PROMPTS.rewrite.user({ title: raw.title, steps: raw.steps, swaps: swapsText }),
-          temperature: 0.3,
-        });
-        const changed = r.data.steps.filter((s) => s.changed).length;
-        return {
-          value: r.data,
-          summary: `${changed} ${changed === 1 ? "korak izmijenjen" : "koraka izmijenjeno"}`,
-          detail: { title: r.data.title_hr },
-          log: { model: r.model, prompt_version: PROMPTS.rewrite.version, output: r.data, tokensIn: r.tokensIn, tokensOut: r.tokensOut },
-        };
-      }),
-    ]);
+    });
 
     // 6 ── save ─────────────────────────────────────────────────────────────────────────────
     await stage("save", async () => {
@@ -390,14 +389,15 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
         const { error } = await db.from("ingredient_alternatives").insert(altRows);
         if (error) throw new Error(error.message);
       }
+      // original steps until the rewrite replaces them; `pending` tells the page to refresh
       await db
         .from("recipes")
         .update({
-          title: rewrite?.title_hr ?? raw.title,
-          veganized_steps: rewrite ? rewrite.steps.map((s, n) => ({ n: n + 1, text_hr: s.text_hr, changed: s.changed })) : raw.steps.map((s, n) => ({ n: n + 1, text_hr: s, changed: false })),
+          title: raw.title,
+          veganized_steps: raw.steps.map((s, n) => ({ n: n + 1, text_hr: s, changed: false, ...(risky.length ? { pending: true } : {}) })),
           dish_category: category,
           dish_notes_hr: research.dishNotes,
-          tip_hr: rewrite?.tip_hr ?? null,
+          tip_hr: null,
           sources: research.sources,
           servings_original: analysis.servings ?? raw.servings,
           servings_target: analysis.servings ?? raw.servings,
@@ -407,9 +407,45 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
       return { value: null, summary: "Spremljeno" };
     });
 
-    const ms = Date.now() - started;
-    await finishRun(db, runId, "done", ms, logs);
-    emit({ type: "done", recipeId: recipeId!, ms });
+    emit({ type: "done", recipeId: recipeId!, ms: Date.now() - started });
+
+    const rewriteSteps = async () => {
+      try {
+        if (risky.length) {
+          const rewrite = await stage("rewrite", async () => {
+            const r = await generateJson({
+              schema: Rewrite,
+              tier: "fast",
+              system: PROMPTS.rewrite.system,
+              user: PROMPTS.rewrite.user({ title: raw.title, steps: raw.steps, swaps: swapsText }),
+              temperature: 0.3,
+            });
+            const changed = r.data.steps.filter((s) => s.changed).length;
+            return {
+              value: r.data,
+              summary: `${changed} ${changed === 1 ? "korak izmijenjen" : "koraka izmijenjeno"}`,
+              detail: { title: r.data.title_hr },
+              log: { model: r.model, prompt_version: PROMPTS.rewrite.version, output: r.data, tokensIn: r.tokensIn, tokensOut: r.tokensOut },
+            };
+          });
+          await db
+            .from("recipes")
+            .update({
+              title: rewrite.title_hr,
+              veganized_steps: rewrite.steps.map((s, n) => ({ n: n + 1, text_hr: s.text_hr, changed: s.changed })),
+              tip_hr: rewrite.tip_hr,
+            })
+            .eq("id", recipeId!);
+        }
+        await finishRun(db, runId, "done", Date.now() - started, logs);
+      } catch (err) {
+        // the result stays usable: keep the original steps, just stop "pending"
+        await db.from("recipes").update({ veganized_steps: raw.steps.map((s, n) => ({ n: n + 1, text_hr: s, changed: false })) }).eq("id", recipeId!);
+        await finishRun(db, runId, "done", Date.now() - started, logs, { stage: "rewrite", message: err instanceof Error ? err.message : "rewrite failed" });
+      }
+    };
+    if (input.defer) input.defer(rewriteSteps);
+    else await rewriteSteps();
     return recipeId;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Nešto je pošlo po zlu.";

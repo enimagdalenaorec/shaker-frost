@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Home, Lightbulb, Plus, Share2, ShoppingBasket, Sparkles, Store } from "lucide-react";
 import { setRecipeSaved } from "@/app/actions/user";
 import { setPendingAction, signInWithGoogle, useAuth } from "@/lib/auth/client";
@@ -38,7 +39,20 @@ function addSwap(recipeId: string, ingredient: IngredientView, alt: AlternativeV
   );
 }
 
+/** The step rewrite finishes a few seconds after the page opens: refresh until it lands (max ~1 min). */
+function useRefreshWhilePending(pending: boolean) {
+  const router = useRouter();
+  useEffect(() => {
+    if (!pending) return;
+    let tries = 0;
+    const t = setInterval(() => (++tries > 30 ? clearInterval(t) : router.refresh()), 2000);
+    return () => clearInterval(t);
+  }, [pending, router]);
+}
+
 export function RecipeResult({ recipe }: { recipe: RecipeView }) {
+  const stepsPending = recipe.steps.some((s) => s.pending);
+  useRefreshWhilePending(stepsPending);
   const risky = recipe.ingredients.filter((i) => i.status !== "vegan" && i.alternatives.length);
   const check = recipe.ingredients.filter((i) => i.status === "depends" && !i.alternatives.length);
   const [selected, setSelected] = useState<Record<string, string>>(() =>
@@ -154,6 +168,11 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
       {recipe.steps.length > 0 && (
         <section className="mt-9">
           <h2 className="title-bar mb-4 text-3xl text-ink">Postupak</h2>
+          {stepsPending && (
+            <p className="mb-3 flex items-center gap-2 text-sm font-bold text-rind">
+              <Sparkles className="size-4 animate-pulse" /> {hr.recipe.stepsPending}
+            </p>
+          )}
           <ol className="space-y-2">
             {recipe.steps.map((s) => (
               <li

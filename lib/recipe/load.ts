@@ -65,7 +65,7 @@ export type RecipeView = {
   dishCategory: string | null;
   dishNotes: string | null;
   tip: string | null;
-  steps: { n: number; text_hr: string; changed: boolean }[];
+  steps: { n: number; text_hr: string; changed: boolean; pending?: boolean }[];
   sources: { title: string | null; url: string }[];
   ingredients: IngredientView[];
   createdAt: string;

@@ -17,7 +17,7 @@ const STAGES: { id: StageName; label: string }[] = [
   { id: "research", label: "Istražujem zamjene" },
   { id: "alternatives", label: "Biram najbolje zamjene" },
   { id: "offers", label: "Tražim proizvode" },
-  { id: "rewrite", label: "Prepisujem korake" },
+  // the step rewrite finishes on the result page (lib/ai/pipeline.ts runs it after "done")
 ];
 
 type StageState = { status: "waiting" | "running" | "done" | "error"; ms?: number; summary?: string; detail?: unknown };
