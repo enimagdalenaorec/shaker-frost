@@ -61,8 +61,8 @@ export function SearchResults({
           aria-pressed={onlyAkcija}
           onClick={() => setOnlyAkcija((v) => !v)}
           className={cn(
-            "inline-flex h-9 shrink-0 items-center gap-1 rounded-full border-[1.5px] border-ink px-3.5 text-[13px] font-extrabold text-ink transition-colors",
-            onlyAkcija ? "bg-guava" : "bg-blush hover:bg-guava-light",
+            "blob inline-flex h-9 shrink-0 items-center gap-1 px-4 text-[13px] font-extrabold text-ink",
+            onlyAkcija ? "blob-fill-guava" : "blob-fill-blush hover:blob-fill-guava-light",
           )}
         >
           <Percent className="size-3.5" /> {hr.search.onlyAkcija}
@@ -75,8 +75,8 @@ export function SearchResults({
             aria-pressed={sort === s.id}
             onClick={() => setSort(s.id)}
             className={cn(
-              "h-9 shrink-0 rounded-full border-[1.5px] px-3.5 text-[13px] font-extrabold transition-colors",
-              sort === s.id ? "border-ink bg-ink text-cream" : "border-ink/35 text-ink hover:border-ink hover:bg-ink hover:text-cream",
+              "blob h-9 shrink-0 px-4 text-[13px] font-extrabold transition-colors",
+              sort === s.id ? "blob-fill-ink text-cream" : "blob-fill-oat-200 text-ink hover:blob-fill-pistachio-light",
             )}
           >
             {s.label}
@@ -84,7 +84,7 @@ export function SearchResults({
         ))}
         <span className="micro ml-auto shrink-0 pl-3 text-rind">{list.length}</span>
       </div>
-      <ul className="mt-3 rounded-[24px] border-[1.5px] border-ink bg-paper p-2">
+      <ul className="pebble mt-3 bg-paper p-2 shadow-soft">
         {list.map((p) => (
           <ProductRow key={p.itemId} product={p} />
         ))}
@@ -102,7 +102,7 @@ function Popular() {
           <Link
             key={q}
             href={`/trazi?q=${encodeURIComponent(q)}`}
-            className="rounded-full border-[1.5px] border-ink/40 px-3.5 py-1.5 text-sm font-extrabold text-ink transition-colors hover:border-ink hover:bg-ink hover:text-cream"
+            className="blob blob-fill-oat-200 px-4 py-1.5 text-sm font-extrabold text-ink hover:blob-fill-pistachio-light"
           >
             {q}
           </Link>

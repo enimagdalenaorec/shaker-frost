@@ -1,9 +1,10 @@
 import "server-only";
 import type { z } from "zod";
-import { OPENAI_MODELS, type Tier } from "./models";
+import { OPENAI_IMAGE, OPENAI_MODELS, type Tier } from "./models";
 
 // Backup provider: used by lib/ai/llm.ts only when every Gemini model failed (quota, overload, timeout).
-// Plain fetch to the Chat Completions API, so there is no extra dependency.
+// Also draws the dish illustrations (openaiImage, used by lib/ai/dish-art.ts).
+// Plain fetch to the Chat Completions and Images APIs, so there is no extra dependency.
 
 export const openaiConfigured = () => Boolean(process.env.OPENAI_API_KEY);
 
@@ -101,4 +102,56 @@ export async function openaiJson<T>(opts: {
     tokensIn: res.usage?.prompt_tokens ?? 0,
     tokensOut: res.usage?.completion_tokens ?? 0,
   };
+}
+
+type ImageResponse = {
+  error?: { message?: string };
+  data?: { b64_json?: string }[];
+  usage?: { input_tokens?: number; output_tokens?: number };
+};
+
+/**
+ * One transparent WebP from the GPT image model. With `references` (style examples) it uses the edits
+ * endpoint, which takes input images; if that is refused (400), it draws from the prompt alone.
+ */
+export async function openaiImage(opts: {
+  prompt: (withReferences: boolean) => string;
+  references?: { name: string; bytes: Uint8Array }[];
+  timeoutMs: number;
+}): Promise<{ bytes: Uint8Array; model: string; usedReferences: boolean; tokensIn: number; tokensOut: number }> {
+  const { model, quality } = OPENAI_IMAGE;
+  const params = { model, quality, size: "1024x1024", background: "transparent", output_format: "webp", output_compression: "80" };
+  const auth = { authorization: `Bearer ${process.env.OPENAI_API_KEY}` };
+  const signal = AbortSignal.timeout(opts.timeoutMs);
+
+  const send = async (withReferences: boolean) => {
+    let res: Response;
+    if (withReferences) {
+      const form = new FormData();
+      for (const [k, v] of Object.entries(params)) form.append(k, v);
+      form.append("prompt", opts.prompt(true));
+      for (const r of opts.references!) form.append("image[]", new Blob([new Uint8Array(r.bytes)], { type: "image/png" }), r.name);
+      res = await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: auth, body: form, signal });
+    } else {
+      res = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: { ...auth, "content-type": "application/json" },
+        body: JSON.stringify({ ...params, output_compression: Number(params.output_compression), prompt: opts.prompt(false) }),
+        signal,
+      });
+    }
+    const json = (await res.json().catch(() => ({}))) as ImageResponse;
+    if (!res.ok) throw Object.assign(new Error(`OpenAI image ${res.status}: ${json.error?.message ?? ""}`.slice(0, 300)), { status: res.status });
+    const b64 = json.data?.[0]?.b64_json;
+    if (!b64) throw new Error("OpenAI image: empty response");
+    return { bytes: Buffer.from(b64, "base64"), tokensIn: json.usage?.input_tokens ?? 0, tokensOut: json.usage?.output_tokens ?? 0 };
+  };
+
+  const withReferences = Boolean(opts.references?.length);
+  try {
+    return { ...(await send(withReferences)), model: `openai:${model}`, usedReferences: withReferences };
+  } catch (err) {
+    if (!withReferences || (err as { status?: number }).status !== 400) throw err;
+    return { ...(await send(false)), model: `openai:${model}`, usedReferences: false };
+  }
 }

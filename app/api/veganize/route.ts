@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { z } from "zod";
 import { runPipeline, type PipelineEvent } from "@/lib/ai/pipeline";
 import { currentUserId } from "@/lib/db/server";
@@ -13,17 +14,22 @@ const Body = z
   })
   .refine((b) => b.url || b.text || b.example, { message: "Nedostaje recept" });
 
-/** Runs the pipeline and streams every stage as Server-Sent Events. */
+/**
+ * Runs the pipeline and streams every stage as Server-Sent Events. The dish illustration it starts
+ * keeps drawing after the stream has closed (after(), within maxDuration); the recipe page polls for it.
+ */
 export async function POST(request: Request) {
   const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Neispravan zahtjev" }, { status: 400 });
 
   const userId = await currentUserId();
+  const background: Promise<unknown>[] = [];
+  after(() => Promise.all(background));
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (e: PipelineEvent) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(e)}\n\n`));
-      await runPipeline({ ...parsed.data, userId }, send);
+      await runPipeline({ ...parsed.data, userId, background: (task) => background.push(task) }, send);
       controller.close();
     },
   });

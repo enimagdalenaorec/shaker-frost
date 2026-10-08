@@ -48,7 +48,7 @@ export function DiscountBadge({ pct, className }: { pct: number; className?: str
   return (
     <span
       className={cn(
-        "tabular inline-flex items-center rounded-full border-[1.5px] border-ink bg-guava px-2 py-0.5 text-[12px] font-black leading-none text-ink",
+        "blob blob-fill-guava tabular inline-flex items-center px-2.5 py-1 text-[12px] font-black leading-none text-ink",
         className,
       )}
     >

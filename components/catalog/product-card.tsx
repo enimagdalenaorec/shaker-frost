@@ -38,7 +38,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "flex h-full flex-col rounded-[22px] border-[1.5px] border-ink/25 bg-cream p-3.5 transition-[transform,box-shadow] hover:-translate-y-1 hover:shadow-[0_10px_0_rgb(64_52_66/0.08)]",
+        "pebble flex h-full flex-col bg-paper p-3.5 shadow-soft transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-lift",
         className,
       )}
     >
@@ -47,9 +47,9 @@ export function ProductCard({
         {p.isAkcija ? (
           <DiscountBadge pct={p.discountPct} />
         ) : times ? (
-          <span className="tabular rounded-full bg-ink px-2 py-0.5 text-[11px] font-black text-cream">{hr.home.times(times)}</span>
+          <span className="blob blob-fill-ink tabular px-2.5 py-0.5 text-[11px] font-black text-cream">{hr.home.times(times)}</span>
         ) : p.eko ? (
-          <span className="grid size-6 place-items-center rounded-full border-[1.5px] border-ink bg-pistachio" title={hr.product.eko}>
+          <span className="blob blob-round blob-fill-pistachio grid size-6 place-items-center" title={hr.product.eko}>
             <Leaf className="size-3" />
           </span>
         ) : null}
@@ -66,7 +66,7 @@ export function ProductCard({
 
 export function ProductCardSkeleton() {
   return (
-    <div className="h-full rounded-[22px] border-[1.5px] border-ink/15 bg-cream p-3.5">
+    <div className="pebble h-full bg-paper/70 p-3.5">
       <div className="h-[22px] w-12 animate-pulse rounded-md bg-oat-200" />
       <div className="mt-3 h-3 w-1/3 animate-pulse rounded bg-oat-200" />
       <div className="mt-2 h-4 w-4/5 animate-pulse rounded bg-oat-200" />

@@ -55,6 +55,9 @@ export type RecipeView = {
   sourceUrl: string | null;
   sourceName: string | null;
   imageUrl: string | null;
+  /** Dish illustration (lib/ai/dish-art.ts); "pending" while it is still being drawn. */
+  artUrl: string | null;
+  artStatus: "pending" | "done" | null;
   servings: number | null;
   dishCategory: string | null;
   dishNotes: string | null;
@@ -68,6 +71,8 @@ export type RecipeView = {
 };
 
 const num = (v: unknown) => (v == null ? null : Number(v));
+// a drawing still "pending" after this long was cut off (function time limit): show no picture
+const ART_GIVE_UP_MS = 3 * 60_000;
 const cap = (s: string) => (s ? s[0].toLocaleUpperCase("hr") + s.slice(1) : s);
 
 export async function loadRecipe(id: string): Promise<RecipeView | null> {
@@ -136,6 +141,11 @@ export async function loadRecipe(id: string): Promise<RecipeView | null> {
     sourceUrl: r.source_url,
     sourceName: r.source_name,
     imageUrl: r.image_url,
+    artUrl: r.art_status === "done" ? r.art_url : null,
+    artStatus:
+      r.art_status === "done" && r.art_url ? "done"
+      : r.art_status === "pending" && Date.now() - Date.parse(r.created_at) < ART_GIVE_UP_MS ? "pending"
+      : null,
     servings: r.servings_target,
     dishCategory: r.dish_category,
     dishNotes: r.dish_notes_hr,

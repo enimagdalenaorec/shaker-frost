@@ -19,7 +19,7 @@ function CountDot({ count, className }: { count: number; className?: string }) {
   return (
     <span
       className={cn(
-        "tabular grid min-w-[18px] place-items-center rounded-full border-[1.5px] border-ink bg-guava px-1 text-[10px] font-black leading-[15px] text-ink",
+        "blob blob-round blob-fill-guava tabular grid min-w-[18px] place-items-center px-1 text-[10px] font-black leading-[18px] text-ink",
         className,
       )}
     >
@@ -34,7 +34,7 @@ export function TabBar() {
   const count = useBasketCount();
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 sm:hidden" aria-label="Glavna navigacija">
-      <ul className="grid grid-cols-4 rounded-[24px] border-2 border-ink bg-ink p-1.5 shadow-[0_6px_0_rgb(64_52_66/0.25)]">
+      <ul className="blob blob-pill blob-float blob-fill-ink grid grid-cols-4 px-2 py-2">
         {TABS.map(({ href, label, Icon, match }) => {
           const active = match(path);
           return (
@@ -42,8 +42,8 @@ export function TabBar() {
               <Link
                 href={href}
                 className={cn(
-                  "relative flex h-12 items-center justify-center gap-1.5 rounded-[18px] text-[13px] font-black transition-colors",
-                  active ? "bg-pistachio text-ink" : "text-cream/70 hover:text-cream",
+                  "blob flex h-12 items-center justify-center gap-1.5 text-[13px] font-black transition-colors",
+                  active ? "blob-fill-pistachio text-ink" : "text-cream/70 hover:text-cream",
                 )}
               >
                 <span className="relative">
@@ -73,8 +73,8 @@ export function NavLinks() {
             key={href}
             href={href}
             className={cn(
-              "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-extrabold text-ink transition-colors",
-              active ? "bg-pistachio" : "hover:bg-ink/[0.07]",
+              "blob inline-flex h-10 items-center gap-2 px-4 text-sm font-extrabold text-ink",
+              active ? "blob-fill-pistachio" : "hover:blob-fill-oat-200",
             )}
           >
             <Icon className="size-4" />

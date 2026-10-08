@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { hr } from "@/lib/i18n/hr";
 
-// Calm dashed band with the recipe sources and the stores we compare (team "ticker").
+// Calm band with the recipe sources and the stores we compare (team "ticker"); the logos fade out at the edges.
 const LOGOS = [
   { src: "/logos/coolinarika.svg", alt: "Coolinarika" },
   { src: "/logos/index.png", alt: "Index recepti", suffix: "recepti" },
@@ -17,7 +17,7 @@ const LOGOS = [
 
 export function Ticker() {
   return (
-    <section className="ticker -mx-4 mt-10 overflow-hidden border-y-[1.5px] border-dashed border-ink/35 bg-cream py-4 sm:-mx-6" aria-label="Izvori recepata i trgovine">
+    <section className="ticker -mx-4 mt-10 overflow-hidden py-4 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] sm:-mx-6" aria-label="Izvori recepata i trgovine">
       <p className="micro mb-3 text-center text-rind">{hr.home.ticker}</p>
       <div className="ticker-track flex w-max">
         {[0, 1].map((k) => (

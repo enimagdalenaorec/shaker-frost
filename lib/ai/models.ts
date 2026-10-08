@@ -22,3 +22,12 @@ export const OPENAI_MODELS: Record<Tier, string> = {
   strong: process.env.OPENAI_MODEL_STRONG || "gpt-5.4-mini",
   fast: process.env.OPENAI_MODEL_FAST || "gpt-5.4-mini",
 };
+
+// Dish illustrations (lib/ai/dish-art.ts), drawn in the background after a run. From our key's live model
+// list (npm run llm:models:openai). Measured on palačinke / kolač od šljiva with two style references:
+// gpt-image-2.5-flare at quality "low" ≈ 13 s and ≈ $0.02 per picture, same look as "medium" at the
+// size we show it. Override with OPENAI_IMAGE_MODEL / OPENAI_IMAGE_QUALITY.
+export const OPENAI_IMAGE = {
+  model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-flare",
+  quality: process.env.OPENAI_IMAGE_QUALITY || "low",
+};

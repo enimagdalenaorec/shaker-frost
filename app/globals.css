@@ -100,9 +100,24 @@
   --sidebar-border: var(--border);
   --sidebar-ring: var(--mint-400);
 
-  --shadow-soft: 6px 7px 0 rgb(64 52 66 / 0.07);
-  --shadow-lift: 8px 9px 0 rgb(64 52 66 / 0.12);
-  --shadow-ink: 4px 4px 0 var(--ink);
+  /* soft, diffuse depth instead of ink outlines */
+  --shadow-soft: 0 1px 2px rgb(64 52 66 / 0.04), 0 14px 30px -18px rgb(64 52 66 / 0.3);
+  --shadow-lift: 0 2px 4px rgb(64 52 66 / 0.05), 0 22px 40px -20px rgb(64 52 66 / 0.4);
+
+  /*
+   * Organic shapes, traced from the team's reference blob (ref) and stretched only in the middle
+   * for wider elements, so the round ends keep their shape. Used as masks by .blob / .btn.
+   *   ref ≈ 2:1–4:1 (default) · pill ≈ 4:1–7:1 · long wider than 7:1 · round ≈ 1:1–2:1
+   * Every shape has a "-b" twin (turned around) that even siblings use, so neighbours differ.
+   */
+  --blob-ref: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 100' preserveAspectRatio='none'%3E%3Cpath d='M0.1 50C0.4 43.3 1.5 34.9 4.2 28.7C6.9 22.7 11 17.5 15.9 13.4C21.3 9 28.4 5.9 35.7 3.7C43.8 1.2 53.7 0.3 62.7 0C71.7 -0.2 81.2 1 89.6 2.1C97.3 3.1 103.7 5.1 111.2 6.1C119.3 7.2 127.8 7.9 136.4 8.2C145.2 8.4 154.7 7.6 163.4 7.3C171.4 7.1 179.6 5.2 186.7 6.7C193.3 8.2 199.8 11 204.7 15.5C209.7 20 213.9 27.2 216.4 33.8C218.8 40.1 220.1 47.4 220 54.1C219.9 60.6 218.8 68.1 215.9 73.4C213 78.5 208 82 202.9 85.5C196.9 89.7 188.9 93.3 181.3 95.7C173.4 98.2 164.4 99.7 156.2 100C148.2 100.2 140.5 99 132.8 97.7C125 96.4 117.2 93.8 109.4 92.2C101.6 90.7 93.9 89 86 88.6C78.3 88.1 70.3 89 62.7 89.6C55.3 90.1 48 91.9 41.1 91.8C34.8 91.8 28.6 91.6 23.1 89.6C17.9 87.7 12.4 84.5 8.7 80.5C5.3 76.6 3 71.3 1.5 66.2C0.1 61.2 -0.2 55.8 0.1 50Z'/%3E%3C/svg%3E");
+  --blob-ref-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 100' preserveAspectRatio='none'%3E%3Cpath d='M219.9 50C219.6 56.7 218.5 65.1 215.8 71.3C213.1 77.3 209 82.5 204.1 86.6C198.7 91 191.6 94.1 184.3 96.3C176.2 98.8 166.3 99.7 157.3 100C148.3 100.2 138.8 99 130.4 97.9C122.7 96.9 116.3 94.9 108.8 93.9C100.7 92.8 92.2 92.1 83.6 91.8C74.8 91.6 65.3 92.4 56.6 92.7C48.6 92.9 40.4 94.8 33.3 93.3C26.7 91.8 20.2 89 15.3 84.5C10.3 80 6.1 72.8 3.6 66.2C1.2 59.9 -0.1 52.6 0 45.9C0.1 39.4 1.2 31.9 4.1 26.6C7 21.5 12 18 17.1 14.5C23.1 10.3 31.1 6.7 38.7 4.3C46.6 1.8 55.6 0.3 63.8 0C71.8 -0.2 79.5 1 87.2 2.3C95 3.6 102.8 6.2 110.6 7.8C118.4 9.3 126.1 11 134 11.4C141.7 11.9 149.7 11 157.3 10.4C164.7 9.9 172 8.1 178.9 8.2C185.2 8.2 191.4 8.4 196.9 10.4C202.1 12.3 207.6 15.5 211.3 19.5C214.7 23.4 217 28.7 218.5 33.8C219.9 38.8 220.2 44.2 219.9 50Z'/%3E%3C/svg%3E");
+  --blob-pill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 100' preserveAspectRatio='none'%3E%3Cpath d='M0.1 50C0.4 43.4 1.4 34.9 4.1 28.7C6.7 22.8 10.7 17.6 15.4 13.5C20.6 9 27.1 6 34.6 3.8C44.2 0.9 56 0.6 69 0.1C85.7 -0.5 108.3 1 126.3 2.2C142.5 3.2 156.3 5.2 172.2 6.2C189.4 7.3 207.6 8 225.7 8.2C244.5 8.5 267.9 7.7 283.1 7.4C293 7.2 300.4 5.1 307.8 6.8C314.3 8.3 320.4 11.1 325.2 15.5C330 20 334 27.2 336.5 33.8C338.9 40.1 340.1 47.4 340 54.1C339.9 60.6 338.8 68 336 73.3C333.2 78.5 328.4 82 323.5 85.5C317.6 89.6 310.6 93.2 302.6 95.6C292.6 98.6 280.4 99.4 267.8 99.9C252.7 100.5 234.6 98.9 218.1 97.6C201.5 96.4 185 93.7 168.4 92.2C151.8 90.7 135.3 89 118.7 88.5C102.1 88.1 83.4 88.8 69 89.5C58 90.1 48.3 92 39.8 91.8C33.2 91.6 27.7 91.5 22.4 89.5C17.3 87.6 12 84.5 8.5 80.4C5.2 76.6 2.9 71.3 1.5 66.2C0.1 61.2 -0.2 55.7 0.1 50Z'/%3E%3C/svg%3E");
+  --blob-pill-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 100' preserveAspectRatio='none'%3E%3Cpath d='M339.9 50C339.6 56.6 338.6 65.1 335.9 71.3C333.3 77.2 329.3 82.4 324.6 86.5C319.4 91 312.9 94 305.4 96.2C295.8 99.1 284 99.4 271 99.9C254.3 100.5 231.7 99 213.7 97.8C197.5 96.8 183.7 94.8 167.8 93.8C150.6 92.7 132.4 92 114.3 91.8C95.5 91.5 72.1 92.3 56.9 92.6C47 92.8 39.6 94.9 32.2 93.2C25.7 91.7 19.6 88.9 14.8 84.5C10 80 6 72.8 3.5 66.2C1.1 59.9 -0.1 52.6 0 45.9C0.1 39.4 1.2 32 4 26.7C6.8 21.5 11.6 18 16.5 14.5C22.4 10.4 29.4 6.8 37.4 4.4C47.4 1.4 59.6 0.6 72.2 0.1C87.3 -0.5 105.4 1.1 121.9 2.4C138.5 3.6 155 6.3 171.6 7.8C188.2 9.3 204.7 11 221.3 11.5C237.9 11.9 256.6 11.2 271 10.5C282 9.9 291.7 8 300.2 8.2C306.8 8.4 312.3 8.5 317.6 10.5C322.7 12.4 328 15.5 331.5 19.6C334.8 23.4 337.1 28.7 338.5 33.8C339.9 38.8 340.2 44.3 339.9 50Z'/%3E%3C/svg%3E");
+  --blob-long: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 100' preserveAspectRatio='none'%3E%3Cpath d='M0.1 50C0.4 43.4 1.5 34.9 4.1 28.8C6.7 22.9 10.7 17.7 15.5 13.6C20.7 9.2 26 6.2 34.7 3.9C50.7 -0.4 76.3 0.9 105.9 0.3C154.8 -0.7 239.5 1.2 300.8 2.3C355.7 3.3 402.8 5.3 456.8 6.3C515.1 7.4 577.1 8.2 638.8 8.4C702.6 8.6 795.5 8 833.7 7.6C849.7 7.4 858.4 4.8 867.7 7C874.6 8.5 880.4 11.2 885.1 15.6C890 20.1 894 27.3 896.5 33.8C898.9 40.1 900.1 47.4 900 54.1C899.9 60.6 898.8 68 896 73.3C893.2 78.4 888.4 81.9 883.4 85.4C877.5 89.5 872 93.1 862.4 95.5C844.5 100.2 813.6 99.1 781.7 99.8C735.7 100.7 669.1 98.8 612.8 97.5C556.4 96.3 500.1 93.6 443.8 92.1C387.5 90.6 331.2 88.9 274.8 88.4C218.5 88 149.2 88.6 105.9 89.4C78.8 90 54.8 92.4 39.9 91.7C32.2 91.3 27.8 91.4 22.5 89.4C17.4 87.5 12 84.4 8.5 80.3C5.2 76.5 2.9 71.3 1.5 66.2C0.1 61.1 -0.2 55.7 0.1 50Z'/%3E%3C/svg%3E");
+  --blob-long-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 100' preserveAspectRatio='none'%3E%3Cpath d='M898.5 66.2C897.1 71.3 894.8 76.5 891.5 80.3C888 84.4 882.6 87.5 877.5 89.4C872.2 91.4 867.8 91.3 860.1 91.7C845.2 92.4 821.2 90 794.1 89.4C750.8 88.6 681.5 88 625.2 88.4C568.8 88.9 512.5 90.6 456.2 92.1C399.9 93.6 343.6 96.3 287.2 97.5C230.9 98.8 164.3 100.7 118.3 99.8C86.4 99.1 55.5 100.2 37.6 95.5C28 93.1 22.5 89.5 16.6 85.4C11.6 81.9 6.8 78.4 4 73.3C1.2 68 0.1 60.6 0 54.1C-0.1 47.4 1.1 40.1 3.5 33.8C6 27.3 10 20.1 14.9 15.6C19.6 11.2 25.4 8.5 32.3 7C41.6 4.8 50.3 7.4 66.3 7.6C104.5 8 197.4 8.6 261.2 8.4C322.9 8.2 384.9 7.4 443.2 6.3C497.2 5.3 544.3 3.3 599.2 2.3C660.5 1.2 745.2 -0.7 794.1 0.3C823.7 0.9 849.3 -0.4 865.3 3.9C874 6.2 879.3 9.2 884.5 13.6C889.3 17.7 893.3 22.9 895.9 28.8C898.5 34.9 899.6 43.4 899.9 50C900.2 55.7 899.9 61.1 898.5 66.2Z'/%3E%3C/svg%3E");
+  --blob-round: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M58 0.5C71.9 3 87.4 17.2 93.9 28.6C100.4 39.9 102.1 57.1 97 68.6C92 80.2 77.4 93.8 63.6 97.8C49.8 101.9 24.9 100.3 14.3 92.8C3.7 85.4 0.7 66.2 0.1 53.1C-0.5 39.9 1.2 22.5 10.9 13.7C20.5 5 44.2 -2 58 0.5Z'/%3E%3C/svg%3E");
+  --blob-round-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M74.8 6.7C86.8 13 97.8 28.6 99.7 40.4C101.6 52.1 95.1 67.3 86.2 77.2C77.2 87.2 59 100.5 46 100C33 99.5 15.5 84.7 8.1 74.1C0.6 63.4 -1.8 48.1 1.4 36.2C4.6 24.3 15.2 7.4 27.5 2.5C39.7 -2.4 62.8 0.4 74.8 6.7Z'/%3E%3C/svg%3E");
 }
 
 @theme inline {
@@ -127,7 +142,6 @@
   --color-smoke: var(--smoke);
   --color-smoke-light: var(--smoke-light);
   --color-rind: var(--rind);
-  --shadow-ink: var(--shadow-ink);
 
   --color-mint-50: var(--mint-50);
   --color-mint-100: var(--mint-100);
@@ -241,102 +255,117 @@
     text-transform: uppercase;
     line-height: 1.5;
   }
-  /* pill buttons with an ink outline that lift on hover and press on click */
+  /*
+   * Organic filled shapes, no outlines. A .blob (and every .btn) paints its fill on a masked ::before
+   * layer, so the content is never clipped and the focus ring stays a plain pill.
+   * Fill: blob-fill-<colour> or .btn-<colour>. Shape: ref (default), blob-pill, blob-long, blob-round.
+   * Never put bg-* on a blob: it paints a rectangle behind the shape.
+   */
+  .blob,
+  .btn {
+    position: relative;
+    isolation: isolate;
+    border-radius: 999px;
+    --blob-fill: transparent;
+    --shape: var(--blob-ref);
+    --shape-b: var(--blob-ref-b);
+  }
+  .blob::before,
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--blob-fill);
+    -webkit-mask: var(--shape) center / 100% 100% no-repeat;
+    mask: var(--shape) center / 100% 100% no-repeat;
+    transition: background-color 0.25s, transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  :is(.blob, .btn):nth-child(even)::before {
+    -webkit-mask-image: var(--shape-b);
+    mask-image: var(--shape-b);
+  }
+  /* interactive blobs breathe on hover and squish on press; the content stays still */
+  :is(a, button).blob:hover::before,
+  .btn:hover::before {
+    transform: scale(1.04, 1.08) rotate(-1deg);
+  }
+  :is(a, button).blob:active::before,
+  .btn:active::before {
+    transform: scale(0.96);
+    transition-duration: 0.12s;
+  }
+  :is(.blob, .btn):disabled::before {
+    transform: none;
+  }
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 999px;
-    border: 2px solid var(--ink);
-    box-shadow: 0 4px 0 var(--ink);
     font-weight: 900;
     color: var(--ink);
-    transition: transform 0.15s, box-shadow 0.15s, background-color 0.2s;
   }
-  .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 var(--ink);
-  }
-  .btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 var(--ink);
-  }
-  .btn:disabled {
-    opacity: 0.6;
-    transform: none;
-  }
-  .btn-guava { background: var(--guava); }
-  .btn-guava:hover { background: #e58f82; }
-  .btn-paper { background: var(--paper); }
-  .btn-paper:hover { background: var(--pistachio); }
-  .btn-pistachio { background: var(--pistachio); }
-  .btn-pistachio:hover { background: #a5b992; }
-  .btn-ink { background: var(--ink); color: var(--cream); }
-  .btn-ink:hover { background: var(--rind); }
-  /* cards */
-  .card-ink {
-    background: var(--paper);
-    border: 2px solid var(--ink);
-    border-radius: 26px;
-    box-shadow: 6px 6px 0 var(--ink);
-  }
-  .card-soft {
-    background: var(--paper);
-    border: 1.5px solid rgb(64 52 66 / 0.28);
-    border-radius: 22px;
-    box-shadow: 6px 7px 0 rgb(64 52 66 / 0.06);
-  }
-  /* outlined pill chip */
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border: 1.5px solid var(--ink);
-    border-radius: 999px;
-    padding: 0.3rem 0.8rem;
-    font-size: 13px;
-    font-weight: 800;
-    background: var(--pistachio);
-    color: var(--ink);
-  }
-  .chip-ghost { background: transparent; }
-  /* ingredient role, e.g. VEZIVO */
+  .btn:disabled { opacity: 0.55; }
+  .btn-guava { --blob-fill: var(--guava); }
+  .btn-guava:hover { --blob-fill: #e08a7d; }
+  .btn-paper { --blob-fill: var(--oat-200); }
+  .btn-paper:hover { --blob-fill: var(--pistachio-light); }
+  .btn-pistachio { --blob-fill: var(--pistachio); }
+  .btn-pistachio:hover { --blob-fill: #a9bb97; }
+  .btn-ink { --blob-fill: var(--ink); color: var(--cream); }
+  .btn-ink:hover { --blob-fill: var(--cocoa-700); }
+  /* content cards: soft, slightly uneven corners; siblings differ a little */
+  .pebble { border-radius: 30px 24px 32px 22px / 26px 30px 24px 30px; }
+  .pebble:nth-child(3n + 2) { border-radius: 24px 32px 24px 30px / 30px 24px 32px 26px; }
+  .pebble:nth-child(3n) { border-radius: 32px 26px 22px 30px / 24px 32px 28px 26px; }
+  .pebble-sm { border-radius: 18px 14px 20px 13px / 15px 19px 14px 18px; }
+  .pebble-sm:nth-child(even) { border-radius: 14px 19px 15px 18px / 18px 14px 19px 15px; }
+  .pebble-lg { border-radius: 48px 36px 52px 34px / 40px 50px 36px 46px; }
+  /* ingredient role, e.g. VEZIVO (use with .blob) */
   .role-tag {
     display: inline-block;
-    background: var(--ink);
+    --blob-fill: var(--ink);
     color: var(--cream);
     font-family: var(--font-space-mono), monospace;
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 3px 9px;
-    border-radius: 999px;
+    padding: 3px 10px;
   }
-  /* section title with the guava underline bar */
+  /* section title with a guava brush stroke */
   .title-bar::after {
     content: "";
     display: block;
-    width: 52px;
-    height: 5px;
-    border-radius: 5px;
+    width: 58px;
+    height: 7px;
+    margin-top: 9px;
     background: var(--guava);
-    margin-top: 8px;
+    -webkit-mask: var(--blob-long) center / 100% 100% no-repeat;
+    mask: var(--blob-long) center / 100% 100% no-repeat;
   }
   /* the food characters */
   .character {
     overflow: visible;
-    filter: drop-shadow(3px 6px 0 rgb(64 52 66 / 0.09));
+    filter: drop-shadow(0 8px 10px rgb(64 52 66 / 0.12));
   }
   @keyframes bob {
     50% { transform: translateY(-8px) rotate(-3deg); }
   }
   .bob { animation: bob 1.4s ease-in-out infinite; }
+  /* the dish illustration arriving: grows from a seed, overshoots a little, settles slightly tilted */
+  @keyframes pop-in {
+    0% { opacity: 0; transform: scale(0.3) rotate(-18deg); }
+    60% { opacity: 1; transform: scale(1.08) rotate(5deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-3deg); }
+  }
+  .pop-in { animation: pop-in 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
   @keyframes tick { to { transform: translateX(-50%); } }
   .ticker-track { animation: tick 40s linear infinite; }
   .ticker:hover .ticker-track { animation-play-state: paused; }
   @media (prefers-reduced-motion: reduce) {
-    .bob, .ticker-track { animation: none; }
+    .bob, .ticker-track, .pop-in { animation: none; }
+    .blob::before, .btn::before { transition-property: background-color; }
   }
 }
 
@@ -350,4 +379,34 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* blob fill from the theme colours: blob-fill-guava, hover:blob-fill-oat-200, blob-fill-[#fff] */
+@utility blob-fill-* {
+  --blob-fill: --value(--color-*, [color]);
+}
+@utility blob-ref {
+  --shape: var(--blob-ref);
+  --shape-b: var(--blob-ref-b);
+}
+@utility blob-pill {
+  --shape: var(--blob-pill);
+  --shape-b: var(--blob-pill-b);
+}
+@utility blob-long {
+  --shape: var(--blob-long);
+  --shape-b: var(--blob-long-b);
+}
+@utility blob-round {
+  --shape: var(--blob-round);
+  --shape-b: var(--blob-round-b);
+}
+/* a soft shadow that follows the blob's outline (for floating bars and the hero input) */
+@utility blob-float {
+  filter: drop-shadow(0 14px 16px rgb(64 52 66 / 0.16)) drop-shadow(0 2px 3px rgb(64 52 66 / 0.08));
+}
+/* clip the element itself to a round blob (avatars, images) */
+@utility blob-clip {
+  -webkit-mask: var(--blob-round) center / 100% 100% no-repeat;
+  mask: var(--blob-round) center / 100% 100% no-repeat;
 }

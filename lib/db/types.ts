@@ -147,6 +147,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"dish_art": {
+                  Row: {
+                    "created_at": string,"dish": string,"key": string,"model": string,"path": string,"prompt_version": string,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"dish": string,"key": string,"model": string,"path": string,"prompt_version": string,"url": string
+                  }
+                  Update: {
+                    "created_at"?: string,"dish"?: string,"key"?: string,"model"?: string,"path"?: string,"prompt_version"?: string,"url"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"dish_research": {
                   Row: {
                     "created_at": string,"dish": string,"key": string,"method": string,"model": string | null,"notes_hr": string,"sources": NonNullable<Json>
@@ -315,14 +329,14 @@ isOneToOne: false
                   ]
                 },"recipes": {
                   Row: {
-                    "created_at": string,"dish_category": string | null,"dish_notes_hr": string | null,"id": string,"image_url": string | null,"ingest_method": string | null,"raw_text": string,"saved_at": string | null,"servings_original": number | null,"servings_target": number | null,"source_kind": string,"source_name": string | null,"source_url": string | null,"sources": NonNullable<Json>,"status": string,"tip_hr": string | null,"title": string | null,"user_id": string | null,"veganized_steps": Json | null
+                    "art_status": string | null,"art_url": string | null,"created_at": string,"dish_category": string | null,"dish_notes_hr": string | null,"id": string,"image_url": string | null,"ingest_method": string | null,"raw_text": string,"saved_at": string | null,"servings_original": number | null,"servings_target": number | null,"source_kind": string,"source_name": string | null,"source_url": string | null,"sources": NonNullable<Json>,"status": string,"tip_hr": string | null,"title": string | null,"user_id": string | null,"veganized_steps": Json | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"dish_category"?: string | null,"dish_notes_hr"?: string | null,"id"?: string,"image_url"?: string | null,"ingest_method"?: string | null,"raw_text": string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind": string,"source_name"?: string | null,"source_url"?: string | null,"sources"?: NonNullable<Json>,"status"?: string,"tip_hr"?: string | null,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
+                    "art_status"?: string | null,"art_url"?: string | null,"created_at"?: string,"dish_category"?: string | null,"dish_notes_hr"?: string | null,"id"?: string,"image_url"?: string | null,"ingest_method"?: string | null,"raw_text": string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind": string,"source_name"?: string | null,"source_url"?: string | null,"sources"?: NonNullable<Json>,"status"?: string,"tip_hr"?: string | null,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
                   }
                   Update: {
-                    "created_at"?: string,"dish_category"?: string | null,"dish_notes_hr"?: string | null,"id"?: string,"image_url"?: string | null,"ingest_method"?: string | null,"raw_text"?: string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind"?: string,"source_name"?: string | null,"source_url"?: string | null,"sources"?: NonNullable<Json>,"status"?: string,"tip_hr"?: string | null,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
+                    "art_status"?: string | null,"art_url"?: string | null,"created_at"?: string,"dish_category"?: string | null,"dish_notes_hr"?: string | null,"id"?: string,"image_url"?: string | null,"ingest_method"?: string | null,"raw_text"?: string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind"?: string,"source_name"?: string | null,"source_url"?: string | null,"sources"?: NonNullable<Json>,"status"?: string,"tip_hr"?: string | null,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
                   }
                   Relationships: [
                     

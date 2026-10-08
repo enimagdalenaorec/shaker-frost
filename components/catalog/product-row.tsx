@@ -25,7 +25,7 @@ export function ProductRow({ product: p }: { product: ProductSummary }) {
   };
 
   return (
-    <li className={cn("rounded-[18px] px-3 py-3", p.isAkcija ? "bg-blush/60" : "odd:bg-cream")}>
+    <li className={cn("pebble-sm px-3 py-3", p.isAkcija ? "bg-blush/60" : "odd:bg-cream")}>
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -36,7 +36,7 @@ export function ProductRow({ product: p }: { product: ProductSummary }) {
           <button type="button" onClick={toggle} aria-expanded={open} className="mt-1.5 inline-flex items-center gap-1.5">
             <ChainBadge code={p.chainCode} name={p.chainName} kind={p.chainKind} />
             {more > 0 && (
-              <span className="tabular rounded-full border border-ink/30 px-1.5 py-px text-[10px] font-black text-ink">{hr.search.moreStores(more)}</span>
+              <span className="blob blob-fill-oat-200 tabular px-2 py-0.5 text-[10px] font-black text-ink">{hr.search.moreStores(more)}</span>
             )}
             <ChevronDown className={cn("size-3.5 text-rind transition-transform", open && "rotate-180")} />
           </button>
@@ -47,7 +47,7 @@ export function ProductRow({ product: p }: { product: ProductSummary }) {
       </div>
 
       {open && (
-        <div className="mt-3 rounded-2xl border-[1.5px] border-dashed border-ink/30 bg-paper p-3">
+        <div className="pebble-sm mt-3 bg-oat-200/50 p-3">
           {pending || !offers ? (
             <div className="space-y-2">
               {[0, 1].map((i) => (
@@ -85,7 +85,7 @@ function StoreOfferList({ offers, productUrl }: { offers: StoreOffer[]; productU
                 <span className="truncate text-xs text-rind">{where}</span>
               </div>
               <span className="flex items-center gap-2">
-                {n === 0 && chains.length > 1 && <em className="micro rounded-full bg-rind px-2 py-0.5 not-italic text-cream">najjeftinije</em>}
+                {n === 0 && chains.length > 1 && <em className="micro blob blob-fill-rind px-2.5 py-0.5 not-italic text-cream">najjeftinije</em>}
                 <span className={cn("tabular font-heading text-base font-black", o.isAkcija ? "text-guava-deep" : "text-ink")}>{formatPrice(o.price)}</span>
               </span>
             </li>
@@ -106,7 +106,7 @@ function StoreOfferList({ offers, productUrl }: { offers: StoreOffer[]; productU
 
 export function ProductRowSkeleton() {
   return (
-    <li className="rounded-[18px] bg-cream px-3 py-3">
+    <li className="pebble-sm bg-cream px-3 py-3">
       <div className="h-3 w-1/4 animate-pulse rounded bg-oat-200" />
       <div className="mt-2 h-4 w-3/5 animate-pulse rounded bg-oat-200" />
       <div className="mt-2 h-5 w-14 animate-pulse rounded bg-oat-200" />

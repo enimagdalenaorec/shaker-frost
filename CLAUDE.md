@@ -45,6 +45,7 @@
 | Database | **One hosted Supabase project (region Frankfurt) = one Postgres database** for everything. No local Docker, no Supabase CLI: SQL migrations in `supabase/migrations/` are applied by `npm run db:migrate` (Node + `pg` over `DATABASE_URL`) |
 | Auth | Supabase **email + password**, **"Confirm email" turned OFF** (judges register instantly). Guests use the app without an account (§5.4) |
 | LLM | ✅ **Gemini via Google AI Studio** (`@google/genai` SDK), behind `lib/ai/llm.ts`. OpenAI stays possible through the same wrapper |
+| Images | **OpenAI `gpt-image-2.5-flare`** (plain `fetch` in `lib/ai/openai.ts`, same `OPENAI_API_KEY`) draws the dish illustrations (§8). No key → no pictures, everything else works |
 | Validation / tests | **Zod** for every LLM output and payload; **Vitest** for the optimiser and the JSON-LD parser |
 
 ### LLM wrapper rules
@@ -185,6 +186,7 @@ recipes (id uuid pk, user_id uuid NULL → auth.users,   -- NULL = guest run, no
          ingest_method text,          -- 'jsonld','site_api','llm_html','web','pasted'
          raw_text text not null, servings_original int, servings_target int,
          veganized_steps jsonb, status check in ('processing','done','error'),
+         art_url text NULL, art_status check in ('pending','done','error') NULL,  -- dish illustration (§8)
          saved_at timestamptz NULL, created_at)
 
 recipe_ingredients (id uuid pk, recipe_id → recipes cascade, position int, raw_text,
@@ -333,6 +335,7 @@ Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later
 | 3 | **alternatives** (strong) | Candidates from `v_rules` plus the facet values that actually exist per concept, plus the research notes. 1–3 alternatives per ingredient. **Ids and facet values are validated against the DB**; `concept_id=null` is allowed (e.g. "mineralna voda", "izostavi"), shown as "bez kupnje". The global concept list is sent only when some ingredient has no rule | 3–6 s |
 | 4 | **offers** ∥ **rewrite** | `get_offers` SQL (no LLM) ∥ steps rewritten with the swaps (fast), changed steps flagged | 1–2 s |
 | 5 | **save** | `recipes`, `recipe_ingredients`, `ingredient_alternatives`, `agent_runs`, `agent_steps` | 0.3 s |
+| bg | **art** (`lib/ai/dish-art.ts`, background) | Starts right after ingest, in parallel with stages 1–5. One small cut-paper picture of the dish in the team style: OpenAI image model (`OPENAI_IMAGE`, quality low), with two team illustrations (`public/illustrations/sarma-pot.png`, `burek.png`) as style references via the edits endpoint; transparent WebP → public Storage bucket `dish-art`. Cached per dish + prompt version in `dish_art`. `recipes.art_status`: pending → done / error. The route keeps it alive with `after()` (within `maxDuration`); `/recept/[id]` shows a placeholder and polls `GET /api/recipe/[id]/art`, then pops the picture in; Moji recepti shows it as a sticker per row. Never fails a run | ≈ 13 s, ≈ $0.02; repeats free |
 
 **Measured end to end:** 8–12 s typical, about 20 s when the free tier is congested.
 
@@ -430,12 +433,13 @@ npm run mock:build -- ~/Downloads/c_products.csv   # → fixtures/catalog_mock.c
 npm run load:catalog -- fixtures/catalog_mock.csv  # later: the real export
 npm run seed:knowledge
 npm run validate:catalog
+npm run art:backfill                               # dish illustrations for older recipes (-- --dry, -- --all)
 npm run db:types                                   # npx supabase gen types --db-url $DATABASE_URL
 npm run dev
 npm test
 ```
 
-Env (`.env.local`, git-ignored, chmod 600; the template `.env.example` is committed): `LLM_PROVIDER=gemini`, `GEMINI_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DATABASE_URL`, `DEMO_PASSWORD`, `ENABLE_WEB_FALLBACK=true`, optional `LLM_MODEL_FAST` / `LLM_MODEL_STRONG`.
+Env (`.env.local`, git-ignored, chmod 600; the template `.env.example` is committed): `LLM_PROVIDER=gemini`, `GEMINI_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DATABASE_URL`, `DEMO_PASSWORD`, `ENABLE_WEB_FALLBACK=true`, optional `LLM_MODEL_FAST` / `LLM_MODEL_STRONG`, `OPENAI_API_KEY` (backup LLM + dish illustrations), `OPENAI_IMAGE_MODEL` / `OPENAI_IMAGE_QUALITY`.
 **Claude never reads or prints `.env.local`.** Use `npm run env:check` to verify it.
 
 ---
