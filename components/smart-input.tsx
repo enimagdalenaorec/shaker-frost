@@ -21,8 +21,8 @@ export function detectMode(value: string): Mode {
 export const PENDING_TEXT_KEY = "veganizir.pendingRecipeText";
 
 /**
- * One box for everything: a recipe link or pasted recipe → Veganiziraj, a short query → Traži.
- * The button label follows what the user typed, so it is always clear what will happen.
+ * One field for everything: a recipe link or pasted recipe → Veganiziraj, a short query → Traži.
+ * The button label follows what was typed, so no hint text is needed.
  */
 export function SmartInput({
   defaultValue = "",
@@ -44,13 +44,14 @@ export function SmartInput({
   const ref = useRef<HTMLTextAreaElement>(null);
   const mode = detectMode(value);
   const isRecipe = mode === "recipe-url" || mode === "recipe-text";
+  const hero = variant === "hero";
 
   // follow the URL (e.g. a suggestion link) unless the user is typing right now
   useEffect(() => {
     if (document.activeElement !== ref.current) setValue(defaultValue);
   }, [defaultValue]);
 
-  // auto-grow the textarea for pasted recipes
+  // auto-grow for pasted recipes
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -85,86 +86,65 @@ export function SmartInput({
   };
 
   const LeadIcon = mode === "recipe-url" ? Link2 : mode === "recipe-text" ? Text : Search;
-  const hero = variant === "hero";
 
   return (
-    <div className={cn("w-full", className)}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submit();
-        }}
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+      className={cn(
+        "flex items-end gap-1.5 bg-oat-50 transition-shadow",
+        hero ? "rounded-[20px] p-1.5" : "rounded-2xl p-1 ring-1 ring-cocoa-900/[0.08] focus-within:ring-2 focus-within:ring-mint-300",
+        className,
+      )}
+    >
+      <span
         className={cn(
-          "group flex items-end gap-2 rounded-[1.4rem] bg-card ring-1 transition-all",
-          "focus-within:ring-2 focus-within:ring-mint-300",
-          hero ? "p-2 shadow-lift ring-border" : "p-1.5 shadow-soft ring-border",
-          isRecipe && "ring-mint-300",
+          "grid shrink-0 place-items-center rounded-[14px] transition-colors",
+          hero ? "size-12" : "size-10",
+          isRecipe ? "bg-mint-600 text-oat-50" : "text-cocoa-400",
+        )}
+        aria-hidden
+      >
+        <LeadIcon className="size-5" />
+      </span>
+      <label className="sr-only" htmlFor={`smart-${variant}`}>
+        {hr.smartInput.placeholder}
+      </label>
+      <textarea
+        id={`smart-${variant}`}
+        ref={ref}
+        rows={1}
+        value={value}
+        autoFocus={autoFocus}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+        placeholder={hero ? hr.smartInput.placeholder : hr.smartInput.placeholderShort}
+        className={cn(
+          "min-w-0 flex-1 resize-none bg-transparent font-medium text-cocoa-900 outline-none placeholder:font-normal placeholder:text-cocoa-400",
+          hero ? "py-3.5 text-base" : "py-2.5 text-[15px]",
+        )}
+        autoComplete="off"
+        spellCheck={false}
+      />
+      <button
+        type="submit"
+        aria-label={isRecipe ? hr.smartInput.veganize : hr.smartInput.search}
+        className={cn(
+          "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[14px] font-semibold transition-all active:scale-95",
+          hero ? "h-12 min-w-12" : "h-10 min-w-10",
+          isRecipe ? "bg-mint-600 px-4 text-oat-50 hover:bg-mint-700" : "bg-cocoa-900 text-oat-50 hover:bg-cocoa-700",
         )}
       >
-        <span
-          className={cn(
-            "grid shrink-0 place-items-center rounded-full transition-colors",
-            hero ? "mb-0.5 size-11" : "size-9",
-            isRecipe ? "bg-mint-600 text-oat-50" : "bg-mint-50 text-mint-600",
-          )}
-          aria-hidden
-        >
-          <LeadIcon className={hero ? "size-5" : "size-4"} />
-        </span>
-        <label className="sr-only" htmlFor={`smart-${variant}`}>
-          {hr.smartInput.placeholder}
-        </label>
-        <textarea
-          id={`smart-${variant}`}
-          ref={ref}
-          rows={1}
-          value={value}
-          autoFocus={autoFocus}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          placeholder={hero ? hr.smartInput.placeholder : hr.smartInput.placeholderShort}
-          className={cn(
-            "min-w-0 flex-1 resize-none bg-transparent text-cocoa-900 outline-none placeholder:text-cocoa-400",
-            hero ? "py-3 text-base sm:text-[17px]" : "py-2 text-[15px]",
-          )}
-          autoComplete="off"
-          spellCheck={false}
-        />
-        <button
-          type="submit"
-          className={cn(
-            "inline-flex shrink-0 items-center gap-1.5 rounded-2xl font-medium transition-all active:scale-[0.97]",
-            hero ? "h-11 px-4 sm:px-5" : "h-9 px-3.5 text-sm",
-            isRecipe ? "bg-mint-600 text-oat-50 hover:bg-mint-700" : "bg-cocoa-900 text-oat-50 hover:bg-cocoa-700",
-          )}
-        >
-          {pending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : isRecipe ? (
-            <Sparkles className="size-4" />
-          ) : (
-            <ArrowRight className="size-4 sm:hidden" />
-          )}
-          <span className={cn(!isRecipe && "hidden sm:inline")}>{isRecipe ? hr.smartInput.veganize : hr.smartInput.search}</span>
-        </button>
-      </form>
-      {hero && (
-        <p
-          className={cn(
-            "mt-2.5 h-4 px-4 text-center text-xs transition-colors sm:text-left",
-            "opacity-100",
-            isRecipe ? "text-mint-700" : "text-cocoa-400",
-          )}
-          aria-live="polite"
-        >
-          {isRecipe ? hr.smartInput.recipeHint : mode === "search" ? hr.smartInput.searchHint : hr.smartInput.emptyHint}
-        </p>
-      )}
-    </div>
+        {pending ? <Loader2 className="size-5 animate-spin" /> : isRecipe ? <Sparkles className="size-4" /> : <ArrowRight className="size-5" />}
+        {isRecipe && <span className="text-sm">{hr.smartInput.veganize}</span>}
+      </button>
+    </form>
   );
 }

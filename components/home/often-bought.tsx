@@ -8,12 +8,11 @@ import { oftenBought, useBasketState } from "@/lib/basket/local-store";
 import { hr } from "@/lib/i18n/hr";
 import type { ProductSummary } from "@/lib/catalog/types";
 
-/** "Često u tvojoj košarici": renders nothing until the user has added something. */
+/** "Često kupuješ": renders nothing until the user has added something. */
 export function OftenBought() {
   const { history } = useBasketState();
   const often = oftenBought(history).filter((o) => o.entry.kind === "product" && o.entry.itemId);
-  const ids = often.map((o) => o.entry.itemId!);
-  const key = ids.join("|");
+  const key = often.map((o) => o.entry.itemId!).join("|");
   const [products, setProducts] = useState<Record<string, ProductSummary> | null>(null);
 
   useEffect(() => {
@@ -30,12 +29,15 @@ export function OftenBought() {
   if (!often.length) return null;
 
   return (
-    <Section title={hr.home.oftenTitle} subtitle={hr.home.oftenSubtitle}>
+    <Section title={hr.home.often}>
       <Strip>
         {often.map((o) => {
           const p = products?.[o.entry.itemId!];
-          if (!products) return <ProductCardSkeleton key={o.key} />;
-          return p ? <ProductCard key={o.key} product={p} source="often" times={o.times} /> : null;
+          return (
+            <div key={o.key} className="w-[10.5rem] shrink-0 snap-start">
+              {!products ? <ProductCardSkeleton /> : p ? <ProductCard product={p} source="often" times={o.times} /> : null}
+            </div>
+          );
         })}
       </Strip>
     </Section>
