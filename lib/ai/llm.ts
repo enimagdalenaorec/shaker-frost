@@ -37,6 +37,11 @@ const HEDGE_MS: Record<Tier, number> = { strong: 6_000, fast: 3_500 };
 const TIMEOUT_MS: Record<Tier, number> = { strong: 20_000, fast: 12_000 };
 const LAST_TIMEOUT_MS = 30_000;
 
+// A model that answered "quota exceeded" stays out for a while (free-tier quotas are per day), an overloaded
+// one briefly, so later calls don't wait on it again; with every model out, generateJson goes straight to OpenAI.
+const COOLDOWN_MS = { quota: 15 * 60_000, overload: 60_000 };
+const coolUntil = new Map<string, number>();
+
 type Opts<T> = { schema: z.ZodType<T>; system: string; user: string; tier: Tier; temperature?: number; search?: boolean };
 
 function toJsonSchema(schema: z.ZodType): unknown {
@@ -52,20 +57,36 @@ function statusOf(err: unknown): number {
 }
 
 /**
- * Structured generation: the Gemini chain first (hedged), then OpenAI as a last-resort backup
- * when every Gemini model failed (quota, overload, timeout) and OPENAI_API_KEY is set.
- * LLM_FORCE_FALLBACK=openai skips Gemini (to test the backup path).
+ * Structured generation: Gemini and OpenAI (when OPENAI_API_KEY is set) start together and the first valid
+ * answer wins; the call fails only when both failed. Free-tier Gemini swings between 1 s and a 30 s timeout or
+ * quota errors, so racing a paid model keeps every stage fast and the demo alive.
+ * LLM_FORCE_FALLBACK=openai skips Gemini (to test the OpenAI path).
  */
 export async function generateJson<T>(opts: Opts<T>): Promise<LlmResult<T>> {
-  const forceOpenai = process.env.LLM_FORCE_FALLBACK === "openai";
-  if (!forceOpenai) {
-    try {
-      return await generateWithGemini(opts);
-    } catch (err) {
-      if (!openaiConfigured()) throw err;
-      console.warn(`[llm] Gemini failed, falling back to OpenAI: ${(err as Error).message.slice(0, 160)}`);
-    }
-  }
+  if (process.env.LLM_FORCE_FALLBACK === "openai") return generateWithOpenai(opts);
+  if (!openaiConfigured()) return generateWithGemini(opts);
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const errors: string[] = [];
+    const win = (r: LlmResult<T>) => {
+      if (!settled) {
+        settled = true;
+        resolve(r);
+      }
+    };
+    const lose = (provider: string) => (err: Error) => {
+      errors.push(`${provider}: ${err.message.slice(0, 200)}`);
+      if (errors.length === 2 && !settled) {
+        settled = true;
+        reject(new LlmError(errors.join(" | ")));
+      }
+    };
+    generateWithGemini(opts).then(win, lose("Gemini"));
+    generateWithOpenai(opts).then(win, lose("OpenAI"));
+  });
+}
+
+async function generateWithOpenai<T>(opts: Opts<T>): Promise<LlmResult<T>> {
   if (!openaiConfigured()) throw new LlmError("OpenAI fallback nije konfiguriran (OPENAI_API_KEY).");
   const started = Date.now();
   const r = await openaiJson({
@@ -82,7 +103,11 @@ export async function generateJson<T>(opts: Opts<T>): Promise<LlmResult<T>> {
 
 /** The Gemini chain with hedged fallback, a repair retry and optional web grounding. */
 function generateWithGemini<T>(opts: Opts<T>): Promise<LlmResult<T>> {
-  const models = MODEL_CHAINS[opts.tier];
+  const all = MODEL_CHAINS[opts.tier];
+  const ready = all.filter((m) => (coolUntil.get(m) ?? 0) <= Date.now());
+  // nothing ready: hand over to OpenAI at once, or, without it, try the whole chain anyway
+  if (!ready.length && openaiConfigured()) return Promise.reject(new LlmError("Svi Gemini modeli su na pauzi (kvota ili preopterećenje)."));
+  const models = ready.length ? ready : all;
   const schema = toJsonSchema(opts.schema);
   const errors: string[] = [];
 
@@ -180,6 +205,8 @@ async function tryModel<T>(model: string, opts: Opts<T>, responseJsonSchema: unk
         continue;
       }
       if (err instanceof SyntaxError) continue; // malformed JSON: one more try on the same model
+      if (status === 429) coolUntil.set(model, Date.now() + COOLDOWN_MS.quota);
+      else if (status === 503) coolUntil.set(model, Date.now() + COOLDOWN_MS.overload);
       break; // 429 / 503 / 404 / timeout: let the chain move on
     }
   }

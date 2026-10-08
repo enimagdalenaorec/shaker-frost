@@ -129,7 +129,10 @@ function fromJsonLd(html: string, url: string): RawRecipe | null {
 }
 
 function mapJsonLdRecipe(r: Record<string, unknown>, url: string): RawRecipe | null {
-  const ingredients = ((r.recipeIngredient as unknown[]) ?? []).map((x) => decodeEntities(String(x)).replace(/\s+/g, " ").trim()).filter(Boolean);
+  // some sites (coolinarika) print missing units as "undefined": "1 jaje undefined"
+  const ingredients = ((r.recipeIngredient as unknown[]) ?? [])
+    .map((x) => decodeEntities(String(x)).replace(/\b(undefined|null)\b/g, "").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
   if (!ingredients.length) return null;
   const steps = flattenInstructions(r.recipeInstructions);
   const yieldRaw = Array.isArray(r.recipeYield) ? r.recipeYield[0] : r.recipeYield;
