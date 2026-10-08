@@ -15,7 +15,7 @@ import type { AlternativeView, IngredientView, RecipeView } from "@/lib/recipe/l
 
 const ROLE_LABEL: Record<string, string> = {
   binder: "veže", leavening: "diže tijesto", base: "glavni sastojak", smoky: "dimljeni okus", frying: "za prženje",
-  flavour: "za okus", baking: "u tijestu", creaminess: "kremoznost", sweet: "zaslađuje", liquid: "tekućina", any: "",
+  flavour: "za okus", baking: "u tijestu", creaminess: "kremoznost", sweet: "zaslađuje", liquid: "tekućina", sauce: "čini umak", glaze: "premaz", any: "",
 };
 
 const qty = (q: number | null, unit: string | null) =>

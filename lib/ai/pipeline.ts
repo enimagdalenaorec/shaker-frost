@@ -21,6 +21,8 @@ export type PipelineInput = { url?: string; text?: string; example?: string; exc
 type StepLog = { stage: StageName; ms: number; model?: string; prompt_version?: string; input?: unknown; output?: unknown; tokensIn?: number; tokensOut?: number };
 type Facets = Record<string, string>;
 const FACET_KEYS = ["okus", "zasladeno", "namjena", "oblik"] as const;
+/** okus value for "no flavour": also matches products that list no flavour at all (lib/catalog/basket-candidates.ts) */
+const PLAIN = "bez okusa / natur";
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
@@ -94,9 +96,10 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
           vocabulary: vocab.map((v) => `${v.slug}: ${v.name_hr}${v.aliases.length ? ` | ${v.aliases.join(", ")}` : ""}`).join("\n"),
         }),
       });
+      // uid = position in this list: one source line can hold several ingredients ("3 jaja, 1 kiselo vrhnje")
       const items = r.data.ingredients
         .filter((i) => i.index >= 0 && i.index < raw.ingredients.length)
-        .map((i) => ({ ...i, slug: i.slug && slugs.has(i.slug) ? i.slug : null }));
+        .map((i, uid) => ({ ...i, uid, slug: i.slug && slugs.has(i.slug) ? i.slug : null }));
       const risky = items.filter((i) => i.status !== "vegan");
       return {
         value: { ...r.data, ingredients: items },
@@ -169,7 +172,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
     });
 
     // 3 ── alternatives ─────────────────────────────────────────────────────────────────────
-    const { data: conceptRows } = await db.from("v_concepts").select("concept_id, name_hr, group_name, n_products");
+    const { data: conceptRows } = await db.from("v_concepts").select("concept_id, name_hr, group_name, n_products, run, zamjenjuje");
     const concepts = new Map((conceptRows ?? []).map((c) => [c.concept_id!, c]));
     const choice = await stage("alternatives", async () => {
       if (!risky.length) return { value: { items: [] } as Choice, summary: "Nije potrebno" };
@@ -182,13 +185,18 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
         .map((i) => {
           const rs = (rules ?? []).filter((r) => r.ingredient_slug === i.slug);
           const cands = rs.length
-            ? rs.map((r) => `    - ${r.concept_id} — ${r.concept_name} (${r.concept_group}) | pravilo: uloga=${r.role}, omjer=${r.ratio}${r.notes_hr ? `, ${r.notes_hr}` : ""}`).join("\n")
+            ? rs
+                .map((r) => {
+                  const prefer = Object.entries((r.prefer as Facets | null) ?? {}).map(([k, v]) => `${k}=${v}`).join(", ");
+                  return `    - ${r.concept_id} — ${r.concept_name} (${r.concept_group}) | pravilo: uloga=${r.role}, omjer=${r.ratio}${prefer ? `, preferira: ${prefer}` : ""}${r.notes_hr ? `, ${r.notes_hr}` : ""}`;
+                })
+                .join("\n")
             : "    - (nema pravila: izaberi iz globalnog popisa ili concept_id=null)";
           const opts = [...new Set(rs.map((r) => r.concept_id!))]
             .map((c) => `    ${c}: ${FACET_KEYS.map((k) => (facetOptions[c]?.[k]?.length ? `${k}=[${facetOptions[c][k].join(", ")}]` : null)).filter(Boolean).join("; ") || "bez opcija"}`)
             .join("\n");
           const qty = i.quantity != null ? ` (${i.quantity} ${i.unit ?? ""})` : "";
-          return `[${i.index}] ${i.name_hr}${qty} | uloga: ${i.role} | ${i.status} | ${i.reason_hr}\n  KANDIDATI:\n${cands}\n  OPCIJE:\n${opts || "    -"}`;
+          return `[${i.uid}] ${i.name_hr}${qty} | uloga: ${i.role} | ${i.status} | ${i.reason_hr}\n  KANDIDATI:\n${cands}\n  OPCIJE:\n${opts || "    -"}`;
         })
         .join("\n\n");
       const researchText = risky
@@ -205,7 +213,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
       const conceptsText = needsGlobal
         ? [...concepts.values()]
             .filter((c) => (c.n_products ?? 0) > 0)
-            .map((c) => `${c.concept_id} — ${c.name_hr} (${c.group_name})`)
+            .map((c) => `${c.concept_id} — ${c.name_hr} (${c.group_name})${c.zamjenjuje?.length ? ` zamjenjuje: ${c.zamjenjuje.slice(0, 3).join(", ")}` : ""}`)
             .join("\n")
         : "(nije potrebno: svi sastojci imaju kandidate)";
 
@@ -234,15 +242,32 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
         }
         return best?.id ?? null;
       };
+      // The label is what the user reads, the concept is what the basket buys: they must agree.
+      // "seitan" filed under tofu → re-resolve from the label; nothing fits → no purchase (concept_id = null).
+      const GENERIC = new Set(["bilj", "vega", "zamj", "goto", "doma", "kupo", "prah"]);
+      const fits = (label: string, id: string) => {
+        const have = stems(`${id} ${concepts.get(id)?.name_hr ?? ""}`);
+        return [...stems(label)].some((w) => !GENERIC.has(w) && have.has(w));
+      };
       for (const it of r.data.items) {
-        const slug = risky.find((x) => x.index === it.index)?.slug ?? null;
-        for (const a of it.alternatives) if (!a.concept_id || !concepts.has(a.concept_id)) a.concept_id = recoverConcept(a.label_hr, slug) ?? a.concept_id;
+        const slug = risky.find((x) => x.uid === it.index)?.slug ?? null;
+        for (const a of it.alternatives) {
+          if (!a.concept_id || !concepts.has(a.concept_id)) a.concept_id = recoverConcept(a.label_hr, slug) ?? a.concept_id;
+          else if (!fits(a.label_hr, a.concept_id)) a.concept_id = recoverConcept(a.label_hr, null);
+        }
       }
+
+      // Facets are strict in the basket, so keep only those that change the dish: taste, functional forms
+      // (smoked, grated, ground) and what a curated rule prefers. "pahuljice" or "integralno" just shrink the shelf.
+      const FUNCTIONAL_FORMS = new Set(["dimljeno", "ribano", "mljeveno"]);
+      const facetMatters = (slug: string | null, conceptId: string, k: string, v: string) =>
+        k === "okus" || (k === "zasladeno" && v === "nezaslađeno") || (k === "oblik" && FUNCTIONAL_FORMS.has(v)) ||
+        (rules ?? []).some((r) => r.ingredient_slug === slug && r.concept_id === conceptId && (r.prefer as Facets | null)?.[k] === v);
 
       // never trust ids or facet values the model returns: keep only what exists in the DB
       const allFacetOptions = await loadFacetOptions([...new Set(r.data.items.flatMap((it) => it.alternatives.map((a) => a.concept_id).filter(Boolean) as string[]))]);
       const items = risky.map((i) => {
-        const fromModel = r.data.items.find((it) => it.index === i.index);
+        const fromModel = r.data.items.find((it) => it.index === i.uid);
         const alternatives = (fromModel?.alternatives ?? [])
           .map((a) => {
             const conceptId = a.concept_id && concepts.has(a.concept_id) ? a.concept_id : null;
@@ -250,7 +275,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
             if (conceptId)
               for (const k of FACET_KEYS) {
                 const v = a.facets[k];
-                if (v && allFacetOptions[conceptId]?.[k]?.includes(v)) facets[k] = v;
+                if (v && allFacetOptions[conceptId]?.[k]?.includes(v) && facetMatters(i.slug, conceptId, k, v)) facets[k] = v;
               }
             return { ...a, concept_id: conceptId, facets, ratio: Math.min(Math.max(a.ratio || 1, 0.01), 5) };
           })
@@ -264,7 +289,10 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
               reasoning_hr: rule.notes_hr ?? "", confidence: 0.5,
             });
         }
-        return { index: i.index, alternatives };
+        // "depends" with nothing suggested: still tell the user what to do
+        if (!alternatives.length && i.status === "depends")
+          alternatives.push({ concept_id: null, label_hr: "provjeri deklaraciju", facets: {}, ratio: 1, reasoning_hr: i.reason_hr, confidence: 0.5 });
+        return { index: i.uid, alternatives };
       });
       const n = items.reduce((s, it) => s + it.alternatives.length, 0);
       return {
@@ -273,7 +301,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
         detail: {
           items: items.map((it) => ({
             index: it.index,
-            name: risky.find((x) => x.index === it.index)?.name_hr,
+            name: risky.find((x) => x.uid === it.index)?.name_hr,
             alternatives: it.alternatives.map((a) => ({ label: a.label_hr, concept: a.concept_id, reasoning: a.reasoning_hr })),
           })),
         },
@@ -285,7 +313,7 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
     const chosenConcepts = [...new Set(choice.items.flatMap((it) => it.alternatives.map((a) => a.concept_id).filter(Boolean) as string[]))];
     const swapsText = choice.items
       .map((it) => {
-        const i = risky.find((x) => x.index === it.index)!;
+        const i = risky.find((x) => x.uid === it.index)!;
         const best = it.alternatives[0];
         return best ? `- ${i.name_hr} → ${best.label_hr}${best.concept_id ? ` (omjer ${best.ratio})` : ""}` : null;
       })
@@ -343,13 +371,16 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
         )
         .select("id, position");
       if (ingErr) throw new Error(ingErr.message);
-      const idByIndex = new Map((ingRows ?? []).map((r) => [r.position, r.id]));
+      // rows come back in insert order; several analysed ingredients can share one source line (position)
+      const idByUid = new Map((ingRows ?? []).map((r, n) => [analysis.ingredients[n].uid, r.id]));
       const sourceUrls = research.sources.map((s) => s.url);
       const altRows = choice.items.flatMap((it) => {
-        const i = risky.find((x) => x.index === it.index)!;
-        const grams = i.quantity == null ? null : i.unit === "kom" ? i.quantity * (gramsPerPiece.get(i.slug ?? "") ?? 50) : i.quantity;
+        const i = risky.find((x) => x.uid === it.index)!;
+        // pieces of something we can't weigh stay unknown: the basket then buys one package
+        const perPiece = gramsPerPiece.get(i.slug ?? "") ?? null;
+        const grams = i.quantity == null ? null : i.unit === "kom" ? (perPiece == null ? null : i.quantity * perPiece) : i.quantity;
         return it.alternatives.map((a, rank) => ({
-          recipe_ingredient_id: idByIndex.get(it.index)!, concept_id: a.concept_id, facets: a.facets, rank: rank + 1, ratio: a.ratio,
+          recipe_ingredient_id: idByUid.get(it.index)!, concept_id: a.concept_id, facets: a.facets, rank: rank + 1, ratio: a.ratio,
           required_qty: grams == null ? null : Math.round(grams * a.ratio), required_unit: i.unit === "ml" ? "ml" : "g",
           reasoning_hr: a.reasoning_hr, confidence: a.confidence, label_hr: a.label_hr, source_urls: sourceUrls,
           has_products: a.concept_id ? (offerStats.get(a.concept_id) ?? 0) > 0 : false, is_selected: rank === 0,
@@ -391,14 +422,17 @@ export async function runPipeline(input: PipelineInput, emit: (e: PipelineEvent)
   async function loadFacetOptions(conceptIds: string[]) {
     const out: Record<string, Record<string, string[]>> = {};
     if (!conceptIds.length) return out;
-    const { data } = await db.from("v_products").select("concept_id, okus, zasladeno, namjena, oblik").in("concept_id", conceptIds);
+    // a concept's options include its descendants' products (tofu → tofu_dimljeni)
+    const { data } = await db.from("v_products").select("concept_put, okus, zasladeno, namjena, oblik").overlaps("concept_put", conceptIds);
     for (const row of data ?? []) {
-      const c = (out[row.concept_id!] ??= {});
-      for (const k of FACET_KEYS) {
-        const v = row[k];
-        if (v && !(c[k] ??= []).includes(v)) c[k].push(v);
+      for (const id of conceptIds) {
+        if (!row.concept_put?.includes(id)) continue;
+        const c = (out[id] ??= {});
+        for (const k of FACET_KEYS) for (const v of row[k] ?? []) if (!(c[k] ??= []).includes(v)) c[k].push(v);
       }
     }
+    // "plain" is only a real choice where flavoured variants exist (zobeni napitak), not for chia or tofu natur
+    for (const c of Object.values(out)) if (c.okus?.length && !c.okus.includes(PLAIN)) c.okus.unshift(PLAIN);
     return out;
   }
 }

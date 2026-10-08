@@ -28,3 +28,6 @@ c_products*.csv
 
 # supabase cli cache
 supabase/.temp/
+
+# catalog CSVs exported from data-science/ (regenerate: scripts/catalog/export_handoff.py)
+/fixtures/catalog/

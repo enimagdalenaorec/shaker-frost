@@ -14,14 +14,16 @@ export const PROMPTS = {
   },
 
   analyze: {
-    version: "analyze-v1",
+    version: "analyze-v2",
     system: [
       "Ti si stručnjak za vegansku prehranu i kuhanje. Analiziraj svaki sastojak recepta.",
-      "index = redni broj retka sastojka (od 0). name_hr = kratak naziv u nominativu jednine (npr. „jaje“, „mljeveno meso“).",
+      "index = redni broj retka sastojka (od 0). Ako jedan redak sadrži više sastojaka („3 jaja, 1 kiselo vrhnje“, „sol i papar“), vrati svaki kao zaseban sastojak s ISTIM indexom tog retka. Retke koji nisu sastojci (napomene, naslovi) preskoči.",
+      "name_hr = kratak naziv u nominativu jednine (npr. „jaje“, „mljeveno meso“).",
       "slug = slug iz RJEČNIKA ako sastojak odgovara pojmu ili sinonimu, inače null.",
-      "Količinu pretvori u g, ml ili kom: žlica ≈ 15, žličica ≈ 5, šalica ≈ 240 ml, kavena šalica ≈ 100 ml, dcl = 100 ml, dag = 10 g, šaka riže ≈ 40 g, prstohvat ≈ 1 g. Jaja i komade vrati u kom. Bez količine → null. quantity_estimated=true kad procjenjuješ.",
-      "status: not_vegan = meso, riba, mlijeko i mliječni proizvodi, jaja, med, želatina, mast, majoneza; depends = može ali ne mora biti veganski (kocka za juhu, Vegeta, gotovo tijesto, kruh, margarin, čokolada, pesto, vino, kupovni umaci); vegan = sve ostalo.",
-      "role = kako sastojak djeluje U OVOM jelu: binder (veže: jaje u palačinkama, pljeskavicama), leavening (diže/rahli: jaja u biskvitu), base (glavni sastojak: meso u sarmi, jaja u omletu), smoky (dimljeni okus: slanina, suho meso, kobasica u varivu), frying (masnoća za prženje), flavour (nositelj okusa: maslac u pireu), baking (masnoća u tijestu), creaminess (vrhnje u umaku), sweet (zaslađuje: med), liquid (tekućina: mlijeko u tijestu), any (ostalo).",
+      "Količinu pretvori u g, ml ili kom: žlica ≈ 15, žličica ≈ 5, šalica ≈ 240 ml, kavena šalica ≈ 100 ml, dcl = 100 ml, dag = 10 g, šaka riže ≈ 40 g, prstohvat ≈ 1 g. Jaja (i žumanjke, bjelanjke) vrati u kom. Sve ostalo procijeni u gramima ili ml (48 piškota ≈ 340 g, 1 kocka za juhu ≈ 10 g, paket lisnatog tijesta ≈ 500 g, čašica vrhnja ≈ 180 g, glavica luka ≈ 100 g). Bez količine → null. quantity_estimated=true kad procjenjuješ.",
+      "status: not_vegan = meso, riba, mlijeko i mliječni proizvodi, jaja, med, želatina, mast, majoneza, mesna ili kokošja kocka; depends = može ali ne mora biti veganski (gotovo lisnato tijesto, kore, kruh, krušne mrvice, keksi, čokolada, pesto, vino, kupovni umaci); vegan = sve ostalo.",
+      "Vegeta (Original, Natur, Maestro začini) i čiste mješavine začina su VEGANSKE. Ne označavaj ih kao depends.",
+      "role = kako sastojak djeluje U OVOM jelu: binder (veže: jaje u palačinkama, pljeskavicama, nadjevu), leavening (diže/rahli: jaja u biskvitu, potišpanju), base (glavni sastojak: meso u sarmi, jaja u omletu), smoky (dimljeni okus: slanina, suho meso, kobasica u varivu), frying (masnoća za prženje), flavour (nositelj okusa: maslac u pireu i rižotu, parmezan), baking (masnoća u tijestu), creaminess (kremoznost: vrhnje u umaku, jaja ili žumanjci u kremi za kremšnite i tiramisu), sauce (jaje koje čini umak: carbonara), glaze (premaz: jaje za premazivanje pite ili peciva), sweet (zaslađuje: med), liquid (tekućina: mlijeko u tijestu), any (ostalo).",
       "reason_hr = jedna kratka rečenica. confidence 0–1. Vrati SVE sastojke, i veganske.",
       `dish_category: jedna od: ${DISH_CATEGORIES.join(", ")}.`,
     ].join("\n"),
@@ -51,11 +53,13 @@ export const PROMPTS = {
   },
 
   choose: {
-    version: "choose-v1",
+    version: "choose-v2",
     system: [
       "Za svaki neveganski sastojak odaberi 1–3 veganske zamjene, najbolja prva.",
       "concept_id smiješ birati SAMO iz KANDIDATA tog sastojka ili iz GLOBALNOG POPISA koncepata. Ako nijedan koncept ne odgovara, concept_id=null i u label_hr opiši zamjenu (npr. „izostavi“, „domaći temeljac od povrća“).",
-      "facets: odaberi vrijednosti SAMO iz ponuđenih OPCIJA za taj koncept, ili null. Primjer: mlijeko u palačinkama → zasladeno=nezaslađeno, okus=bez okusa; panceta → tofu s okus=dimljeno.",
+      "label_hr MORA opisivati proizvod iz odabranog koncepta (seitan → concept seitan, ne tofu). Ako predlažeš nešto čega nema među konceptima, concept_id=null.",
+      "facets: postavi vrijednost SAMO kad je bitna za ovo jelo (nezaslađeno i bez okusa / natur za slana jela, ribano za posipanje); inače null. Biraj SAMO iz ponuđenih OPCIJA. Pravila navode preporučene facete (preferira: …).",
+      "Za sastojke sa statusom depends (vino, lisnato tijesto, keksi) prva alternativa je obično isti proizvod u veganskoj verziji ili concept_id=null s label_hr „provjeri deklaraciju“.",
       "Uzmi u obzir ULOGU sastojka i BILJEŠKE ISTRAŽIVANJA: jaje koje veže ≠ jaje koje diže ≠ jaje kao glavni sastojak.",
       "ratio = grama/ml zamjene po gramu/ml originala (pravila daju polazni omjer). label_hr = kratak naziv zamjene za korisnika.",
       "reasoning_hr = 1–2 rečenice, konkretno za ovo jelo. confidence 0–1.",

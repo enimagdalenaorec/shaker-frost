@@ -3,7 +3,7 @@ import { z } from "zod";
 // Every LLM output is validated against one of these (CLAUDE.md §8).
 
 /** How an ingredient works in the dish: decides which replacement makes sense. */
-export const ROLES = ["any", "frying", "flavour", "baking", "binder", "leavening", "base", "smoky", "sweet", "creaminess", "liquid"] as const;
+export const ROLES = ["any", "frying", "flavour", "baking", "binder", "leavening", "base", "smoky", "sweet", "creaminess", "liquid", "sauce", "glaze"] as const;
 export type Role = (typeof ROLES)[number];
 
 export const DISH_CATEGORIES = [

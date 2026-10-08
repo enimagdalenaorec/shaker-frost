@@ -7,8 +7,15 @@ import type { BasketItemInput } from "@/lib/basket/view";
 type Input = z.output<typeof BasketItemInput>;
 type Row = Record<string, unknown>;
 
-const FACET_KEYS = ["okus", "zasladeno", "namjena", "oblik", "obogaceno"] as const;
+const FACET_KEYS = ["okus", "zasladeno", "namjena", "oblik"] as const;
+const PLAIN = "bez okusa / natur";
 const num = (v: unknown) => (v == null ? null : Number(v));
+
+/** Product facets are lists; "bez okusa / natur" also matches a product that lists no flavour at all. */
+function facetMatches(r: Row, key: string, want: string): boolean {
+  const have = Array.isArray(r[key]) ? (r[key] as string[]) : r[key] == null ? [] : [String(r[key])];
+  return have.includes(want) || (key === "okus" && want === PLAIN && have.length === 0);
+}
 
 function toOffer(r: Row, facets?: Record<string, string>): Offer {
   return {
@@ -40,7 +47,7 @@ function toOffer(r: Row, facets?: Record<string, string>): Offer {
     },
     // how many of the AI-chosen facets (e.g. {"okus":"dimljeno"}) this product matches
     facetScore: facets
-      ? Object.entries(facets).filter(([k, v]) => (FACET_KEYS as readonly string[]).includes(k) && r[k] === v).length
+      ? Object.entries(facets).filter(([k, v]) => (FACET_KEYS as readonly string[]).includes(k) && facetMatches(r, k, v)).length
       : 0,
   };
 }

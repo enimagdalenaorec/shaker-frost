@@ -135,14 +135,14 @@ isOneToOne: false
                   ]
                 },"concepts": {
                   Row: {
-                    "group_name": string | null,"id": string,"name_hr": string,"parent": string | null
+                    "concept_id": string,"korijeni": (string)[],"n_products": number,"naziv": string,"obitelj": string | null,"put_nazivi": string | null,"razina": number | null,"roditelj": string | null,"run": string | null,"sinonimi": (string)[],"zamjenjuje": (string)[]
                   }
                   ComputedFields: never
                   Insert: {
-                    "group_name"?: string | null,"id": string,"name_hr": string,"parent"?: string | null
+                    "concept_id": string,"korijeni"?: (string)[],"n_products"?: number,"naziv": string,"obitelj"?: string | null,"put_nazivi"?: string | null,"razina"?: number | null,"roditelj"?: string | null,"run"?: string | null,"sinonimi"?: (string)[],"zamjenjuje"?: (string)[]
                   }
                   Update: {
-                    "group_name"?: string | null,"id"?: string,"name_hr"?: string,"parent"?: string | null
+                    "concept_id"?: string,"korijeni"?: (string)[],"n_products"?: number,"naziv"?: string,"obitelj"?: string | null,"put_nazivi"?: string | null,"razina"?: number | null,"roditelj"?: string | null,"run"?: string | null,"sinonimi"?: (string)[],"zamjenjuje"?: (string)[]
                   }
                   Relationships: [
                     
@@ -157,20 +157,6 @@ isOneToOne: false
                   }
                   Update: {
                     "created_at"?: string,"dish"?: string,"key"?: string,"method"?: string,"model"?: string | null,"notes_hr"?: string,"sources"?: NonNullable<Json>
-                  }
-                  Relationships: [
-                    
-                  ]
-                },"import_rows": {
-                  Row: {
-                    "barcode": string | null,"brand": string | null,"carbohydrates": string | null,"chain_logo_url": string | null,"concept": string | null,"concept_confidence": string | null,"concept_group": string | null,"concept_id": string | null,"concept_parent": string | null,"eko": string | null,"energy_kcal": string | null,"fat": string | null,"fiber": string | null,"image_url": string | null,"item_id": string | null,"name": string | null,"namjena": string | null,"nutrition_source": string | null,"oblik": string | null,"obogaceno": string | null,"okus": string | null,"pack_count": string | null,"price": string | null,"price_date": string | null,"product_url": string | null,"proteins": string | null,"provjeri": string | null,"regular_price": string | null,"salt": string | null,"saturated_fat": string | null,"search_text": string | null,"size_unit": string | null,"size_value": string | null,"store_address": string | null,"store_chain": string | null,"store_city": string | null,"store_id": string | null,"sugars": string | null,"tags": string | null,"vegan_evidence": string | null,"vegan_status": string | null,"zasladeno": string | null
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "barcode"?: string | null,"brand"?: string | null,"carbohydrates"?: string | null,"chain_logo_url"?: string | null,"concept"?: string | null,"concept_confidence"?: string | null,"concept_group"?: string | null,"concept_id"?: string | null,"concept_parent"?: string | null,"eko"?: string | null,"energy_kcal"?: string | null,"fat"?: string | null,"fiber"?: string | null,"image_url"?: string | null,"item_id"?: string | null,"name"?: string | null,"namjena"?: string | null,"nutrition_source"?: string | null,"oblik"?: string | null,"obogaceno"?: string | null,"okus"?: string | null,"pack_count"?: string | null,"price"?: string | null,"price_date"?: string | null,"product_url"?: string | null,"proteins"?: string | null,"provjeri"?: string | null,"regular_price"?: string | null,"salt"?: string | null,"saturated_fat"?: string | null,"search_text"?: string | null,"size_unit"?: string | null,"size_value"?: string | null,"store_address"?: string | null,"store_chain"?: string | null,"store_city"?: string | null,"store_id"?: string | null,"sugars"?: string | null,"tags"?: string | null,"vegan_evidence"?: string | null,"vegan_status"?: string | null,"zasladeno"?: string | null
-                  }
-                  Update: {
-                    "barcode"?: string | null,"brand"?: string | null,"carbohydrates"?: string | null,"chain_logo_url"?: string | null,"concept"?: string | null,"concept_confidence"?: string | null,"concept_group"?: string | null,"concept_id"?: string | null,"concept_parent"?: string | null,"eko"?: string | null,"energy_kcal"?: string | null,"fat"?: string | null,"fiber"?: string | null,"image_url"?: string | null,"item_id"?: string | null,"name"?: string | null,"namjena"?: string | null,"nutrition_source"?: string | null,"oblik"?: string | null,"obogaceno"?: string | null,"okus"?: string | null,"pack_count"?: string | null,"price"?: string | null,"price_date"?: string | null,"product_url"?: string | null,"proteins"?: string | null,"provjeri"?: string | null,"regular_price"?: string | null,"salt"?: string | null,"saturated_fat"?: string | null,"search_text"?: string | null,"size_unit"?: string | null,"size_value"?: string | null,"store_address"?: string | null,"store_chain"?: string | null,"store_city"?: string | null,"store_id"?: string | null,"sugars"?: string | null,"tags"?: string | null,"vegan_evidence"?: string | null,"vegan_status"?: string | null,"zasladeno"?: string | null
                   }
                   Relationships: [
                     
@@ -211,58 +197,58 @@ isOneToOne: false
                   ]
                 },"offers": {
                   Row: {
-                    "item_id": string,"price": number,"price_date": string,"regular_price": number | null,"store_id": string
+                    "akcija": boolean,"akcija_price": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number,"price_date": string | null,"prilika": boolean,"product_key": string,"regular_price": number | null,"seller": string,"source": string,"url": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "item_id": string,"price": number,"price_date": string,"regular_price"?: number | null,"store_id": string
+                    "akcija"?: boolean,"akcija_price"?: number | null,"n_stores"?: number | null,"n_stores_akcija"?: number | null,"price": number,"price_date"?: string | null,"prilika"?: boolean,"product_key": string,"regular_price"?: number | null,"seller": string,"source": string,"url"?: string | null
                   }
                   Update: {
-                    "item_id"?: string,"price"?: number,"price_date"?: string,"regular_price"?: number | null,"store_id"?: string
+                    "akcija"?: boolean,"akcija_price"?: number | null,"n_stores"?: number | null,"n_stores_akcija"?: number | null,"price"?: number,"price_date"?: string | null,"prilika"?: boolean,"product_key"?: string,"regular_price"?: number | null,"seller"?: string,"source"?: string,"url"?: string | null
                   }
                   Relationships: [
                     {
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
+      foreignKeyName: "offers_product_key_fkey"
+      columns: ["product_key"]
 isOneToOne: false
       referencedRelation: "products"
-      referencedColumns: ["item_id"]
+      referencedColumns: ["product_key"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
+      foreignKeyName: "offers_product_key_fkey"
+      columns: ["product_key"]
 isOneToOne: false
       referencedRelation: "v_product_best"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
+      foreignKeyName: "offers_product_key_fkey"
+      columns: ["product_key"]
 isOneToOne: false
       referencedRelation: "v_product_offers"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
+      foreignKeyName: "offers_product_key_fkey"
+      columns: ["product_key"]
 isOneToOne: false
       referencedRelation: "v_products"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
+      foreignKeyName: "offers_seller_fkey"
+      columns: ["seller"]
 isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
+      referencedRelation: "chains"
+      referencedColumns: ["code"]
     }
                   ]
                 },"products": {
                   Row: {
-                    "barcode": string | null,"brand": string | null,"carbohydrates": number | null,"concept_confidence": number | null,"concept_id": string | null,"eko": boolean | null,"energy_kcal": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"item_id": string,"name": string,"name_norm": string,"namjena": string | null,"nutrition_source": string | null,"oblik": string | null,"obogaceno": string | null,"okus": string | null,"pack_count": number,"product_url": string | null,"proteins": number | null,"provjeri": boolean,"salt": number | null,"saturated_fat": number | null,"search_norm": string,"search_text": string | null,"size_unit": string | null,"size_value": number | null,"sugars": number | null,"tags": (string)[],"vegan_evidence": Json | null,"vegan_status": string,"zasladeno": string | null
+                    "atr_namjena": (string)[],"atr_oblik_obrada": (string)[],"atr_okus": (string)[],"atr_porijeklo": (string)[],"atr_prehrambena_svojstva": (string)[],"atr_zasladenost": (string)[],"brand": string | null,"brands": (string)[],"carbohydrates": number | null,"concept_id": string | null,"concept_put": (string)[],"evidence_class": string | null,"fat": number | null,"fiber": number | null,"has_barcode": boolean,"kcal": number | null,"name": string,"name_norm": string,"nutrition_izvor": string | null,"nutrition_izvor_opis": string | null,"nutrition_nedostaje": (string)[],"nutrition_praznina_opis": string | null,"nutrition_procijenjeno": boolean | null,"pakiranje_jedinica": string | null,"pakiranje_kolicina": number | null,"pakiranje_komada": number,"product_key": string,"protein": number | null,"salt": number | null,"saturated_fat": number | null,"search_norm": string,"search_text": string | null,"std_naziv": string | null,"sugars": number | null,"tags": (string)[],"url": string | null,"vegan_class": string,"vegan_evidence": Json | null,"vegan_reason": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "barcode"?: string | null,"brand"?: string | null,"carbohydrates"?: number | null,"concept_confidence"?: number | null,"concept_id"?: string | null,"eko"?: boolean | null,"energy_kcal"?: number | null,"fat"?: number | null,"fiber"?: number | null,"image_url"?: string | null,"item_id": string,"name": string,"name_norm"?: string,"namjena"?: string | null,"nutrition_source"?: string | null,"oblik"?: string | null,"obogaceno"?: string | null,"okus"?: string | null,"pack_count"?: number,"product_url"?: string | null,"proteins"?: number | null,"provjeri"?: boolean,"salt"?: number | null,"saturated_fat"?: number | null,"search_norm"?: string,"search_text"?: string | null,"size_unit"?: string | null,"size_value"?: number | null,"sugars"?: number | null,"tags"?: (string)[],"vegan_evidence"?: Json | null,"vegan_status": string,"zasladeno"?: string | null
+                    "atr_namjena"?: (string)[],"atr_oblik_obrada"?: (string)[],"atr_okus"?: (string)[],"atr_porijeklo"?: (string)[],"atr_prehrambena_svojstva"?: (string)[],"atr_zasladenost"?: (string)[],"brand"?: string | null,"brands"?: (string)[],"carbohydrates"?: number | null,"concept_id"?: string | null,"concept_put"?: (string)[],"evidence_class"?: string | null,"fat"?: number | null,"fiber"?: number | null,"has_barcode"?: boolean,"kcal"?: number | null,"name": string,"name_norm"?: string,"nutrition_izvor"?: string | null,"nutrition_izvor_opis"?: string | null,"nutrition_nedostaje"?: (string)[],"nutrition_praznina_opis"?: string | null,"nutrition_procijenjeno"?: boolean | null,"pakiranje_jedinica"?: string | null,"pakiranje_kolicina"?: number | null,"pakiranje_komada"?: number,"product_key": string,"protein"?: number | null,"salt"?: number | null,"saturated_fat"?: number | null,"search_norm"?: string,"search_text"?: string | null,"std_naziv"?: string | null,"sugars"?: number | null,"tags"?: (string)[],"url"?: string | null,"vegan_class": string,"vegan_evidence"?: Json | null,"vegan_reason"?: string | null
                   }
                   Update: {
-                    "barcode"?: string | null,"brand"?: string | null,"carbohydrates"?: number | null,"concept_confidence"?: number | null,"concept_id"?: string | null,"eko"?: boolean | null,"energy_kcal"?: number | null,"fat"?: number | null,"fiber"?: number | null,"image_url"?: string | null,"item_id"?: string,"name"?: string,"name_norm"?: string,"namjena"?: string | null,"nutrition_source"?: string | null,"oblik"?: string | null,"obogaceno"?: string | null,"okus"?: string | null,"pack_count"?: number,"product_url"?: string | null,"proteins"?: number | null,"provjeri"?: boolean,"salt"?: number | null,"saturated_fat"?: number | null,"search_norm"?: string,"search_text"?: string | null,"size_unit"?: string | null,"size_value"?: number | null,"sugars"?: number | null,"tags"?: (string)[],"vegan_evidence"?: Json | null,"vegan_status"?: string,"zasladeno"?: string | null
+                    "atr_namjena"?: (string)[],"atr_oblik_obrada"?: (string)[],"atr_okus"?: (string)[],"atr_porijeklo"?: (string)[],"atr_prehrambena_svojstva"?: (string)[],"atr_zasladenost"?: (string)[],"brand"?: string | null,"brands"?: (string)[],"carbohydrates"?: number | null,"concept_id"?: string | null,"concept_put"?: (string)[],"evidence_class"?: string | null,"fat"?: number | null,"fiber"?: number | null,"has_barcode"?: boolean,"kcal"?: number | null,"name"?: string,"name_norm"?: string,"nutrition_izvor"?: string | null,"nutrition_izvor_opis"?: string | null,"nutrition_nedostaje"?: (string)[],"nutrition_praznina_opis"?: string | null,"nutrition_procijenjeno"?: boolean | null,"pakiranje_jedinica"?: string | null,"pakiranje_kolicina"?: number | null,"pakiranje_komada"?: number,"product_key"?: string,"protein"?: number | null,"salt"?: number | null,"saturated_fat"?: number | null,"search_norm"?: string,"search_text"?: string | null,"std_naziv"?: string | null,"sugars"?: number | null,"tags"?: (string)[],"url"?: string | null,"vegan_class"?: string,"vegan_evidence"?: Json | null,"vegan_reason"?: string | null
                   }
                   Relationships: [
                     {
@@ -270,7 +256,7 @@ isOneToOne: false
       columns: ["concept_id"]
 isOneToOne: false
       referencedRelation: "concepts"
-      referencedColumns: ["id"]
+      referencedColumns: ["concept_id"]
     },{
       foreignKeyName: "products_concept_id_fkey"
       columns: ["concept_id"]
@@ -327,26 +313,6 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"stores": {
-                  Row: {
-                    "address": string | null,"chain_code": string,"city": string | null,"id": string,"is_chainwide": boolean
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "address"?: string | null,"chain_code": string,"city"?: string | null,"id": string,"is_chainwide"?: boolean
-                  }
-                  Update: {
-                    "address"?: string | null,"chain_code"?: string,"city"?: string | null,"id"?: string,"is_chainwide"?: boolean
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "stores_chain_code_fkey"
-      columns: ["chain_code"]
-isOneToOne: false
-      referencedRelation: "chains"
-      referencedColumns: ["code"]
-    }
-                  ]
                 },"substitution_research": {
                   Row: {
                     "created_at": string,"dish_category": string,"ingredient": string,"key": string,"method": string,"model": string | null,"notes_hr": string,"role": string,"sources": NonNullable<Json>,"suggestions": NonNullable<Json>
@@ -386,86 +352,36 @@ isOneToOne: false
           Views: {
             "best_offers": {
                   Row: {
-                    "any_akcija": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
+                    "any_akcija": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "products"
-      referencedColumns: ["item_id"]
+      referencedColumns: ["product_key"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_product_best"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_product_offers"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_products"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
-isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "stores_chain_code_fkey"
-      columns: ["chain_code"]
-isOneToOne: false
-      referencedRelation: "chains"
-      referencedColumns: ["code"]
-    }
-                  ]
-                },"latest_offers": {
-                  Row: {
-                    "chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"unit_price_per_kg_l": number | null
-                  }
-                  ComputedFields: never
-                  Relationships: [
-                    {
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
-isOneToOne: false
-      referencedRelation: "products"
-      referencedColumns: ["item_id"]
-    },{
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
-isOneToOne: false
-      referencedRelation: "v_product_best"
-      referencedColumns: ["item_id"]
-    },{
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
-isOneToOne: false
-      referencedRelation: "v_product_offers"
-      referencedColumns: ["item_id"]
-    },{
-      foreignKeyName: "offers_item_id_fkey"
-      columns: ["item_id"]
-isOneToOne: false
-      referencedRelation: "v_products"
-      referencedColumns: ["item_id"]
-    },{
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
-isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "stores_chain_code_fkey"
+      foreignKeyName: "offers_seller_fkey"
       columns: ["chain_code"]
 isOneToOne: false
       referencedRelation: "chains"
@@ -474,42 +390,36 @@ isOneToOne: false
                   ]
                 },"v_best_offers": {
                   Row: {
-                    "any_akcija": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
+                    "any_akcija": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "products"
-      referencedColumns: ["item_id"]
+      referencedColumns: ["product_key"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_product_best"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_product_offers"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_products"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
-isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "stores_chain_code_fkey"
+      foreignKeyName: "offers_seller_fkey"
       columns: ["chain_code"]
 isOneToOne: false
       referencedRelation: "chains"
@@ -518,56 +428,50 @@ isOneToOne: false
                   ]
                 },"v_concepts": {
                   Row: {
-                    "concept_id": string | null,"group_name": string | null,"n_products": number | null,"name_hr": string | null,"parent": string | null
+                    "concept_id": string | null,"group_name": string | null,"n_products": number | null,"name_hr": string | null,"parent": string | null,"run": string | null,"zamjenjuje": (string)[] | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "concept_id"?: string | null,"group_name"?: string | null,"n_products"?: never,"name_hr"?: string | null,"parent"?: string | null
+                           "concept_id"?: string | null,"group_name"?: string | null,"n_products"?: number | null,"name_hr"?: string | null,"parent"?: string | null,"run"?: string | null,"zamjenjuje"?: (string)[] | null
                          }
                         Update: {
-                           "concept_id"?: string | null,"group_name"?: string | null,"n_products"?: never,"name_hr"?: string | null,"parent"?: string | null
+                           "concept_id"?: string | null,"group_name"?: string | null,"n_products"?: number | null,"name_hr"?: string | null,"parent"?: string | null,"run"?: string | null,"zamjenjuje"?: (string)[] | null
                          }
                         Relationships: [
                     
                   ]
                 },"v_offers": {
                   Row: {
-                    "chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"unit_price_per_kg_l": number | null
+                    "akcija_price": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number | null,"price_date": string | null,"prilika": boolean | null,"regular_price": number | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"unit_price_per_kg_l": number | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "products"
-      referencedColumns: ["item_id"]
+      referencedColumns: ["product_key"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_product_best"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_product_offers"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_item_id_fkey"
+      foreignKeyName: "offers_product_key_fkey"
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "v_products"
       referencedColumns: ["item_id"]
     },{
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
-isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "stores_chain_code_fkey"
+      foreignKeyName: "offers_seller_fkey"
       columns: ["chain_code"]
 isOneToOne: false
       referencedRelation: "chains"
@@ -576,71 +480,59 @@ isOneToOne: false
                   ]
                 },"v_product_best": {
                   Row: {
-                    "any_akcija": boolean | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"concept_confidence": number | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"name": string | null,"namjena": string | null,"net_qty": number | null,"nutrition_source": string | null,"oblik": string | null,"obogaceno": string | null,"okus": string | null,"pack_count": number | null,"price": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"store_id": string | null,"sugars": number | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_status": string | null,"zasladeno": string | null
+                    "any_akcija": boolean | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"price": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"store_id": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
+      foreignKeyName: "offers_seller_fkey"
+      columns: ["chain_code"]
 isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
+      referencedRelation: "chains"
+      referencedColumns: ["code"]
     },{
       foreignKeyName: "products_concept_id_fkey"
       columns: ["concept_id"]
 isOneToOne: false
       referencedRelation: "concepts"
-      referencedColumns: ["id"]
+      referencedColumns: ["concept_id"]
     },{
       foreignKeyName: "products_concept_id_fkey"
       columns: ["concept_id"]
 isOneToOne: false
       referencedRelation: "v_concepts"
       referencedColumns: ["concept_id"]
-    },{
-      foreignKeyName: "stores_chain_code_fkey"
-      columns: ["chain_code"]
-isOneToOne: false
-      referencedRelation: "chains"
-      referencedColumns: ["code"]
     }
                   ]
                 },"v_product_offers": {
                   Row: {
-                    "barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"concept_confidence": number | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"name": string | null,"namjena": string | null,"net_qty": number | null,"nutrition_source": string | null,"oblik": string | null,"obogaceno": string | null,"okus": string | null,"pack_count": number | null,"price": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"sugars": number | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_status": string | null,"zasladeno": string | null
+                    "akcija_price": number | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"n_stores": number | null,"n_stores_akcija": number | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"price": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
-      foreignKeyName: "offers_store_id_fkey"
-      columns: ["store_id"]
+      foreignKeyName: "offers_seller_fkey"
+      columns: ["chain_code"]
 isOneToOne: false
-      referencedRelation: "stores"
-      referencedColumns: ["id"]
+      referencedRelation: "chains"
+      referencedColumns: ["code"]
     },{
       foreignKeyName: "products_concept_id_fkey"
       columns: ["concept_id"]
 isOneToOne: false
       referencedRelation: "concepts"
-      referencedColumns: ["id"]
+      referencedColumns: ["concept_id"]
     },{
       foreignKeyName: "products_concept_id_fkey"
       columns: ["concept_id"]
 isOneToOne: false
       referencedRelation: "v_concepts"
       referencedColumns: ["concept_id"]
-    },{
-      foreignKeyName: "stores_chain_code_fkey"
-      columns: ["chain_code"]
-isOneToOne: false
-      referencedRelation: "chains"
-      referencedColumns: ["code"]
     }
                   ]
                 },"v_products": {
                   Row: {
-                    "barcode": string | null,"brand": string | null,"carbohydrates": number | null,"concept_confidence": number | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"item_id": string | null,"name": string | null,"namjena": string | null,"net_qty": number | null,"nutrition_source": string | null,"oblik": string | null,"obogaceno": string | null,"okus": string | null,"pack_count": number | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"sugars": number | null,"tags": (string)[] | null,"vegan_evidence": Json | null,"vegan_status": string | null,"zasladeno": string | null
+                    "barcode": string | null,"brand": string | null,"carbohydrates": number | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"item_id": string | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -649,7 +541,7 @@ isOneToOne: false
       columns: ["concept_id"]
 isOneToOne: false
       referencedRelation: "concepts"
-      referencedColumns: ["id"]
+      referencedColumns: ["concept_id"]
     },{
       foreignKeyName: "products_concept_id_fkey"
       columns: ["concept_id"]
@@ -680,17 +572,18 @@ isOneToOne: false
                            },
 "get_offers":
 { Args: { "p_concept_ids": (string)[],"p_exclude_tags"?: (string)[] }; Returns: {
-              "barcode": string | null,
+              "akcija_price": number | null,
+"barcode": string | null,
 "brand": string | null,
 "carbohydrates": number | null,
 "chain_code": string | null,
 "chain_kind": string | null,
 "chain_logo_url": string | null,
 "chain_name": string | null,
-"concept_confidence": number | null,
 "concept_group": string | null,
 "concept_id": string | null,
 "concept_name": string | null,
+"concept_put": (string)[] | null,
 "discount_pct": number | null,
 "eko": boolean | null,
 "energy_kcal": number | null,
@@ -701,13 +594,16 @@ isOneToOne: false
 "is_akcija": boolean | null,
 "is_chainwide": boolean | null,
 "item_id": string | null,
+"n_stores": number | null,
+"n_stores_akcija": number | null,
 "name": string | null,
-"namjena": string | null,
+"namjena": (string)[] | null,
 "net_qty": number | null,
+"nutrition_estimated": boolean | null,
 "nutrition_source": string | null,
-"oblik": string | null,
-"obogaceno": string | null,
-"okus": string | null,
+"nutrition_source_hr": string | null,
+"oblik": (string)[] | null,
+"okus": (string)[] | null,
 "pack_count": number | null,
 "price": number | null,
 "price_date": string | null,
@@ -719,15 +615,18 @@ isOneToOne: false
 "saturated_fat": number | null,
 "size_unit": string | null,
 "size_value": number | null,
+"std_naziv": string | null,
 "store_address": string | null,
 "store_city": string | null,
 "store_id": string | null,
 "sugars": number | null,
+"svojstva": (string)[] | null,
 "tags": (string)[] | null,
 "unit_price_per_kg_l": number | null,
 "vegan_evidence": Json | null,
+"vegan_reason": string | null,
 "vegan_status": string | null,
-"zasladeno": string | null
+"zasladeno": (string)[] | null
             }[]
                           SetofOptions: {
         from: "*"
@@ -737,17 +636,18 @@ isOneToOne: false
       } },
 "get_offers_for_items":
 { Args: { "p_item_ids": (string)[] }; Returns: {
-              "barcode": string | null,
+              "akcija_price": number | null,
+"barcode": string | null,
 "brand": string | null,
 "carbohydrates": number | null,
 "chain_code": string | null,
 "chain_kind": string | null,
 "chain_logo_url": string | null,
 "chain_name": string | null,
-"concept_confidence": number | null,
 "concept_group": string | null,
 "concept_id": string | null,
 "concept_name": string | null,
+"concept_put": (string)[] | null,
 "discount_pct": number | null,
 "eko": boolean | null,
 "energy_kcal": number | null,
@@ -758,13 +658,16 @@ isOneToOne: false
 "is_akcija": boolean | null,
 "is_chainwide": boolean | null,
 "item_id": string | null,
+"n_stores": number | null,
+"n_stores_akcija": number | null,
 "name": string | null,
-"namjena": string | null,
+"namjena": (string)[] | null,
 "net_qty": number | null,
+"nutrition_estimated": boolean | null,
 "nutrition_source": string | null,
-"oblik": string | null,
-"obogaceno": string | null,
-"okus": string | null,
+"nutrition_source_hr": string | null,
+"oblik": (string)[] | null,
+"okus": (string)[] | null,
 "pack_count": number | null,
 "price": number | null,
 "price_date": string | null,
@@ -776,15 +679,18 @@ isOneToOne: false
 "saturated_fat": number | null,
 "size_unit": string | null,
 "size_value": number | null,
+"std_naziv": string | null,
 "store_address": string | null,
 "store_city": string | null,
 "store_id": string | null,
 "sugars": number | null,
+"svojstva": (string)[] | null,
 "tags": (string)[] | null,
 "unit_price_per_kg_l": number | null,
 "vegan_evidence": Json | null,
+"vegan_reason": string | null,
 "vegan_status": string | null,
-"zasladeno": string | null
+"zasladeno": (string)[] | null
             }[]
                           SetofOptions: {
         from: "*"
@@ -815,10 +721,10 @@ isOneToOne: false
 "chain_kind": string | null,
 "chain_logo_url": string | null,
 "chain_name": string | null,
-"concept_confidence": number | null,
 "concept_group": string | null,
 "concept_id": string | null,
 "concept_name": string | null,
+"concept_put": (string)[] | null,
 "discount_pct": number | null,
 "eko": boolean | null,
 "energy_kcal": number | null,
@@ -832,12 +738,13 @@ isOneToOne: false
 "n_chains": number | null,
 "n_stores": number | null,
 "name": string | null,
-"namjena": string | null,
+"namjena": (string)[] | null,
 "net_qty": number | null,
+"nutrition_estimated": boolean | null,
 "nutrition_source": string | null,
-"oblik": string | null,
-"obogaceno": string | null,
-"okus": string | null,
+"nutrition_source_hr": string | null,
+"oblik": (string)[] | null,
+"okus": (string)[] | null,
 "pack_count": number | null,
 "price": number | null,
 "price_date": string | null,
@@ -849,13 +756,16 @@ isOneToOne: false
 "saturated_fat": number | null,
 "size_unit": string | null,
 "size_value": number | null,
+"std_naziv": string | null,
 "store_id": string | null,
 "sugars": number | null,
+"svojstva": (string)[] | null,
 "tags": (string)[] | null,
 "unit_price_per_kg_l": number | null,
 "vegan_evidence": Json | null,
+"vegan_reason": string | null,
 "vegan_status": string | null,
-"zasladeno": string | null
+"zasladeno": (string)[] | null
             }[]
                           SetofOptions: {
         from: "*"

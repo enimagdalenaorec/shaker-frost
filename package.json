@@ -13,7 +13,6 @@
     "db:types": "tsx scripts/db-types.ts",
     "load:catalog": "tsx scripts/load-catalog.ts",
     "llm:models": "tsx scripts/gemini-models.ts",
-    "mock:build": "tsx scripts/mock/build.ts",
     "seed:knowledge": "tsx scripts/seed-knowledge.ts",
     "validate:catalog": "tsx scripts/validate-catalog.ts",
     "llm:probe": "tsx scripts/llm-probe.ts",

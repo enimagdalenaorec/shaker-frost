@@ -1,6 +1,6 @@
 # CLAUDE.md — veganizir.ai
 
-> Status: **v5: plan agreed (incl. home page search + "često u košarici"), catalog schema defined (slimmed from the data teammate's `c_products`), build starting.** Items marked ❓ are still open. This file is the source of truth: if code and this file disagree, fix one of them in the same commit.
+> Status: **v6: the real catalog from the data teammate's handoff (`data-science/HANDOFF.md`) is live in Supabase in their own structure (§4); the mock catalog is retired; rules remapped to the real concepts.** Items marked ❓ are still open. This file is the source of truth: if code and this file disagree, fix one of them in the same commit.
 >
 > Context: hackathon **today in Zagreb, ~8 h**. Theme: an app with a medium-complexity AI layer that solves an everyday problem. **LLM provider: OpenAI or Google AI Studio (Gemini), as given by the organisers. No Anthropic API.** Team of 4: 2 build (app + data), 2 do branding and the pitch. A working demo beats completeness.
 
@@ -69,8 +69,8 @@ Browser ─▶│ UI: Recept · Košarica · Moji recepti · Prijava (sheet)    
                          │ supabase-js                            │ lib/ai/llm.ts → OpenAI | Gemini
                          ▼
           ┌──────────────── ONE Supabase Postgres ──────────────────────────────┐
-          │ CATALOG   chains · stores · concepts · products · offers            │
-          │           (filled by the loader from ONE flat import CSV, §4.2)     │
+          │ CATALOG   chains · concepts · products · offers                     │
+          │           (handoff parquet → 3 CSVs → loader, §4.2)                 │
           │ KNOWLEDGE ingredients · substitution_rules (ours)                   │
           │ ── CONTRACT VIEWS (app reads only these) ────────────────────────── │
           │   v_concepts · v_rules · v_products · v_offers · rpc get_offers     │
@@ -80,79 +80,54 @@ Browser ─▶│ UI: Recept · Košarica · Moji recepti · Prijava (sheet)    
           └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**The swap rule:** mock and real data use **the same import CSV format and the same loader**. When the data teammate's real export is ready: `pnpm load:catalog real.csv`, then `pnpm validate:catalog`. No code changes. If their columns change, fix the loader mapping or one view. App code reads only the contract views (§6).
+**The refresh rule:** a new handoff from the data teammate goes through `export_handoff.py` → `npm run load:catalog` → `npm run validate:catalog`. No app code changes. If their columns change, fix the exporter or one view. App code reads only the contract views (§6).
 
 ---
 
 ## 4. The catalog
 
 ### 4.1 Decisions
-- **One row per (product, store) in the import** (the teammate's final format). The database **normalises** it into `products` (one row per product) + `offers` (one row per product × store). The product attributes are not repeated per store.
-- **Every suggestable vegan product is imported:** `suggestable = true`, not excluded, no animal conflict, not a price outlier. **`concept_id` is optional.**
-  - Products with a concept (≠ `ostalo`) can be recipe alternatives.
-  - **All** imported products are searchable. Search needs this: e.g. *kruh* has no substitute concept. Stores: Zagreb stores, chain-wide prices (`store_id = all`) and the web shops. The teammate filters on export; the loader filters again defensively.
-- **Store ids are namespaced:** `konzum:S10`, `lidl:all`, `tzh:online`. The raw `store_id` values (`S10`, `008`, `all`) are not unique across chains.
-- **Images are optional:** `chains.logo_url` and `products.image_url` are nullable. The UI falls back to a chain-coloured initial badge and a `concept_group` icon.
-- **Derived values are computed, not imported:** akcija, unit price, kJ, n_offers / n_chains, median price.
-- The current values in `c_products` are **partly mock**. Data quality is the teammate's job; the app only guards against crashes (NULL-safe, no division by zero).
+- **Source:** the data teammate's handoff in `data-science/` (`HANDOFF.md` documents every column). The tables keep **their column names** (`product_key`, `vegan_class`, `atr_okus`, `pakiranje_kolicina` …); the §6 views translate them to the app's names.
+- **Products:** only `vegan_class in ('vegan', 'potencijalno_vegan')` (18,753). `potencijalno_vegan` → `provjeri` (the Provjeri list, never in totals). `nesigurno` / `nije_vegan` are not imported.
+- **Concepts are a hierarchy** (447, `roditelj`, `products.concept_put` = path from the root). A concept means **itself and all descendants**: `tofu` includes `tofu_dimljeni`, `tofu_natur` … (`get_offers`, `search_products(p_concept_id)`, rules).
+- **Facets are lists** (`atr_okus`, `atr_zasladenost`, `atr_namjena`, `atr_oblik_obrada`): a product can be `mljeveno` *and* `integralno`. The okus value **`bez okusa / natur` also matches products with no flavour listed** (most plain products).
+- **Prices: one row per product × chain, no per-store rows, no history.** `price` = the **25th percentile** of the chain's current Zagreb store prices (akcija included); `regular_price` = p25 of the regular price; `akcija` = price < regular_price; plus `n_stores` / `n_stores_akcija` ("akcija u 12/30 trgovina") and `akcija_price` (the lowest special price in any store). Stale prices are dropped; Kaufland's national price lists (non-Zagreb stores) are dropped. Web shops (biobio, tzh) keep their one price.
+- **Store ids** stay in the contract as `<chain>:all` (chain-wide) and `<shop>:online`; `store_address` is NULL.
+- **Allergen tags** (`soja`, `gluten`, `orasi`) are derived by the exporter from name + concept keywords (the handoff has no allergen column).
+- **Images:** none in the handoff; the UI falls back to a chain-coloured initial badge and a concept icon.
+- Data quality is the teammate's job; the app only guards against crashes (NULL-safe, no division by zero).
 
-### 4.2 Import CSV format (the contract with the data teammate)
+### 4.2 Load path
 
-One flat CSV, UTF-8, header row, **one row per product × store**, ~41 columns (down from 68). Product columns are identical on every row of the same `item_id`.
+```
+data-science/*.parquet ──scripts/catalog/export_handoff.py (duckdb)──▶ fixtures/catalog/{concepts,products,offers}.csv (git-ignored)
+                       ──npm run load:catalog──▶ concepts · products · offers · chains   (one transaction, then refresh_catalog())
+```
 
-| Import column | ← from `c_products` | Notes |
-|---|---|---|
-| `item_id` | item_id | product key |
-| `barcode` | barcode | text, nullable |
-| `name`, `brand` | name, brand | |
-| `image_url` | *(new, optional)* | |
-| `product_url` | url | optional, mostly web shops |
-| `concept_id`, `concept`, `concept_parent`, `concept_group` | same | → `concepts` table |
-| `concept_confidence` | std_confidence | < 0.5 → "manje sigurno" |
-| `okus`, `zasladeno`, `namjena`, `oblik`, `obogaceno` | same | facets the AI chooses from |
-| `eko` | eko | → "bio" badge |
-| `tags` | components **+ allergens** | JSON list, e.g. `["soja","gluten"]`; ❓ allergens are new; until then the loader derives soja/gluten/orasi from `search_text` keywords |
-| `size_value`, `size_unit`, `pack_count` | same | unit: `g`, `ml`, or `kom` |
-| `vegan_status` | same | only `vegan` / `probably` arrive |
-| `provjeri` | same | → Provjeri list, never in totals |
-| `vegan_evidence` | vegan_evidence (+ evidence_source, vegan_rule folded in) | JSON |
-| `energy_kcal`, `fat`, `saturated_fat`, `carbohydrates`, `sugars`, `proteins`, `salt`, `fiber` | same | per 100 g/ml, empty = unknown |
-| `nutrition_source` | the 8 `*_src` collapsed into one | the least reliable source among the values: `deklaracija` / `web` / `procjena` |
-| `search_text` | search_text | for the Zamijeni search |
-| `store_chain` | store_chain | |
-| `chain_logo_url` | *(new, optional)* | |
-| `store_id` | store_id | raw; the loader namespaces it |
-| `store_address`, `store_city` | store_address, *(new)* city | |
-| `price`, `regular_price`, `price_date` | same | `akcija` = price < regular_price |
+- `export_handoff.py` needs `pip install duckdb`. It reads `products`, `store_prices`, `offers` (web shops), `shop_products` (web-shop regular prices) and `concepts`.
+- **Handoff quirk handled in the exporter:** `store_prices.current_price` does **not** include the special price (it equals `regular_price` even when `special_price` is lower), so the paid price is `least(current_price, special_price)` when `akcija`.
+- `refresh_catalog()` fills `products.name_norm` / `search_norm`, `concepts.n_products` (buyable incl. descendants) and refreshes `best_offers`.
 
-**Dropped (27):**
-- **derivable:** `akcija`, `n_offers`, `n_chains`, `median_price`, `unit_price_eur_per_kg_l`, `name_norm`, `nutrition_complete7`, `source` (→ `chains.kind`);
-- **used only by the teammate's pipeline (filtered before export):** `suggestable`, `excluded`, `animal_conflict`, `price_outlier`, `rule_candidates`;
-- **merged:** `evidence_source`, `vegan_rule` (→ `vegan_evidence`); the 8 `*_src` (→ `nutrition_source`); `components` (→ `tags`);
-- **unused:** `package` (replaced by the size fields), `plain` (covered by okus + zasladeno), `product_type`, `product_category` (13 % filled, concepts cover them), `nutrition_note`, `nutrition_refs`.
-
-### 4.3 Database tables (normalised)
+### 4.3 Database tables (`0009_handoff_catalog.sql`)
 
 ```sql
 chains   (code text pk, name text, kind text check in ('store','webshop'), logo_url text null)
-stores   (id text pk,                      -- 'konzum:S10', 'lidl:all', 'tzh:online'
-          chain_code → chains, address text null, city text null,
-          is_chainwide bool)               -- true for ':all' (price valid in every store of the chain)
-concepts (id text pk, name_hr, parent, group_name)
-products (item_id text pk, barcode, name, brand, image_url null, product_url null,
-          concept_id → concepts NULL, concept_confidence numeric,
-          okus, zasladeno, namjena, oblik, obogaceno, eko bool, tags text[],
-          size_value numeric, size_unit text, pack_count int default 1,
-          vegan_status text, provjeri bool, vegan_evidence jsonb,
-          energy_kcal, fat, saturated_fat, carbohydrates, sugars, proteins, salt, fiber numeric null,
-          nutrition_source text null, search_text text,
-          search_norm text)              -- lower(unaccent(name ‖ brand ‖ search_text)), filled by refresh_catalog()
-                                         -- (unaccent isn't immutable, so not a generated column); GIN trigram index
-offers   (item_id → products, store_id → stores, price numeric, regular_price numeric null,
-          price_date date, primary key (item_id, store_id, price_date))
+concepts (concept_id text pk, naziv, run,            -- run 'A' = vegan substitute, 'B' = plain plant food
+          obitelj, roditelj, razina, put_nazivi, korijeni text[], sinonimi text[],
+          zamjenjuje text[],                         -- what the substitute replaces: 'mlijeko', 'jaje kao vezivo'
+          n_products int)                            -- buyable incl. descendants, by refresh_catalog()
+products (product_key text pk, has_barcode, name, brand, brands text[], url,
+          vegan_class, vegan_reason, evidence_class, vegan_evidence jsonb,
+          kcal, fat, saturated_fat, carbohydrates, sugars, protein, salt, fiber numeric null,
+          nutrition_izvor, nutrition_izvor_opis, nutrition_procijenjeno, nutrition_nedostaje text[], nutrition_praznina_opis,
+          concept_id → concepts NULL, concept_put text[], std_naziv,
+          atr_okus, atr_zasladenost, atr_prehrambena_svojstva, atr_oblik_obrada, atr_namjena, atr_porijeklo text[],
+          pakiranje_kolicina numeric, pakiranje_jedinica ('g'|'ml'), pakiranje_komada int,   -- per piece × pieces
+          tags text[], search_text, name_norm, search_norm)    -- GIN on concept_put and trigram on search_norm
+offers   (product_key → products, seller → chains, source ('lanac'|'trgovina'),
+          price, regular_price, akcija bool, akcija_price, n_stores, n_stores_akcija, prilika bool,
+          price_date, url, primary key (product_key, seller))
 ```
-
-Loader `scripts/load-catalog.ts`: streams the CSV with a real CSV parser into the staging table `import_rows` (all text). Then the SQL `refresh_catalog()` upserts chains → stores → concepts → products (distinct on `item_id`) → offers, and truncates the old catalog first.
 
 ---
 
@@ -165,14 +140,15 @@ ingredients (slug text pk,           -- 'maslac','mlijeko','jaje','mljeveno_meso
              name_hr, aliases text[], is_vegan bool, category, grams_per_piece numeric)
 
 substitution_rules (id bigserial pk, ingredient_slug → ingredients,
-             role text,              -- 'any','frying','flavour','binder','leavening','creaminess','smoky','sweet','base'
-             concept_id text,        -- the teammate's concept ids (validated)
-             prefer jsonb,           -- soft facet preferences {"zasladeno":"nezaslađeno","okus":"bez okusa"}
+             role text,              -- 'any','frying','flavour','baking','binder','leavening','base','smoky',
+                                     -- 'sweet','creaminess','liquid','sauce','glaze'
+             concept_id text,        -- the teammate's concept id; matches the concept AND its descendants
+             prefer jsonb,           -- facet values exactly as in the catalog {"zasladeno":"nezaslađeno","okus":"bez okusa / natur"}
              ratio numeric default 1,-- g/ml of substitute per g/ml of original
              notes_hr text, rank int)
 ```
 
-About 30 non-vegan ingredients × 2–3 rules. **The LLM drafts them from the real concept list** (`scripts/rules/draft.ts`), a human reviews them (~30 min), and they are committed. They use the teammate's real `concept_id`s, so they survive the switch to real data.
+`supabase/seed/knowledge.sql`: 54 ingredients (37 non-vegan, incl. `meso_komadi` for whole-cut meat, `riba`, `mascarpone`, `piskote`; **Vegeta is vegan**) and 93 rules on the real concept ids. `npm run validate:catalog` fails if a rule's concept has no buyable product or a `prefer` value doesn't exist in that concept.
 
 ### 5.2 App tables
 
@@ -248,8 +224,8 @@ App tables store catalog ids (`concept_id`, `pinned_item_id`) as **plain text wi
 
 ### 5.5 Conventions
 - **Unknown = NULL, never 0.**
-- Units: `g`, `ml`, `kom`. ml ≈ g. `kom` → grams via `grams_per_piece`.
-- EUR `numeric`. `price` is what you pay (already the akcija price); `regular_price` is shown struck through when higher.
+- Units: `g`, `ml`, `kom`. ml ≈ g. `kom` → grams via `grams_per_piece`; **no `grams_per_piece` → required quantity unknown → the basket buys 1 package** (never a guessed 50 g per piece).
+- EUR `numeric`. `price` is what you pay (p25 of the chain's Zagreb stores, akcija included); `regular_price` is shown struck through when higher; `n_stores_akcija / n_stores` says how widespread the akcija is.
 - Nutrition sort: any of the 8, user-chosen direction, NULL always last, `nutrition_source` badge visible. `energy_kj = round(energy_kcal × 4.184)` is display only.
 
 ---
@@ -257,24 +233,28 @@ App tables store catalog ids (`concept_id`, `pinned_item_id`) as **plain text wi
 ## 6. Contract views (the only catalog interface for app code)
 
 ```sql
-v_concepts (concept_id, name_hr, parent, group_name, n_products)
-v_rules    (ingredient_slug, role, concept_id, prefer, ratio, notes_hr, rank)
-v_products (item_id, barcode, name, brand, image_url, product_url, concept_id, concept_group,
-            okus, zasladeno, namjena, oblik, obogaceno, eko, tags,
+v_concepts (concept_id, name_hr, parent, group_name, run, zamjenjuje, n_products)
+v_rules    (ingredient_slug, role, concept_id, concept_name, concept_group, prefer, ratio, notes_hr, rank)
+v_products (item_id, barcode, name, brand, image_url, product_url, concept_id, concept_name, concept_group,
+            concept_put, std_naziv,
+            okus, zasladeno, namjena, oblik, svojstva,      -- text[] facets
+            eko, tags,
             net_qty,                         -- size_value × pack_count
-            size_unit, pack_count, vegan_status, provjeri, vegan_evidence, concept_confidence,
+            size_value, size_unit, pack_count, vegan_status, provjeri, vegan_reason, vegan_evidence,
             energy_kcal, energy_kj, fat, saturated_fat, carbohydrates, sugars, proteins, salt, fiber,
-            nutrition_source)
+            nutrition_source, nutrition_source_hr, nutrition_estimated)
 v_offers   (item_id, chain_code, chain_name, chain_kind, chain_logo_url,
-            store_id, store_address, is_chainwide,
-            price, regular_price, is_akcija, unit_price_per_kg_l, price_date)  -- latest date per (item, store)
-rpc get_offers(p_concepts jsonb, p_exclude_tags text[])
-            -- p_concepts = [{concept_id, facets}] → v_products ⨝ v_offers + facet_match_score,
-            -- ordered by score desc, then price
+            store_id ('<chain>:all' | '<shop>:online'), store_address (NULL), store_city, is_chainwide (true),
+            price, regular_price, is_akcija, discount_pct, unit_price_per_kg_l, price_date,
+            akcija_price, n_stores, n_stores_akcija, prilika)          -- one row per product × chain
+rpc get_offers(p_concept_ids text[], p_exclude_tags text[])
+            -- every offer of every product in the concepts OR THEIR DESCENDANTS; concept_id in the result is
+            -- the REQUESTED id. Facet matching happens in lib/catalog/basket-candidates.ts
+rpc get_offers_for_items(p_item_ids text[])
 v_best_offers (item_id, chain_code, chain_name, price, regular_price, is_akcija, discount_pct,
-               unit_price_per_kg_l, n_chains, any_akcija)   -- one row per product: its cheapest offer
+               unit_price_per_kg_l, n_chains, n_stores, any_akcija, max_discount_pct)   -- one row per product
 rpc search_products(p_query text, p_only_akcija bool default false,
-                    p_concept_id text default null, p_limit int default 40)
+                    p_concept_id text default null, p_limit int default 60)   -- p_concept_id incl. descendants
             -- every token of the unaccented, lower-cased query must match search_norm (ILIKE);
             --   0 hits → trigram similarity fallback (typos: "kruhh")
             -- match_tier: 1 = the product name STARTS with a query token ("Kruh polubijeli"),
@@ -292,32 +272,16 @@ Why search sorts by **price per kg** and not package price: 300 g of bread at 0.
 
 ---
 
-## 7. Mock data
+## 7. Validation (the mock is retired)
 
-**Plan A (preferred):** `scripts/mock/build.ts` takes the teammate's **current `c_products.csv`** (real product names, brands and the **real 198 `concept_id`s**), applies the §4.1 filters, and writes `fixtures/catalog_mock.csv` **in the §4.2 import format**:
-- product columns mapped as in §4.2 (allergen tags derived from `search_text`);
-- **synthetic per-store offers:** each product gets `n_chains` chains (its original chain + random others), 2–5 mocked Zagreb stores per chain, or a `:all` chain-wide row; prices = the original price ± up to 15 %; ~5 % akcija;
-- seeded RNG, so the output is identical every run.
+The synthetic mock catalog (`scripts/mock/`, `fixtures/catalog_mock.csv`) was removed when the real handoff arrived; it is in git history.
 
-**Plan B (if the CSV isn't here by T+0:45):** the same script with a hand-written list of ~300 products, in the same format.
+**Validator** `npm run validate:catalog`:
+- every `substitution_rules.concept_id` exists and has ≥ 1 non-provjeri product with an offer (incl. descendants);
+- every `prefer` facet value exists among that concept's products;
+- per demo recipe: the best single chain for the rank-1 alternatives.
 
-Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later goes through the same command.**
-
-**The mock must contain** (checked by the validator):
-- a concept sold in many chains (cheapest ≠ one store);
-- a concept only at biobio/tzh (the "Proizvodi su raspršeni po trgovinama" fallback);
-- a demo recipe coverable by one chain;
-- akcija offers;
-- missing nutrition values;
-- `provjeri` products;
-- unknown size;
-- soy and soy-free options;
-- an ingredient counted in `kom`;
-- **for the search demo:** ≥ 5 *kruh* products across several chains, ≥ 1 of them on akcija, plus one "smjesa za kruh" (to show the match-tier ranking).
-
-**Validator** `pnpm validate:catalog`:
-- every `substitution_rules.concept_id` exists and has ≥ 1 non-provjeri product with an offer;
-- it prints, per demo recipe, the alternatives and products found for each non-vegan ingredient.
+**LLM eval:** the 30 recipes in `test_links.txt` (coolinarika). Run each through `runPipeline` and read back `recipe_ingredients` + `ingredient_alternatives`; check missed non-vegan ingredients, roles, label ↔ concept agreement, facets and quantities.
 
 ---
 
@@ -328,9 +292,9 @@ Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later
 | # | Stage | How | Typical time |
 |---|---|---|---|
 | 0 | **ingest** (`lib/recipe/ingest.ts`) | `recepti.index.hr` → its API `recepti-api.index.hr/api/services/app/Recipe/Get?Id=<number from URL>`. Any other URL → schema.org `Recipe` JSON-LD (coolinarika and most recipe sites; HTML entities decoded). No JSON-LD → page text → LLM extraction. Pasted text → LLM extraction. Example chips → saved real pages in `fixtures/recipes/*.json` (work offline) | 0–3 s |
-| 1 | **analyze** (strong) | Per ingredient: `name_hr`, `slug` (from the `ingredients` vocabulary), quantity in g/ml/kom, **role** (binder / leavening / base / smoky / frying / flavour / baking / creaminess / sweet / liquid / any) and **status** (vegan / not_vegan / **depends**), plus a reason and a confidence. Also the dish category | 2–4 s |
+| 1 | **analyze** (strong) | Per ingredient: `name_hr`, `slug` (from the `ingredients` vocabulary), quantity in g/ml (kom only for eggs), **role** (binder / leavening / base / smoky / frying / flavour / baking / creaminess / sauce / glaze / sweet / liquid / any) and **status** (vegan / not_vegan / **depends**), plus a reason and a confidence. Also the dish category. A line with several ingredients ("3 jaja, 1 kiselo vrhnje") yields several items with the **same** `index`; each item gets a `uid` (its position in the analysis) used by the later stages | 2–4 s |
 | 2 | **research** (fast, cached) | One call for all risky ingredients plus the dish. Cached per `slug|role|dish category` (`substitution_research`) and per dish (`dish_research`), so repeats cost about 0.1 s. Tries Google Search grounding; **our free-tier key refuses it**, so it silently uses model knowledge (`method='ai'`). A billed key or OpenAI makes it web-grounded with sources, with no code change | 0.1–3 s |
-| 3 | **alternatives** (strong) | Candidates from `v_rules` plus the facet values that actually exist per concept, plus the research notes. 1–3 alternatives per ingredient. **Ids and facet values are validated against the DB**; `concept_id=null` is allowed (e.g. "mineralna voda", "izostavi"), shown as "bez kupnje". The global concept list is sent only when some ingredient has no rule | 3–6 s |
+| 3 | **alternatives** (strong) | Candidates from `v_rules` (with their `prefer` facets) plus the facet values that exist per concept (incl. descendants), plus the research notes. 1–3 alternatives per ingredient. **Ids and facet values are validated against the DB**; `concept_id=null` is allowed (e.g. "izostavi", "provjeri deklaraciju"), shown as "bez kupnje". **The label must fit the concept**: a label that shares no word stem with its concept is re-resolved from the label, or becomes `concept_id=null`. The global concept list (with `zamjenjuje` hints) is sent only when some ingredient has no rule | 3–6 s |
 | 4 | **offers** ∥ **rewrite** | `get_offers` SQL (no LLM) ∥ steps rewritten with the swaps (fast), changed steps flagged | 1–2 s |
 | 5 | **save** | `recipes`, `recipe_ingredients`, `ingredient_alternatives`, `agent_runs`, `agent_steps` | 0.3 s |
 
@@ -350,7 +314,7 @@ Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later
 
 **Optimise per chain; show stores within the chain.** There is no user location, so picking between 30 identical-price Konzums is arbitrary. The chain answers "where", and the store list answers "which shop".
 
-- An offer for (item, chain): price = the min over that chain's offers (store-level or `:all`), plus the list of stores carrying it.
+- An offer for (item, chain) is one catalog row: the chain's p25 Zagreb price (§4.1). There are no per-store rows, so the store list is "sve trgovine lanca" (`:all`).
 - `packages = ceil(required_qty / net_qty)`, `line_cost = packages × price`, `used_cost = required_qty / net_qty × price` (shown as "iskorišteno").
 - Totals exclude `provjeri` offers. **Unknown package size → assume 1 package**, flagged "pakiranje nepoznato" (`sizeKnown: false`, no "iskorišteno"). The same concept + facets from several recipes merge into one line.
 - **Recipe swaps enter the basket as the alternative (concept), never as a fixed product.** "Dodaj: Chia sjemenke" stores `{kind: 'concept', conceptId, facets, forIngredient: 'jaje', requiredQty}`; the basket picks the product **and** the shop per sort mode. The basket shows "Chia sjemenke · za: jaje" plus the current pick. Products on the recipe screen are only a price preview.
@@ -413,10 +377,11 @@ lib/
   ai/pipeline/ ingest/{jsonld,index-hr,html-llm,web}.ts · extract.ts · alternatives.ts · offers.ts · rewrite.ts · run.ts
   basket/optimize.ts · basket/useBasket.ts (local + DB adapters)
   db/{server,browser,catalog,types}.ts · i18n/hr.ts
-supabase/migrations/ 0001_catalog.sql (tables + import_rows + refresh_catalog) · 0002_knowledge.sql · 0003_app.sql · 0004_views.sql · 0005_rls.sql
-supabase/seed/ ingredients.sql · substitution_rules.sql
-scripts/ load-catalog.ts · validate-catalog.ts · rules/draft.ts · mock/build.ts
-fixtures/ recipes/ · catalog_mock.csv
+supabase/migrations/ 0001–0008 (mock catalog, knowledge, app, views, RLS, pipeline, user data) · 0009_handoff_catalog.sql (real catalog + views)
+supabase/seed/ knowledge.sql (ingredients + substitution_rules)
+scripts/ catalog/export_handoff.py · load-catalog.ts · validate-catalog.ts · seed-knowledge.ts
+fixtures/ recipes/ · catalog/ (exported CSVs, git-ignored)
+data-science/ the data teammate's handoff (HANDOFF.md, reports; parquet files are git-ignored)
 docs/AI-TOOLS.md
 ```
 
@@ -426,8 +391,8 @@ docs/AI-TOOLS.md
 npm install
 npm run env:check                                  # prints set/missing per variable, never the values
 npm run db:migrate                                 # applies supabase/migrations/*.sql in order
-npm run mock:build -- ~/Downloads/c_products.csv   # → fixtures/catalog_mock.csv
-npm run load:catalog -- fixtures/catalog_mock.csv  # later: the real export
+python3 scripts/catalog/export_handoff.py data-science fixtures/catalog   # needs: pip install duckdb
+npm run load:catalog                               # loads fixtures/catalog/*.csv
 npm run seed:knowledge
 npm run validate:catalog
 npm run db:types                                   # npx supabase gen types --db-url $DATABASE_URL
@@ -486,12 +451,13 @@ The core loop, search and "Često u košarici" are never cut.
 | Who | Owns |
 |---|---|
 | _You_ + Claude Code | The app: P0–P6 |
-| _Data teammate_ | The real export in the §4.2 format; reviewing `substitution_rules`; real numbers for the pitch |
+| _Data teammate_ | The handoff in `data-science/` (HANDOFF.md); reviewing `substitution_rules`; real numbers for the pitch |
 | _Branding pair_ | Logo, colours and font → Tailwind tokens by **T+3:00**; chain logos (optional); pitch deck, demo script, backup video, `docs/AI-TOOLS.md` |
 
 ## 16. Still open
 
 1. ❓ Gemini rate limits on our key (free tier?). This decides the fast/strong models per stage.
-2. ❓ The current `c_products.csv` file for Plan A (not in ~/Downloads yet; only the column description is).
-3. ❓ Teammate: allergen tags feasible? A `store_city` column? Agree to the §4.2 format?
-4. ✅ index.hr endpoint found: `Recipe/Get?Id=<id>`.
+2. ✅ Real catalog loaded from the handoff (§4).
+3. ❓ Teammate: `store_prices.current_price` ignores the special price (worked around in the exporter); `brands[1]` is sometimes a category or warehouse; "prehrambeni kvasac" has no concept (the classic vegan parmezan swap); allergen tags.
+4. ❓ Per-store akcija dropdown ("akcija u Konzum Ilica") would need a slim per-store table; today only "N/M trgovina".
+5. ✅ index.hr endpoint found: `Recipe/Get?Id=<id>`.
