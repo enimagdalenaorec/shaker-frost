@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { BookOpen, Heart } from "lucide-react";
 import { currentUserId, serverDb } from "@/lib/db/server";
@@ -21,6 +22,8 @@ export default function RecipesPage() {
 }
 
 async function MyRecipes() {
+  // per-user and time-dependent (the auth token expiry check reads the clock): render at request time
+  await connection();
   const uid = await currentUserId();
   if (!uid) return <LoggedOut />;
 
