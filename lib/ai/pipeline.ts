@@ -18,6 +18,8 @@ export type PipelineEvent =
 
 export type PipelineInput = {
   url?: string; text?: string; example?: string; excludeTags?: string[]; userId?: string | null;
+  /** Skip the 24 h same-URL reuse (evals, prompt changes). */
+  fresh?: boolean;
   /** Runs work after the response (the route passes Next's after()); without it the work runs inline. */
   defer?: (task: () => Promise<void>) => void;
 };
@@ -68,6 +70,26 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
         log: { model: r.model, output: { title: r.title, method: r.method, n: r.ingredients.length } },
       };
     });
+
+    // Same page veganized in the last 24 h → reuse it (guest results or the user's own; prices load live on view)
+    if (raw.sourceUrl && !input.text && !input.fresh) {
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const owner = input.userId ? `user_id.is.null,user_id.eq.${input.userId}` : "user_id.is.null";
+      const { data: hit } = await db
+        .from("recipes")
+        .select("id, veganized_steps")
+        .eq("source_url", raw.sourceUrl)
+        .eq("status", "done")
+        .gte("created_at", since)
+        .or(owner)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      const ready = (hit ?? []).find((r) => !((r.veganized_steps as { pending?: boolean }[] | null) ?? []).some((s) => s.pending));
+      if (ready) {
+        emit({ type: "done", recipeId: ready.id, ms: Date.now() - started });
+        return ready.id;
+      }
+    }
 
     const { data: rec, error: recErr } = await db
       .from("recipes")
