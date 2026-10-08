@@ -22,6 +22,9 @@ const checks: Check[] = [
   },
   { name: "DEMO_PASSWORD", required: true, valid: (v) => (v.length >= 8 ? null : "use at least 8 characters") },
   { name: "ENABLE_WEB_FALLBACK", required: false },
+  { name: "OPENAI_API_KEY", required: false },
+  { name: "OPENAI_MODEL_STRONG", required: false },
+  { name: "OPENAI_MODEL_FAST", required: false },
   { name: "LLM_MODEL_FAST", required: false },
   { name: "LLM_MODEL_STRONG", required: false },
 ];

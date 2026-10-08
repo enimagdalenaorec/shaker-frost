@@ -94,16 +94,20 @@ export function SmartInput({
         submit();
       }}
       className={cn(
-        "flex items-end gap-1.5 bg-oat-50 transition-shadow",
-        hero ? "rounded-[20px] p-1.5" : "rounded-2xl p-1 ring-1 ring-cocoa-900/[0.08] focus-within:ring-2 focus-within:ring-mint-300",
+        "flex gap-2 transition-shadow",
+        hero ? "flex-col sm:flex-row sm:items-end" : "items-end",
+        hero
+          ? "rounded-[28px] border-[2.5px] border-ink bg-paper p-2.5 shadow-[8px_8px_0_var(--ink)] focus-within:ring-4 focus-within:ring-pistachio"
+          : "rounded-full border-2 border-ink bg-paper py-1.5 pl-4 pr-1.5 shadow-[0_6px_0_var(--ink)] focus-within:ring-4 focus-within:ring-pistachio",
         className,
       )}
     >
+      <div className="flex min-w-0 flex-1 items-end gap-2">
       <span
         className={cn(
-          "grid shrink-0 place-items-center rounded-[14px] transition-colors",
-          hero ? "size-12" : "size-10",
-          isRecipe ? "bg-mint-600 text-oat-50" : "text-cocoa-400",
+          "grid shrink-0 place-items-center rounded-full transition-colors",
+          hero ? "mb-0.5 size-12" : "size-9",
+          isRecipe ? "bg-pistachio text-ink" : "text-rind",
         )}
         aria-hidden
       >
@@ -127,23 +131,24 @@ export function SmartInput({
         }}
         placeholder={hero ? hr.smartInput.placeholder : hr.smartInput.placeholderShort}
         className={cn(
-          "min-w-0 flex-1 resize-none bg-transparent font-medium text-cocoa-900 outline-none placeholder:font-normal placeholder:text-cocoa-400",
-          hero ? "py-3.5 text-base" : "py-2.5 text-[15px]",
+          "min-w-0 flex-1 resize-none bg-transparent font-bold text-ink outline-none placeholder:font-semibold placeholder:text-ink/45",
+          hero ? "py-3.5 text-[17px]" : "py-2 text-[17px]",
         )}
         autoComplete="off"
         spellCheck={false}
       />
+      </div>
       <button
         type="submit"
         aria-label={isRecipe ? hr.smartInput.veganize : hr.smartInput.search}
         className={cn(
-          "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[14px] font-semibold transition-all active:scale-95",
-          hero ? "h-12 min-w-12" : "h-10 min-w-10",
-          isRecipe ? "bg-mint-600 px-4 text-oat-50 hover:bg-mint-700" : "bg-cocoa-900 text-oat-50 hover:bg-cocoa-700",
+          hero
+            ? "btn btn-guava h-12 w-full px-5 text-base sm:w-auto"
+            : "grid size-10 shrink-0 place-items-center rounded-full bg-ink text-cream transition-colors hover:bg-rind",
         )}
       >
-        {pending ? <Loader2 className="size-5 animate-spin" /> : isRecipe ? <Sparkles className="size-4" /> : <ArrowRight className="size-5" />}
-        {isRecipe && <span className="text-sm">{hr.smartInput.veganize}</span>}
+        {pending ? <Loader2 className="size-5 animate-spin" /> : !hero ? <ArrowRight className="size-5" /> : isRecipe || mode === "empty" ? <Sparkles className="size-4" /> : null}
+        {hero && <span>{isRecipe || mode === "empty" ? hr.smartInput.veganize : hr.smartInput.search}</span>}
       </button>
     </form>
   );

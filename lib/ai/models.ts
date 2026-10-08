@@ -13,3 +13,12 @@ export const MODEL_CHAINS: Record<Tier, string[]> = {
   strong: chain(process.env.LLM_MODEL_STRONG, "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-flash-latest"),
   fast: chain(process.env.LLM_MODEL_FAST, "gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-3.5-flash-lite"),
 };
+
+// Backup provider, used only when every Gemini model in the chain failed (lib/ai/openai.ts).
+// Chosen from our key's live model list (npm run llm:models:openai) and measured end to end with
+// LLM_FORCE_FALLBACK=openai on palačinke: gpt-5.4-mini 16.6 s vs gpt-5.5 29.3 s, same alternatives.
+// Override with OPENAI_MODEL_STRONG / OPENAI_MODEL_FAST.
+export const OPENAI_MODELS: Record<Tier, string> = {
+  strong: process.env.OPENAI_MODEL_STRONG || "gpt-5.4-mini",
+  fast: process.env.OPENAI_MODEL_FAST || "gpt-5.4-mini",
+};

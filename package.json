@@ -17,7 +17,8 @@
     "seed:knowledge": "tsx scripts/seed-knowledge.ts",
     "validate:catalog": "tsx scripts/validate-catalog.ts",
     "llm:probe": "tsx scripts/llm-probe.ts",
-    "veganize": "tsx --conditions=react-server scripts/veganize.ts"
+    "veganize": "tsx --conditions=react-server scripts/veganize.ts",
+    "llm:models:openai": "tsx scripts/openai-models.ts"
   },
   "dependencies": {
     "@google/genai": "^2.28.0",

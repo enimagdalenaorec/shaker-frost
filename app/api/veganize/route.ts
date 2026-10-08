@@ -2,7 +2,7 @@ import { z } from "zod";
 import { runPipeline, type PipelineEvent } from "@/lib/ai/pipeline";
 import { currentUserId } from "@/lib/db/server";
 
-export const maxDuration = 90;
+export const maxDuration = 60;
 
 const Body = z
   .object({

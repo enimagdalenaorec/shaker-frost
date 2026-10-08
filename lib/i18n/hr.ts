@@ -11,7 +11,12 @@ export const hr = {
     search: "Traži",
   },
   home: {
-    title: "Što danas kuhamo?",
+    title: "Mamina sarma.",
+    titleAccent: "Biljnim jezikom.",
+    subtitle: "Zalijepi recept. Mi ga veganiziramo.",
+    hint: "Svaku namirnicu mijenjamo prema njezinoj ulozi: jaje kao vezivo nije isto što i jaje za rahlost.",
+    steps: ["Zalijepiš poveznicu", "Mi pronađemo ulogu svake namirnice", "Kuhaš biljnu verziju"],
+    ticker: "Donesi recept odakle god želiš · cijene iz 8 trgovina",
     recipes: "Isprobaj",
     swaps: (n: number) => `${n} ${plural(n, "zamjena", "zamjene", "zamjena")}`,
     often: "Često kupuješ",

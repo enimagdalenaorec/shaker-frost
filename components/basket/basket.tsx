@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, Coins, HeartPulse, Minus, Plus, ShoppingBasket, Sparkles, Store, X } from "lucide-react";
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, Coins, HeartPulse, Minus, Plus, Sparkles, Store, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPrice, formatSize, nameHasSize } from "@/lib/format";
 import { hr } from "@/lib/i18n/hr";
 import { basketStore, useBasketState } from "@/lib/basket/local-store";
 import { NUTRITION_METRICS, type NutritionMetric, type SortOrder, type Strategy } from "@/lib/basket/types";
 import type { BasketView, LineView } from "@/lib/basket/view";
-import { chainColor } from "@/components/catalog/chain-badge";
-import { ProductIcon } from "@/components/catalog/product-icon";
+import { ChainBadge } from "@/components/catalog/chain-badge";
+import { Character } from "@/components/brand/sprites";
 
 const STRATEGY_ICONS = { one_store: Store, cheapest: Coins, nutrition: HeartPulse } as const;
 const DEFAULT_ORDER: Record<NutritionMetric, SortOrder> = {
@@ -58,16 +58,18 @@ export function Basket() {
   return (
     <div className="pb-24">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="flex items-center gap-2.5 text-3xl font-bold text-cocoa-900">
-          {hr.basket.title}
-          <span className="tabular rounded-full bg-oat-200 px-2 py-0.5 font-sans text-sm font-bold text-cocoa-500">{items.length}</span>
-        </h1>
-        <button type="button" onClick={() => basketStore.clear()} className="text-xs font-semibold text-cocoa-400 hover:text-clay-600">
+        <h1 className="title-bar text-[2.6rem] leading-none text-ink">{hr.basket.title}</h1>
+        <span className="micro rounded-full border-[1.5px] border-ink px-2.5 py-1 font-bold text-ink">Popis / {items.length}</span>
+      </div>
+      <div className="mt-1 flex justify-end">
+        <button type="button" onClick={() => basketStore.clear()} className="text-xs font-extrabold text-rind underline-offset-4 hover:text-ink hover:underline">
           {hr.basket.clear}
         </button>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-1 rounded-[18px] bg-oat-200/80 p-1" role="radiogroup" aria-label="Način slaganja">
+      <div className="mt-3 rounded-[22px] border-[1.5px] border-ink/25 bg-paper p-3">
+      <p className="micro mb-2 text-rind">Način slaganja</p>
+      <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Način slaganja">
         {(Object.keys(hr.basket.strategies) as Strategy[]).map((s) => {
           const Icon = STRATEGY_ICONS[s];
           const active = strategy === s;
@@ -79,8 +81,8 @@ export function Basket() {
               aria-checked={active}
               onClick={() => setStrategy(s)}
               className={cn(
-                "flex h-11 items-center justify-center gap-1.5 rounded-[14px] text-[12px] font-bold transition-all sm:text-sm",
-                active ? "bg-cocoa-900 text-oat-50" : "text-cocoa-500 hover:text-cocoa-900",
+                "flex h-11 items-center justify-center gap-1.5 rounded-full border-[1.5px] text-[12px] font-extrabold transition-colors sm:text-sm",
+                active ? "border-ink bg-ink text-cream" : "border-ink/40 text-ink hover:border-ink",
               )}
             >
               <Icon className="hidden size-4 min-[400px]:block" />
@@ -91,7 +93,7 @@ export function Basket() {
       </div>
 
       {strategy === "nutrition" && (
-        <div className="mt-2 flex items-center gap-1.5">
+        <div className="mt-2.5 flex items-center gap-1.5">
           <div className="-ml-4 flex flex-1 gap-1.5 overflow-x-auto pb-1 pl-4 scrollbar-none sm:ml-0 sm:flex-wrap sm:pl-0">
             {NUTRITION_METRICS.map((m) => (
               <button
@@ -102,8 +104,8 @@ export function Basket() {
                   setOrder(DEFAULT_ORDER[m]);
                 }}
                 className={cn(
-                  "h-8 shrink-0 rounded-full px-3 text-xs font-semibold transition-colors",
-                  metric === m ? "bg-mint-600 text-oat-50" : "bg-oat-50 text-cocoa-500 ring-1 ring-cocoa-900/[0.08]",
+                  "h-8 shrink-0 rounded-full border-[1.5px] px-3 text-xs font-extrabold transition-colors",
+                  metric === m ? "border-ink bg-pistachio text-ink" : "border-ink/35 text-ink hover:border-ink",
                 )}
               >
                 {hr.nutrition[m]}
@@ -113,7 +115,7 @@ export function Basket() {
           <button
             type="button"
             onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
-            className="grid size-8 shrink-0 place-items-center rounded-full bg-oat-50 text-cocoa-700 ring-1 ring-cocoa-900/[0.08]"
+            className="grid size-8 shrink-0 place-items-center rounded-full border-[1.5px] border-ink bg-cream text-ink"
             aria-label={hr.basket.order[order]}
             title={hr.basket.order[order]}
           >
@@ -121,25 +123,26 @@ export function Basket() {
           </button>
         </div>
       )}
+      </div>
 
       <div className={cn("transition-opacity", loading && view && "opacity-50")}>
         {!view ? (
           <div className="mt-4 space-y-2.5">
-            <div className="h-40 animate-pulse rounded-[22px] bg-oat-50" />
-            <div className="h-28 animate-pulse rounded-[22px] bg-oat-50" />
+            <div className="h-40 animate-pulse rounded-[22px] border-[1.5px] border-ink/15 bg-cream" />
+            <div className="h-28 animate-pulse rounded-[22px] border-[1.5px] border-ink/15 bg-cream" />
           </div>
         ) : (
           <>
             <Notice view={view} />
-            <div className="mt-3 space-y-2.5">
+            <div className="mt-3 space-y-3.5">
               {view.groups.map((g) => (
                 <ChainGroupCard key={g.chainCode} group={g} strategy={strategy} metric={metric} />
               ))}
             </div>
             {view.unpriced.length > 0 && (
-              <div className="mt-2.5 rounded-[22px] bg-oat-200/60 px-4 py-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-cocoa-400">{hr.basket.unpriced}</p>
-                <ul className="mt-1.5 space-y-1 text-sm text-cocoa-500">
+              <div className="mt-3 rounded-[22px] border-[1.5px] border-dashed border-ink/35 px-4 py-3">
+                <p className="micro text-rind">{hr.basket.unpriced}</p>
+                <ul className="mt-1.5 space-y-1 text-sm font-semibold text-ink">
                   {view.unpriced.map((u) => (
                     <li key={u.basketItemId} className="flex items-center justify-between">
                       {u.label}
@@ -161,18 +164,18 @@ export function Basket() {
 
 function Notice({ view }: { view: BasketView }) {
   if (view.strategy !== "one_store") return null;
-  const pill = "mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold";
-  if (view.scattered) return <p className={cn(pill, "bg-honey-100 text-honey-700")}>{hr.basket.scattered}</p>;
+  const pill = "mt-3 inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink px-3 py-1.5 text-xs font-extrabold text-ink";
+  if (view.scattered) return <p className={cn(pill, "bg-ochre-light")}>{hr.basket.scattered}</p>;
   if (view.groups.length === 1) {
     return (
-      <p className={cn(pill, "bg-mint-100 text-mint-800")}>
+      <p className={cn(pill, "bg-pistachio")}>
         <Check className="size-3.5" /> {hr.basket.allInOne(view.groups[0].chainName)}
       </p>
     );
   }
   const b = view.bestSingleChain;
   return b ? (
-    <p className={cn(pill, "bg-oat-200 text-cocoa-500")} title={b.missing.join(", ")}>
+    <p className={cn(pill, "bg-paper")} title={b.missing.join(", ")}>
       {hr.basket.missingIn(b.chainName, b.missing.length)}
     </p>
   ) : null;
@@ -184,18 +187,15 @@ function ChainGroupCard({ group, strategy, metric }: { group: BasketView["groups
     : group.storesWithAll === "all" ? hr.basket.allStores
     : group.storesWithAll.map((s) => s.address).filter(Boolean).join(" · ") || "—";
   return (
-    <section
-      className="overflow-hidden rounded-[22px] bg-card ring-1 ring-cocoa-900/[0.06]"
-      style={{ boxShadow: `inset 4px 0 0 ${chainColor(group.chainCode)}` }}
-    >
-      <header className="flex items-baseline justify-between gap-3 px-4 pb-1 pt-3.5">
-        <div className="min-w-0">
-          <h2 className="font-heading text-lg font-bold leading-tight text-cocoa-900">{group.chainName}</h2>
-          <p className="truncate text-xs text-cocoa-400">{where}</p>
+    <section className="rounded-[22px] border-[1.5px] border-ink/45 bg-cream px-4 pb-1 pt-3.5 shadow-[10px_11px_0_rgb(64_52_66/0.08)]">
+      <header className="flex items-center justify-between gap-3 pb-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <ChainBadge code={group.chainCode} name={group.chainName} kind={group.chainKind} size="md" />
+          <p className="truncate text-xs font-semibold text-rind">{where}</p>
         </div>
-        <span className="tabular font-heading text-lg font-bold text-cocoa-900">{formatPrice(group.subtotal)}</span>
+        <span className="tabular font-heading text-xl font-black text-ink">{formatPrice(group.subtotal)}</span>
       </header>
-      <ul>
+      <ul className="divide-y divide-ink/15 border-t border-ink/25">
         {group.lines.map((l) => (
           <BasketLine key={l.basketItemId} line={l} strategy={strategy} metric={metric} />
         ))}
@@ -211,13 +211,12 @@ function BasketLine({ line: l, strategy, metric }: { line: LineView; strategy: S
   const isSwap = l.kind === "concept";
   const meta = isSwap ? [l.forIngredient ? `za: ${l.forIngredient}` : null, hr.basket.packages(l.packages)].filter(Boolean).join(" · ") : size;
   return (
-    <li className="flex items-center gap-3 px-3 py-2.5">
-      <ProductIcon group={o.conceptGroup ?? null} name={o.name} className="size-12 rounded-[14px]" iconClassName="size-5" />
+    <li className="flex items-center gap-3 py-3">
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 text-[14px] font-semibold leading-tight text-cocoa-900">{isSwap ? l.label : o.name}</p>
-        {meta && <p className="mt-0.5 text-xs text-cocoa-400">{meta}</p>}
+        <p className="line-clamp-2 text-[15px] font-extrabold leading-tight text-ink">{isSwap ? l.label : o.name}</p>
+        {meta && <p className="mt-0.5 text-xs font-semibold text-rind">{meta}</p>}
         {isSwap && (
-          <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-mint-700" title="Odabrano prema načinu slaganja">
+          <p className="mt-1 flex items-center gap-1 text-xs font-bold text-ink/80" title="Odabrano prema načinu slaganja">
             <Sparkles className="size-3 shrink-0" />
             <span className="truncate">{o.name}</span>
           </p>
@@ -225,22 +224,22 @@ function BasketLine({ line: l, strategy, metric }: { line: LineView; strategy: S
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {!isSwap && <Stepper value={l.packages} onChange={(n) => basketStore.setPackages(l.basketItemId, n)} />}
           {strategy === "nutrition" && (
-            <span className="tabular rounded-full bg-mint-50 px-2 py-0.5 text-[11px] font-bold text-mint-700">
+            <span className="tabular rounded-full border border-ink/40 bg-pistachio-pale px-2 py-0.5 text-[11px] font-extrabold text-ink">
               {nutrient == null ? hr.nutrition.unknown : `${fmt(nutrient)} ${UNIT[metric]}`}
-              <span className="font-medium text-mint-600/70"> /100 g</span>
+              <span className="font-semibold text-rind"> /100 g</span>
             </span>
           )}
         </div>
       </div>
       <div className="flex flex-col items-end gap-1">
-        <span className={cn("tabular text-[15px] font-bold", o.isAkcija ? "text-apricot-700" : "text-cocoa-900")}>
+        <span className={cn("tabular font-heading text-lg font-black leading-none", o.isAkcija ? "text-guava-deep" : "text-ink")}>
           {formatPrice(l.lineCost)}
         </span>
         <button
           type="button"
           onClick={() => basketStore.remove(l.basketItemId)}
           aria-label={hr.basket.remove}
-          className="grid size-7 place-items-center rounded-full text-cocoa-300 transition-colors hover:bg-clay-100 hover:text-clay-600"
+          className="grid size-7 place-items-center rounded-full text-ink/45 transition-colors hover:bg-guava-light hover:text-ink"
         >
           <X className="size-4" />
         </button>
@@ -251,12 +250,12 @@ function BasketLine({ line: l, strategy, metric }: { line: LineView; strategy: S
 
 function Stepper({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
-    <div className="inline-flex h-7 items-center rounded-full bg-oat-200/70">
-      <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} className="grid size-7 place-items-center text-cocoa-700 disabled:opacity-30" aria-label="Manje">
+    <div className="inline-flex h-7 items-center rounded-full border-[1.5px] border-ink bg-paper">
+      <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} className="grid size-6 place-items-center text-ink disabled:opacity-30" aria-label="Manje">
         <Minus className="size-3.5" />
       </button>
-      <span className="tabular w-5 text-center text-xs font-bold text-cocoa-900">{value}</span>
-      <button type="button" onClick={() => onChange(value + 1)} className="grid size-7 place-items-center text-cocoa-700" aria-label="Više">
+      <span className="tabular w-5 text-center text-xs font-black text-ink">{value}</span>
+      <button type="button" onClick={() => onChange(value + 1)} className="grid size-6 place-items-center text-ink" aria-label="Više">
         <Plus className="size-3.5" />
       </button>
     </div>
@@ -267,12 +266,12 @@ function Summary({ view, strategy, metric }: { view: BasketView; strategy: Strat
   const n = view.nutritionSummary[metric];
   return (
     <div className="fixed inset-x-3 bottom-[5.25rem] z-30 sm:inset-x-0 sm:bottom-5">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 rounded-[22px] bg-mint-700 px-5 py-3.5 text-oat-50 shadow-lift sm:mx-6 md:mx-auto">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 rounded-[22px] border-2 border-ink bg-ink px-5 py-3.5 text-cream shadow-[0_6px_0_rgb(64_52_66/0.25)] sm:mx-6 md:mx-auto">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-mint-200">
+          <p className="micro text-cream/70">
             {hr.basket.total} · {hr.basket.stores(view.groups.length)}
           </p>
-          <p className="tabular font-heading text-[1.9rem] font-bold leading-none">{formatPrice(view.total)}</p>
+          <p className="tabular font-heading text-[2rem] font-black leading-none">{formatPrice(view.total)}</p>
         </div>
         {strategy === "nutrition" && n ? (
           <p className="tabular text-right text-sm font-bold">
@@ -282,7 +281,7 @@ function Summary({ view, strategy, metric }: { view: BasketView; strategy: Strat
             </span>
           </p>
         ) : view.saving > 0 ? (
-          <span className="tabular rounded-full bg-mint-200 px-3 py-1.5 text-sm font-bold text-mint-800">{hr.basket.saving(formatPrice(view.saving))}</span>
+          <span className="tabular rounded-full border-[1.5px] border-cream/40 bg-ochre px-3 py-1.5 text-sm font-black text-ink">{hr.basket.saving(formatPrice(view.saving))}</span>
         ) : null}
       </div>
     </div>
@@ -291,14 +290,14 @@ function Summary({ view, strategy, metric }: { view: BasketView; strategy: Strat
 
 function EmptyBasket() {
   return (
-    <div className="mt-16 text-center">
-      <span className="mx-auto grid size-20 place-items-center rounded-[26px] bg-mint-100 text-mint-600">
-        <ShoppingBasket className="size-9" strokeWidth={1.6} />
-      </span>
-      <h1 className="mt-5 text-2xl font-bold text-cocoa-900">{hr.basket.empty}</h1>
-      <Link href="/trazi" className="mt-5 inline-flex h-11 items-center rounded-full bg-cocoa-900 px-5 text-sm font-bold text-oat-50">
-        {hr.basket.goSearch}
-      </Link>
+    <div className="mt-10 text-center">
+      <Character id="tofu" className="character bob mx-auto w-24" />
+      <h1 className="mt-4 text-3xl text-ink">{hr.basket.empty}</h1>
+      <p className="mx-auto mt-2 max-w-xs font-semibold text-rind">Prazna kao hladnjak u nedjelju navečer.</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2.5">
+        <Link href="/" className="btn btn-guava h-12 px-5">Veganiziraj recept ↗</Link>
+        <Link href="/trazi" className="btn btn-paper h-12 px-5">{hr.basket.goSearch}</Link>
+      </div>
     </div>
   );
 }
