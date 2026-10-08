@@ -18,7 +18,7 @@ export type PipelineEvent =
 
 export type PipelineInput = {
   url?: string; text?: string; example?: string; excludeTags?: string[]; userId?: string | null;
-  /** Skip the 24 h same-URL reuse (evals, prompt changes). */
+  /** No reuse at all: skip the 24 h same-URL result and the research cache (evals, prompt changes). */
   fresh?: boolean;
   /** Runs work after the response (the route passes Next's after()); without it the work runs inline. */
   defer?: (task: () => Promise<void>) => void;
@@ -154,8 +154,8 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
       const dishKey = norm(raw.title);
       const riskySlugs = [...new Set(risky.map((i) => i.slug).filter(Boolean) as string[])];
       const [{ data: cached }, { data: dishCached }, { data: ruled }] = await Promise.all([
-        keys.length ? db.from("substitution_research").select("*").in("key", keys) : Promise.resolve({ data: [] as never[] }),
-        db.from("dish_research").select("*").eq("key", dishKey).maybeSingle(),
+        keys.length && !input.fresh ? db.from("substitution_research").select("*").in("key", keys) : Promise.resolve({ data: [] as never[] }),
+        input.fresh ? Promise.resolve({ data: null }) : db.from("dish_research").select("*").eq("key", dishKey).maybeSingle(),
         riskySlugs.length ? db.from("substitution_rules").select("ingredient_slug").in("ingredient_slug", riskySlugs) : Promise.resolve({ data: [] as never[] }),
       ]);
       const hasRules = new Set((ruled ?? []).map((r) => r.ingredient_slug));
