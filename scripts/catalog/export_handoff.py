@@ -1,8 +1,9 @@
 # Converts the data teammate's handoff (data-science/*.parquet, see data-science/HANDOFF.md) into the three
 # CSVs that `npm run load:catalog` loads: concepts.csv, products.csv, offers.csv.
 #   - products: vegan + potencijalno_vegan only (the app hides the rest)
-#   - offers:   one row per product x chain = 25th percentile of the chain's current Zagreb store prices
-#               (akcija included; stale prices and history dropped), plus one row per web-shop offer
+#   - offers:   one row per product x chain: the MINIMUM (cheapest Zagreb store, what the basket pays) and
+#               the AVERAGE over the chain's current Zagreb stores, plus that cheapest store's akcija / prilika
+#               (stale prices and history dropped), and one row per web-shop offer
 # Usage: pip install duckdb && python3 scripts/catalog/export_handoff.py [data-science] [fixtures/catalog]
 import os
 import sys
@@ -25,7 +26,7 @@ select * from 'products.parquet' where vegan_class in ('vegan', 'potencijalno_ve
 c.sql("""
 create temp table c_offers as
 with store_rows as (
-  select product_key, chain, current_price, special_price, "current_date", prilika,
+  select product_key, chain, store_id, address, "current_date", prilika, median_month, pct_vs_median,
          -- the handoff's current_price does not include the special price; pay the lower one on akcija
          case when akcija and special_price > 0 then least(current_price, special_price) else current_price end as eff,
          coalesce(regular_price, current_price) as reg
@@ -33,25 +34,42 @@ with store_rows as (
   where not stale and current_price > 0
     and not (chain = 'kaufland' and scope = 'nacionalno')        -- national price lists of non-Zagreb stores
     and product_key in (select product_key from c_products)
+), ranked as (
+  -- the cheapest store of the chain; on a tie prefer the one whose low price is an akcija / prilika
+  select *, row_number() over (partition by product_key, chain order by eff, (eff < reg) desc, prilika desc) as rn
+  from store_rows
 ), chain_rows as (
-  select product_key, chain as seller, 'lanac' as source,
-         round(quantile_cont(eff, 0.25), 2) as price,
-         round(quantile_cont(greatest(reg, eff), 0.25), 2) as regular_price,
-         min(eff) filter (where eff < reg) as akcija_price,
-         count(*) as n_stores,
-         count(*) filter (where eff < reg) as n_stores_akcija,
-         bool_or(prilika) as prilika,
-         max("current_date") as price_date,
-         null as url
-  from store_rows group by 1, 2
+  select r.product_key, r.chain as seller, 'lanac' as source,
+         round(r.eff, 2) as price,
+         round(a.price_avg, 2) as price_avg,
+         greatest(r.reg, r.eff) as regular_price,
+         a.akcija_price,
+         round(r.median_month, 2) as median_month,
+         round(r.pct_vs_median, 1) as pct_vs_median,
+         coalesce(r.prilika, false) as prilika,
+         a.n_stores, a.n_stores_akcija, a.n_stores_prilika,
+         r.store_id as cheapest_store_id, r.address as cheapest_store_address,
+         a.price_date, null as url
+  from ranked r
+  join (
+    select product_key, chain, avg(eff) as price_avg, min(eff) filter (where eff < reg) as akcija_price,
+           count(*) as n_stores, count(*) filter (where eff < reg) as n_stores_akcija,
+           count(*) filter (where prilika) as n_stores_prilika, max("current_date") as price_date
+    from store_rows group by 1, 2
+  ) a using (product_key, chain)
+  where r.rn = 1
 ), shop_regular as (
   select url, max(regular_price) as regular_price from 'shop_products.parquet' group by 1
 ), shop_rows as (
-  select o.product_key, o.seller, 'trgovina' as source, o.price,
+  select o.product_key, o.seller, 'trgovina' as source, o.price, o.price as price_avg,
          case when s.regular_price > o.price then s.regular_price end as regular_price,
          case when o.akcija then o.price end as akcija_price,
+         round(o.median_month, 2) as median_month, round(o.pct_vs_median, 1) as pct_vs_median,
+         coalesce(o.prilika, false) as prilika,
          1 as n_stores, case when o.akcija then 1 else 0 end as n_stores_akcija,
-         coalesce(o.prilika, false) as prilika, o.price_date, o.url
+         case when o.prilika then 1 else 0 end as n_stores_prilika,
+         'online' as cheapest_store_id, null as cheapest_store_address,
+         o.price_date, o.url
   from 'offers.parquet' o
   left join shop_regular s on s.url = o.url
   where o.source = 'trgovina' and not o.stale and o.price > 0

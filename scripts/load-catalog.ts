@@ -27,8 +27,9 @@ const TABLES = {
       "atr_oblik_obrada", "atr_namjena", "atr_porijeklo", "tags"],
   },
   offers: {
-    columns: ["product_key", "seller", "source", "price", "regular_price", "akcija", "akcija_price",
-      "n_stores", "n_stores_akcija", "prilika", "price_date", "url"],
+    columns: ["product_key", "seller", "source", "price", "price_avg", "regular_price", "akcija", "akcija_price",
+      "median_month", "pct_vs_median", "prilika", "n_stores", "n_stores_akcija", "n_stores_prilika",
+      "cheapest_store_id", "cheapest_store_address", "price_date", "url"],
     arrays: [],
   },
 } as const;

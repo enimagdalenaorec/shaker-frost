@@ -197,14 +197,14 @@ isOneToOne: false
                   ]
                 },"offers": {
                   Row: {
-                    "akcija": boolean,"akcija_price": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number,"price_date": string | null,"prilika": boolean,"product_key": string,"regular_price": number | null,"seller": string,"source": string,"url": string | null
+                    "akcija": boolean,"akcija_price": number | null,"cheapest_store_address": string | null,"cheapest_store_id": string | null,"median_month": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"n_stores_prilika": number | null,"pct_vs_median": number | null,"price": number,"price_avg": number | null,"price_date": string | null,"prilika": boolean,"product_key": string,"regular_price": number | null,"seller": string,"source": string,"url": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "akcija"?: boolean,"akcija_price"?: number | null,"n_stores"?: number | null,"n_stores_akcija"?: number | null,"price": number,"price_date"?: string | null,"prilika"?: boolean,"product_key": string,"regular_price"?: number | null,"seller": string,"source": string,"url"?: string | null
+                    "akcija"?: boolean,"akcija_price"?: number | null,"cheapest_store_address"?: string | null,"cheapest_store_id"?: string | null,"median_month"?: number | null,"n_stores"?: number | null,"n_stores_akcija"?: number | null,"n_stores_prilika"?: number | null,"pct_vs_median"?: number | null,"price": number,"price_avg"?: number | null,"price_date"?: string | null,"prilika"?: boolean,"product_key": string,"regular_price"?: number | null,"seller": string,"source": string,"url"?: string | null
                   }
                   Update: {
-                    "akcija"?: boolean,"akcija_price"?: number | null,"n_stores"?: number | null,"n_stores_akcija"?: number | null,"price"?: number,"price_date"?: string | null,"prilika"?: boolean,"product_key"?: string,"regular_price"?: number | null,"seller"?: string,"source"?: string,"url"?: string | null
+                    "akcija"?: boolean,"akcija_price"?: number | null,"cheapest_store_address"?: string | null,"cheapest_store_id"?: string | null,"median_month"?: number | null,"n_stores"?: number | null,"n_stores_akcija"?: number | null,"n_stores_prilika"?: number | null,"pct_vs_median"?: number | null,"price"?: number,"price_avg"?: number | null,"price_date"?: string | null,"prilika"?: boolean,"product_key"?: string,"regular_price"?: number | null,"seller"?: string,"source"?: string,"url"?: string | null
                   }
                   Relationships: [
                     {
@@ -352,7 +352,7 @@ isOneToOne: false
           Views: {
             "best_offers": {
                   Row: {
-                    "any_akcija": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
+                    "any_akcija": boolean | null,"any_prilika": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"cheapest_store_address": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_prilika": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"pct_vs_median": number | null,"price": number | null,"price_avg": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -390,7 +390,7 @@ isOneToOne: false
                   ]
                 },"v_best_offers": {
                   Row: {
-                    "any_akcija": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
+                    "any_akcija": boolean | null,"any_prilika": boolean | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"cheapest_store_address": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_prilika": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"pct_vs_median": number | null,"price": number | null,"price_avg": number | null,"price_date": string | null,"regular_price": number | null,"store_id": string | null,"unit_price_per_kg_l": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -442,7 +442,7 @@ isOneToOne: false
                   ]
                 },"v_offers": {
                   Row: {
-                    "akcija_price": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"n_stores": number | null,"n_stores_akcija": number | null,"price": number | null,"price_date": string | null,"prilika": boolean | null,"regular_price": number | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"unit_price_per_kg_l": number | null
+                    "akcija_price": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"cheapest_store_address": string | null,"cheapest_store_id": string | null,"discount_pct": number | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"is_prilika": boolean | null,"item_id": string | null,"median_month": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"n_stores_prilika": number | null,"pct_vs_median": number | null,"price": number | null,"price_avg": number | null,"price_date": string | null,"regular_price": number | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"unit_price_per_kg_l": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -480,7 +480,7 @@ isOneToOne: false
                   ]
                 },"v_product_best": {
                   Row: {
-                    "any_akcija": boolean | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"price": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"store_id": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
+                    "any_akcija": boolean | null,"any_prilika": boolean | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"cheapest_store_address": string | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"is_prilika": boolean | null,"item_id": string | null,"max_discount_pct": number | null,"n_chains": number | null,"n_stores": number | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"pct_vs_median": number | null,"price": number | null,"price_avg": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"store_id": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -506,7 +506,7 @@ isOneToOne: false
                   ]
                 },"v_product_offers": {
                   Row: {
-                    "akcija_price": number | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"item_id": string | null,"n_stores": number | null,"n_stores_akcija": number | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"price": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
+                    "akcija_price": number | null,"barcode": string | null,"brand": string | null,"carbohydrates": number | null,"chain_code": string | null,"chain_kind": string | null,"chain_logo_url": string | null,"chain_name": string | null,"cheapest_store_address": string | null,"cheapest_store_id": string | null,"concept_group": string | null,"concept_id": string | null,"concept_name": string | null,"concept_put": (string)[] | null,"discount_pct": number | null,"eko": boolean | null,"energy_kcal": number | null,"energy_kj": number | null,"fat": number | null,"fiber": number | null,"image_url": string | null,"is_akcija": boolean | null,"is_chainwide": boolean | null,"is_prilika": boolean | null,"item_id": string | null,"median_month": number | null,"n_stores": number | null,"n_stores_akcija": number | null,"n_stores_prilika": number | null,"name": string | null,"namjena": (string)[] | null,"net_qty": number | null,"nutrition_estimated": boolean | null,"nutrition_source": string | null,"nutrition_source_hr": string | null,"oblik": (string)[] | null,"okus": (string)[] | null,"pack_count": number | null,"pct_vs_median": number | null,"price": number | null,"price_avg": number | null,"price_date": string | null,"product_url": string | null,"proteins": number | null,"provjeri": boolean | null,"regular_price": number | null,"salt": number | null,"saturated_fat": number | null,"size_unit": string | null,"size_value": number | null,"std_naziv": string | null,"store_address": string | null,"store_city": string | null,"store_id": string | null,"sugars": number | null,"svojstva": (string)[] | null,"tags": (string)[] | null,"unit_price_per_kg_l": number | null,"vegan_evidence": Json | null,"vegan_reason": string | null,"vegan_status": string | null,"zasladeno": (string)[] | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -580,6 +580,8 @@ isOneToOne: false
 "chain_kind": string | null,
 "chain_logo_url": string | null,
 "chain_name": string | null,
+"cheapest_store_address": string | null,
+"cheapest_store_id": string | null,
 "concept_group": string | null,
 "concept_id": string | null,
 "concept_name": string | null,
@@ -593,9 +595,12 @@ isOneToOne: false
 "image_url": string | null,
 "is_akcija": boolean | null,
 "is_chainwide": boolean | null,
+"is_prilika": boolean | null,
 "item_id": string | null,
+"median_month": number | null,
 "n_stores": number | null,
 "n_stores_akcija": number | null,
+"n_stores_prilika": number | null,
 "name": string | null,
 "namjena": (string)[] | null,
 "net_qty": number | null,
@@ -605,7 +610,9 @@ isOneToOne: false
 "oblik": (string)[] | null,
 "okus": (string)[] | null,
 "pack_count": number | null,
+"pct_vs_median": number | null,
 "price": number | null,
+"price_avg": number | null,
 "price_date": string | null,
 "product_url": string | null,
 "proteins": number | null,
@@ -644,6 +651,8 @@ isOneToOne: false
 "chain_kind": string | null,
 "chain_logo_url": string | null,
 "chain_name": string | null,
+"cheapest_store_address": string | null,
+"cheapest_store_id": string | null,
 "concept_group": string | null,
 "concept_id": string | null,
 "concept_name": string | null,
@@ -657,9 +666,12 @@ isOneToOne: false
 "image_url": string | null,
 "is_akcija": boolean | null,
 "is_chainwide": boolean | null,
+"is_prilika": boolean | null,
 "item_id": string | null,
+"median_month": number | null,
 "n_stores": number | null,
 "n_stores_akcija": number | null,
+"n_stores_prilika": number | null,
 "name": string | null,
 "namjena": (string)[] | null,
 "net_qty": number | null,
@@ -669,7 +681,9 @@ isOneToOne: false
 "oblik": (string)[] | null,
 "okus": (string)[] | null,
 "pack_count": number | null,
+"pct_vs_median": number | null,
 "price": number | null,
+"price_avg": number | null,
 "price_date": string | null,
 "product_url": string | null,
 "proteins": number | null,
@@ -714,6 +728,7 @@ isOneToOne: false
 "todays_deals":
 { Args: { "p_limit"?: number }; Returns: {
               "any_akcija": boolean | null,
+"any_prilika": boolean | null,
 "barcode": string | null,
 "brand": string | null,
 "carbohydrates": number | null,
@@ -721,6 +736,7 @@ isOneToOne: false
 "chain_kind": string | null,
 "chain_logo_url": string | null,
 "chain_name": string | null,
+"cheapest_store_address": string | null,
 "concept_group": string | null,
 "concept_id": string | null,
 "concept_name": string | null,
@@ -733,6 +749,7 @@ isOneToOne: false
 "fiber": number | null,
 "image_url": string | null,
 "is_akcija": boolean | null,
+"is_prilika": boolean | null,
 "item_id": string | null,
 "max_discount_pct": number | null,
 "n_chains": number | null,
@@ -746,7 +763,9 @@ isOneToOne: false
 "oblik": (string)[] | null,
 "okus": (string)[] | null,
 "pack_count": number | null,
+"pct_vs_median": number | null,
 "price": number | null,
+"price_avg": number | null,
 "price_date": string | null,
 "product_url": string | null,
 "proteins": number | null,

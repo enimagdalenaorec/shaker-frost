@@ -91,7 +91,7 @@ Browser ─▶│ UI: Recept · Košarica · Moji recepti · Prijava (sheet)    
 - **Products:** only `vegan_class in ('vegan', 'potencijalno_vegan')` (18,753). `potencijalno_vegan` → `provjeri` (the Provjeri list, never in totals). `nesigurno` / `nije_vegan` are not imported.
 - **Concepts are a hierarchy** (447, `roditelj`, `products.concept_put` = path from the root). A concept means **itself and all descendants**: `tofu` includes `tofu_dimljeni`, `tofu_natur` … (`get_offers`, `search_products(p_concept_id)`, rules).
 - **Facets are lists** (`atr_okus`, `atr_zasladenost`, `atr_namjena`, `atr_oblik_obrada`): a product can be `mljeveno` *and* `integralno`. The okus value **`bez okusa / natur` also matches products with no flavour listed** (most plain products).
-- **Prices: one row per product × chain, no per-store rows, no history.** `price` = the **25th percentile** of the chain's current Zagreb store prices (akcija included); `regular_price` = p25 of the regular price; `akcija` = price < regular_price; plus `n_stores` / `n_stores_akcija` ("akcija u 12/30 trgovina") and `akcija_price` (the lowest special price in any store). Stale prices are dropped; Kaufland's national price lists (non-Zagreb stores) are dropped. Web shops (biobio, tzh) keep their one price.
+- **Prices: one row per product × chain, no per-store rows, no history.** `price` = the **minimum**: the cheapest current Zagreb store of the chain (akcija included), which the basket pays; `price_avg` = the **average** over the chain's Zagreb stores. `regular_price`, `akcija`, **`prilika`** (≥ 5 % below that store's monthly median, from the handoff) and `pct_vs_median` describe the cheapest store (`cheapest_store_id` / `cheapest_store_address`); `n_stores` / `n_stores_akcija` / `n_stores_prilika` say how widespread they are ("akcija u 12/30 trgovina"). Stale prices are dropped; Kaufland's national price lists (non-Zagreb stores) are dropped. Web shops (biobio, tzh) keep their one price.
 - **Store ids** stay in the contract as `<chain>:all` (chain-wide) and `<shop>:online`; `store_address` is NULL.
 - **Allergen tags** (`soja`, `gluten`, `orasi`) are derived by the exporter from name + concept keywords (the handoff has no allergen column).
 - **Images:** none in the handoff; the UI falls back to a chain-coloured initial badge and a concept icon.
@@ -108,7 +108,7 @@ data-science/*.parquet ──scripts/catalog/export_handoff.py (duckdb)──▶
 - **Handoff quirk handled in the exporter:** `store_prices.current_price` does **not** include the special price (it equals `regular_price` even when `special_price` is lower), so the paid price is `least(current_price, special_price)` when `akcija`.
 - `refresh_catalog()` fills `products.name_norm` / `search_norm`, `concepts.n_products` (buyable incl. descendants) and refreshes `best_offers`.
 
-### 4.3 Database tables (`0009_handoff_catalog.sql`)
+### 4.3 Database tables (`0009_handoff_catalog.sql`, `0010_offer_min_avg.sql`)
 
 ```sql
 chains   (code text pk, name text, kind text check in ('store','webshop'), logo_url text null)
@@ -125,7 +125,9 @@ products (product_key text pk, has_barcode, name, brand, brands text[], url,
           pakiranje_kolicina numeric, pakiranje_jedinica ('g'|'ml'), pakiranje_komada int,   -- per piece × pieces
           tags text[], search_text, name_norm, search_norm)    -- GIN on concept_put and trigram on search_norm
 offers   (product_key → products, seller → chains, source ('lanac'|'trgovina'),
-          price, regular_price, akcija bool, akcija_price, n_stores, n_stores_akcija, prilika bool,
+          price (min), price_avg, regular_price, akcija bool, akcija_price,
+          median_month, pct_vs_median, prilika bool,                   -- of the cheapest store
+          n_stores, n_stores_akcija, n_stores_prilika, cheapest_store_id, cheapest_store_address,
           price_date, url, primary key (product_key, seller))
 ```
 
@@ -225,7 +227,7 @@ App tables store catalog ids (`concept_id`, `pinned_item_id`) as **plain text wi
 ### 5.5 Conventions
 - **Unknown = NULL, never 0.**
 - Units: `g`, `ml`, `kom`. ml ≈ g. `kom` → grams via `grams_per_piece`; **no `grams_per_piece` → required quantity unknown → the basket buys 1 package** (never a guessed 50 g per piece).
-- EUR `numeric`. `price` is what you pay (p25 of the chain's Zagreb stores, akcija included); `regular_price` is shown struck through when higher; `n_stores_akcija / n_stores` says how widespread the akcija is.
+- EUR `numeric`. `price` is what you pay (the chain's cheapest Zagreb store, akcija included); `price_avg` is the chain's average; `regular_price` is shown struck through when higher. **akcija** = the retailer's special price; **prilika** = ≥ 5 % below the monthly median (only akcija is called a sale).
 - Nutrition sort: any of the 8, user-chosen direction, NULL always last, `nutrition_source` badge visible. `energy_kj = round(energy_kcal × 4.184)` is display only.
 
 ---
@@ -246,13 +248,16 @@ v_products (item_id, barcode, name, brand, image_url, product_url, concept_id, c
 v_offers   (item_id, chain_code, chain_name, chain_kind, chain_logo_url,
             store_id ('<chain>:all' | '<shop>:online'), store_address (NULL), store_city, is_chainwide (true),
             price, regular_price, is_akcija, discount_pct, unit_price_per_kg_l, price_date,
-            akcija_price, n_stores, n_stores_akcija, prilika)          -- one row per product × chain
+            akcija_price, n_stores, n_stores_akcija,
+            price_avg, median_month, pct_vs_median, is_prilika, n_stores_prilika,
+            cheapest_store_id, cheapest_store_address)                 -- one row per product × chain
 rpc get_offers(p_concept_ids text[], p_exclude_tags text[])
             -- every offer of every product in the concepts OR THEIR DESCENDANTS; concept_id in the result is
             -- the REQUESTED id. Facet matching happens in lib/catalog/basket-candidates.ts
 rpc get_offers_for_items(p_item_ids text[])
-v_best_offers (item_id, chain_code, chain_name, price, regular_price, is_akcija, discount_pct,
-               unit_price_per_kg_l, n_chains, n_stores, any_akcija, max_discount_pct)   -- one row per product
+v_best_offers (item_id, chain_code, chain_name, price, price_avg, regular_price, is_akcija, discount_pct,
+               is_prilika, pct_vs_median, cheapest_store_address, unit_price_per_kg_l,
+               n_chains, n_stores, any_akcija, max_discount_pct, any_prilika)   -- one row per product
 rpc search_products(p_query text, p_only_akcija bool default false,
                     p_concept_id text default null, p_limit int default 60)   -- p_concept_id incl. descendants
             -- every token of the unaccented, lower-cased query must match search_norm (ILIKE);
@@ -314,7 +319,7 @@ The synthetic mock catalog (`scripts/mock/`, `fixtures/catalog_mock.csv`) was re
 
 **Optimise per chain; show stores within the chain.** There is no user location, so picking between 30 identical-price Konzums is arbitrary. The chain answers "where", and the store list answers "which shop".
 
-- An offer for (item, chain) is one catalog row: the chain's p25 Zagreb price (§4.1). There are no per-store rows, so the store list is "sve trgovine lanca" (`:all`).
+- An offer for (item, chain) is one catalog row: the chain's cheapest Zagreb store price (§4.1). There are no per-store rows, so the store list is "sve trgovine lanca" (`:all`); `cheapest_store_address` names where that minimum is.
 - `packages = ceil(required_qty / net_qty)`, `line_cost = packages × price`, `used_cost = required_qty / net_qty × price` (shown as "iskorišteno").
 - Totals exclude `provjeri` offers. **Unknown package size → assume 1 package**, flagged "pakiranje nepoznato" (`sizeKnown: false`, no "iskorišteno"). The same concept + facets from several recipes merge into one line.
 - **Recipe swaps enter the basket as the alternative (concept), never as a fixed product.** "Dodaj: Chia sjemenke" stores `{kind: 'concept', conceptId, facets, forIngredient: 'jaje', requiredQty}`; the basket picks the product **and** the shop per sort mode. The basket shows "Chia sjemenke · za: jaje" plus the current pick. Products on the recipe screen are only a price preview.
@@ -459,5 +464,6 @@ The core loop, search and "Često u košarici" are never cut.
 1. ❓ Gemini rate limits on our key (free tier?). This decides the fast/strong models per stage.
 2. ✅ Real catalog loaded from the handoff (§4).
 3. ❓ Teammate: `store_prices.current_price` ignores the special price (worked around in the exporter); `brands[1]` is sometimes a category or warehouse; "prehrambeni kvasac" has no concept (the classic vegan parmezan swap); allergen tags.
-4. ❓ Per-store akcija dropdown ("akcija u Konzum Ilica") would need a slim per-store table; today only "N/M trgovina".
-5. ✅ index.hr endpoint found: `Recipe/Get?Id=<id>`.
+4. ❓ Per-store akcija dropdown ("akcija u Konzum Ilica") would need a slim per-store table; today: the cheapest store's address + "N/M trgovina".
+5. ❓ UI: show the prilika badge (`is_prilika`, `pct_vs_median`) and the chain average (`price_avg`); the data is in the views.
+6. ✅ index.hr endpoint found: `Recipe/Get?Id=<id>`.
