@@ -44,6 +44,11 @@ export const hr = {
     online: "online",
     lastPrice: "Cijena od",
   },
+  ingest: {
+    llmFallback: "Parser recepta trenutno implementiran za Coolinariku i Index, prebacujem na LLM analizu.",
+    refused: "Server ne odobrava pristup stranici",
+    unreadable: "Stranica se ne može otvoriti",
+  },
   recipe: {
     stepsPending: "Prilagođavam korake zamjenama…",
   },

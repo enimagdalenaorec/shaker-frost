@@ -2,10 +2,11 @@ import "server-only";
 import { generateJson } from "@/lib/ai/llm";
 import { ExtractedRecipe } from "@/lib/ai/schemas";
 import { PROMPTS } from "@/lib/ai/prompts";
+import { hr } from "@/lib/i18n/hr";
 import { EXAMPLE_FIXTURES } from "./examples-data";
 
 // Stage 0 (CLAUDE.md §8): turn a URL / pasted text / example into one RawRecipe.
-// Order: index.hr API → schema.org JSON-LD (coolinarika and most recipe sites) → LLM extraction.
+// Dedicated parsers: index.hr API, coolinarika JSON-LD. Everything else (and an incomplete parse) → LLM extraction.
 
 export type IngestMethod = "jsonld" | "site_api" | "llm_html" | "web" | "pasted";
 export type RawRecipe = {
@@ -25,18 +26,52 @@ export class IngestError extends Error {}
 
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36";
 
-export async function ingestUrl(url: string): Promise<RawRecipe> {
+/** Hosts with a dedicated parser; every other site goes to LLM extraction (CLAUDE.md §8). */
+function dedicatedParser(host: string): "index" | "coolinarika" | null {
+  if (host.endsWith("recepti.index.hr")) return "index";
+  if (host.endsWith("coolinarika.com")) return "coolinarika";
+  return null;
+}
+
+export async function ingestUrl(url: string, onNotice?: (message: string) => void): Promise<RawRecipe> {
   const u = new URL(url);
-  if (u.hostname.endsWith("recepti.index.hr")) {
+  const parser = dedicatedParser(u.hostname);
+  let parsed: RawRecipe | null = null;
+  let html: string | null = null;
+  if (parser === "index") {
     const id = u.pathname.match(/\/recept\/(\d+)/)?.[1];
-    if (id) return fromIndexHr(id, url);
+    if (id) parsed = await fromIndexHr(id, url).catch(() => null);
   }
-  const html = await fetchText(url);
-  const fromLd = fromJsonLd(html, url);
-  if (fromLd) return fromLd;
-  const text = htmlToText(html);
-  if (text.length < 300) throw new IngestError("Stranica nema čitljiv recept. Zalijepi tekst recepta.");
-  return extractWithLlm(text.slice(0, 15000), { sourceUrl: url, sourceName: siteName(url), method: "llm_html" });
+  if (!parsed) html = await fetchText(url);
+  if (parser === "coolinarika") parsed = fromJsonLd(html!, url);
+  if (parsed && isComplete(parsed)) return parsed;
+
+  // Any other site, or a dedicated parser that came back empty: the LLM reads the page (slower, but works anywhere).
+  onNotice?.(hr.ingest.llmFallback);
+  html ??= await fetchText(url);
+  const ld = parsed ?? fromJsonLd(html, url);
+  const text = recipePageText(html, ld);
+  if (text.length < 300) throw new IngestError(hr.ingest.unreadable);
+  const recipe = await extractWithLlm(text, { sourceUrl: url, sourceName: siteName(url), method: "llm_html" });
+  return { ...recipe, imageUrl: ld?.imageUrl ?? null };
+}
+
+/** A parse the rest of the pipeline can work with: ingredients AND steps (24sata's JSON-LD, e.g., has no steps). */
+function isComplete(r: RawRecipe): boolean {
+  return r.ingredients.length >= 2 && r.steps.length >= 1;
+}
+
+/**
+ * The text the LLM extracts from: the page's schema.org Recipe (or the incomplete parse) when there is one (often only
+ * partial), then the visible text of <article>/<main> (or the whole body), capped at 15k characters.
+ */
+function recipePageText(html: string, ld: RawRecipe | null): string {
+  const ldText = ld
+    ? `STRUKTURIRANI PODACI STRANICE (mogu biti nepotpuni):\nNaslov: ${ld.title}\nSastojci:\n${ld.ingredients.join("\n")}\n${ld.steps.length ? `Koraci:\n${ld.steps.join("\n")}\n` : ""}\n`
+    : "";
+  const main = html.match(/<article[\s\S]*<\/article>/i)?.[0] ?? html.match(/<main[\s\S]*<\/main>/i)?.[0];
+  const body = main && htmlToText(main).length > 500 ? main : html;
+  return (ldText + "VIDLJIVI TEKST:\n" + htmlToText(body.replace(/<(aside|form|figure)[\s\S]*?<\/\1>/gi, " "))).slice(0, 15000);
 }
 
 export async function ingestText(text: string): Promise<RawRecipe> {
@@ -55,14 +90,15 @@ export async function ingestExample(slug: string): Promise<RawRecipe> {
 
 // ---------------------------------------------------------------------------------------------
 
+/** Statuses of a site that blocks our server (allrecipes answers 402), as opposed to a page that is down or missing. */
+const REFUSED = new Set([401, 402, 403, 429, 451]);
+
 async function fetchText(url: string): Promise<string> {
-  try {
-    const res = await fetch(url, { headers: { "user-agent": UA, accept: "text/html" }, signal: AbortSignal.timeout(10_000) });
-    if (!res.ok) throw new Error(String(res.status));
-    return await res.text();
-  } catch {
-    throw new IngestError("Ne mogu otvoriti tu stranicu. Zalijepi tekst recepta.");
-  }
+  const res = await fetch(url, { headers: { "user-agent": UA, accept: "text/html" }, signal: AbortSignal.timeout(10_000) }).catch(() => null);
+  if (res && REFUSED.has(res.status)) throw new IngestError(hr.ingest.refused);
+  const html = res?.ok ? await res.text().catch(() => null) : null;
+  if (html == null) throw new IngestError(hr.ingest.unreadable);
+  return html;
 }
 
 async function fromIndexHr(id: string, url: string): Promise<RawRecipe> {

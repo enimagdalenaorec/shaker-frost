@@ -3,7 +3,8 @@ import { z } from "zod";
 import { runPipeline, type PipelineEvent } from "@/lib/ai/pipeline";
 import { currentUserId } from "@/lib/db/server";
 
-export const maxDuration = 60;
+// LLM extraction for non-coolinarika/index sites makes long runs ~35 s; 120 s leaves room on a slow model day
+export const maxDuration = 120;
 
 const Body = z
   .object({

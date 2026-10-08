@@ -20,7 +20,7 @@ const STAGES: { id: StageName; label: string }[] = [
   // the step rewrite finishes on the result page (lib/ai/pipeline.ts runs it after "done")
 ];
 
-type StageState = { status: "waiting" | "running" | "done" | "error"; ms?: number; summary?: string; detail?: unknown };
+type StageState = { status: "waiting" | "running" | "done" | "error"; ms?: number; summary?: string; detail?: unknown; notice?: string };
 type AnalyzeDetail = { ingredients: { index: number; name: string; status: string }[] };
 type AltDetail = { items: { name?: string; alternatives: { label: string }[] }[] };
 type IngestDetail = { title: string; source: string | null };
@@ -55,13 +55,9 @@ function Run() {
     started.current = true;
     const text = params.get("izvor") === "tekst" ? sessionStorage.getItem(PENDING_TEXT_KEY) : null;
     const body = example ? { example } : url ? { url } : text ? { text } : null;
-    if (!body) {
-      setError("Nema recepta. Zalijepi link ili tekst na početnoj.");
-      setRunning(false);
-      return;
-    }
     (async () => {
       try {
+        if (!body) throw new Error("Nema recepta. Zalijepi link ili tekst na početnoj.");
         const res = await fetch("/api/veganize", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
         if (!res.body) throw new Error("Nema odgovora");
         const reader = res.body.getReader();
@@ -80,8 +76,10 @@ function Run() {
             if (e.type === "stage") {
               setStages((s) => ({
                 ...s,
-                [e.stage]: e.status === "start" ? { status: "running" } : { status: "done", ms: e.ms, summary: e.summary, detail: e.detail },
+                [e.stage]: e.status === "start" ? { status: "running" } : { ...s[e.stage], status: "done", ms: e.ms, summary: e.summary, detail: e.detail },
               }));
+            } else if (e.type === "notice") {
+              setStages((s) => ({ ...s, [e.stage]: { ...(s[e.stage] ?? { status: "running" }), notice: e.message } }));
             } else if (e.type === "done") {
               rememberLocalRecipe(e.recipeId);
               setDoneId(e.recipeId);
@@ -145,6 +143,7 @@ function Run() {
                 <span className={cn("flex-1 text-[15px] font-extrabold", s.status === "waiting" ? "text-ink/35" : "text-ink")}>{st.label}</span>
                 {s.status === "done" && <span className="micro tabular text-rind">{(s.ms! / 1000).toFixed(1)} s</span>}
               </div>
+              {s.notice && <p className="ml-9 mt-1 text-sm font-semibold text-ink/60">{s.notice}</p>}
               {s.status === "done" && (
                 <div className="ml-9 mt-1">
                   <p className="text-sm font-semibold text-rind">{s.summary}</p>

@@ -15,6 +15,7 @@ export type StageName = "ingest" | "analyze" | "research" | "alternatives" | "of
 export type PipelineEvent =
   | { type: "stage"; stage: StageName; status: "start" }
   | { type: "stage"; stage: StageName; status: "done"; ms: number; summary: string; detail?: unknown }
+  | { type: "notice"; stage: StageName; message: string }
   | { type: "done"; recipeId: string; ms: number }
   | { type: "error"; stage?: StageName; message: string };
 
@@ -71,7 +72,12 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
   try {
     // 0 ── ingest ───────────────────────────────────────────────────────────────────────────
     const raw: RawRecipe = await stage("ingest", async () => {
-      const r = input.example ? await ingestExample(input.example) : input.url ? await ingestUrl(input.url) : await ingestText(input.text ?? "");
+      // non-coolinarika/index sites switch to LLM extraction: say so in the stage card and the server log
+      const notice = (message: string) => {
+        console.info(`[ingest] ${message} (${input.url})`);
+        emit({ type: "notice", stage: "ingest", message });
+      };
+      const r = input.example ? await ingestExample(input.example) : input.url ? await ingestUrl(input.url, notice) : await ingestText(input.text ?? "");
       return {
         value: r,
         summary: `${r.ingredients.length} sastojaka · ${r.sourceName ?? "tekst"}`,
