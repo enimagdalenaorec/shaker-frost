@@ -1,26 +1,200 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * veganizir.ai design tokens: "mint & oat".
+ * Warm oat-cream surfaces, soft sage-mint primary, cocoa ink, apricot for akcija.
+ * Swap these values when the brand identity arrives; components only use the tokens.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* palette */
+  --mint-50: #f1f8f4;
+  --mint-100: #e3f1e9;
+  --mint-200: #c8e4d5;
+  --mint-300: #a3d1bb;
+  --mint-400: #7fb9a2;
+  --mint-500: #5a9c84;
+  --mint-600: #3f7d68;
+  --mint-700: #2f6453;
+  --mint-800: #244c40;
+
+  --oat-50: #fcfaf6;
+  --oat-100: #f7f3ec;
+  --oat-200: #efe8dc;
+  --oat-300: #e4d9c8;
+  --oat-400: #cdbca4;
+
+  --cocoa-300: #b8a698;
+  --cocoa-400: #9c897b;
+  --cocoa-500: #7d6b5f;
+  --cocoa-700: #4d3f37;
+  --cocoa-900: #2e2622;
+
+  --apricot-50: #fdf3ec;
+  --apricot-100: #fbe6d7;
+  --apricot-500: #e08a55;
+  --apricot-700: #b25c2c;
+
+  --honey-100: #f8efd6;
+  --honey-700: #8a661b;
+
+  --clay-100: #f6e4de;
+  --clay-600: #b0533f;
+
+  /* semantic (shadcn) */
+  --background: var(--oat-100);
+  --foreground: var(--cocoa-900);
+  --card: var(--oat-50);
+  --card-foreground: var(--cocoa-900);
+  --popover: var(--oat-50);
+  --popover-foreground: var(--cocoa-900);
+  --primary: var(--mint-600);
+  --primary-foreground: #fbfaf6;
+  --secondary: var(--mint-100);
+  --secondary-foreground: var(--mint-800);
+  --muted: var(--oat-200);
+  --muted-foreground: var(--cocoa-500);
+  --accent: var(--mint-50);
+  --accent-foreground: var(--mint-800);
+  --destructive: var(--clay-600);
+  --border: #e6ddd0;
+  --input: #ddd2c2;
+  --ring: var(--mint-400);
+  --radius: 0.875rem;
+
+  --chart-1: var(--mint-600);
+  --chart-2: var(--apricot-500);
+  --chart-3: var(--mint-400);
+  --chart-4: var(--cocoa-400);
+  --chart-5: var(--honey-700);
+  --sidebar: var(--oat-50);
+  --sidebar-foreground: var(--cocoa-900);
+  --sidebar-primary: var(--mint-600);
+  --sidebar-primary-foreground: #fbfaf6;
+  --sidebar-accent: var(--mint-50);
+  --sidebar-accent-foreground: var(--mint-800);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--mint-400);
+
+  --shadow-soft: 0 1px 2px rgb(46 38 34 / 0.04), 0 4px 16px -4px rgb(46 38 34 / 0.06);
+  --shadow-lift: 0 2px 4px rgb(46 38 34 / 0.05), 0 12px 32px -8px rgb(46 38 34 / 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-fraunces);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-mint-50: var(--mint-50);
+  --color-mint-100: var(--mint-100);
+  --color-mint-200: var(--mint-200);
+  --color-mint-300: var(--mint-300);
+  --color-mint-400: var(--mint-400);
+  --color-mint-500: var(--mint-500);
+  --color-mint-600: var(--mint-600);
+  --color-mint-700: var(--mint-700);
+  --color-mint-800: var(--mint-800);
+  --color-oat-50: var(--oat-50);
+  --color-oat-100: var(--oat-100);
+  --color-oat-200: var(--oat-200);
+  --color-oat-300: var(--oat-300);
+  --color-oat-400: var(--oat-400);
+  --color-cocoa-300: var(--cocoa-300);
+  --color-cocoa-400: var(--cocoa-400);
+  --color-cocoa-500: var(--cocoa-500);
+  --color-cocoa-700: var(--cocoa-700);
+  --color-cocoa-900: var(--cocoa-900);
+  --color-apricot-50: var(--apricot-50);
+  --color-apricot-100: var(--apricot-100);
+  --color-apricot-500: var(--apricot-500);
+  --color-apricot-700: var(--apricot-700);
+  --color-honey-100: var(--honey-100);
+  --color-honey-700: var(--honey-700);
+  --color-clay-100: var(--clay-100);
+  --color-clay-600: var(--clay-600);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+    font-variation-settings: "SOFT" 60, "WONK" 0;
+    letter-spacing: -0.01em;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--mint-200);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

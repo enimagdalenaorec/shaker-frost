@@ -25,3 +25,6 @@ c_products*.csv
 # testing / certs
 /coverage
 *.pem
+
+# supabase cli cache
+supabase/.temp/

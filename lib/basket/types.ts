@@ -38,6 +38,9 @@ export type Offer = {
   nutrition: Nutrition;
   /** How many of the AI-preferred facets this product matches (concept items only). */
   facetScore?: number;
+  /** Display only: drives the category icon / "online" label. */
+  conceptGroup?: string | null;
+  chainKind?: string;
 };
 
 export type BasketItem = {

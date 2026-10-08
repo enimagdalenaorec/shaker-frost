@@ -1,69 +1,118 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Suspense } from "react";
+import { BookOpen, Leaf, Search } from "lucide-react";
+import { SmartInput } from "@/components/smart-input";
+import { OftenBought } from "@/components/home/often-bought";
+import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
+import { Section, Strip } from "@/components/section";
+import { getTodaysDeals } from "@/lib/catalog/queries";
+import { EXAMPLE_RECIPES, EXAMPLE_SEARCHES } from "@/lib/examples";
+import { hr } from "@/lib/i18n/hr";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+      <Hero />
+      <Steps />
+      <OftenBought />
+      <Section title={hr.home.dealsTitle} subtitle={hr.home.dealsSubtitle}>
+        <Suspense fallback={<DealsSkeleton />}>
+          <Deals />
+        </Suspense>
+      </Section>
+    </main>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="relative pb-4 pt-12 text-center sm:pt-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -top-16 -z-10 mx-auto h-[26rem] max-w-3xl rounded-full bg-[radial-gradient(closest-side,var(--mint-200),transparent)] opacity-70 blur-2xl"
+      />
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-card/80 px-3 py-1 text-xs font-medium text-mint-700 ring-1 ring-mint-200">
+        <Leaf className="size-3.5" /> {hr.home.eyebrow}
+      </span>
+      <h1 className="mx-auto mt-5 max-w-3xl text-[2.6rem] font-normal leading-[1.05] text-cocoa-900 sm:text-6xl">
+        Svaki recept može biti <em className="font-medium text-mint-600">veganski.</em>
+      </h1>
+      <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-cocoa-500 sm:text-base">{hr.home.subtitle}</p>
+
+      <SmartInput className="mx-auto mt-8 max-w-2xl" autoFocus={false} />
+
+      <div className="mx-auto mt-4 flex max-w-2xl flex-col items-center gap-2.5 text-sm">
+        <ChipRow label={hr.home.tryRecipes}>
+          {EXAMPLE_RECIPES.map((r) => (
+            <Link
+              key={r.slug}
+              href={`/recept/novi?primjer=${r.slug}`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-cocoa-700 ring-1 ring-border transition-colors hover:bg-mint-50 hover:text-mint-700 hover:ring-mint-200"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <BookOpen className="size-3.5 text-mint-500" />
+              {r.label}
+            </Link>
+          ))}
+        </ChipRow>
+        <ChipRow label={hr.home.trySearch}>
+          {EXAMPLE_SEARCHES.map((q) => (
+            <Link
+              key={q}
+              href={`/trazi?q=${encodeURIComponent(q)}`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-cocoa-700 ring-1 ring-border transition-colors hover:bg-oat-200"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              <Search className="size-3.5 text-cocoa-400" />
+              {q}
+            </Link>
+          ))}
+        </ChipRow>
+      </div>
+    </section>
+  );
+}
+
+function ChipRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex max-w-full items-center gap-2 overflow-x-auto px-1 scrollbar-none">
+      <span className="w-[4.5rem] shrink-0 text-right text-xs font-medium uppercase tracking-wide text-cocoa-400">{label}</span>
+      {children}
     </div>
+  );
+}
+
+function Steps() {
+  return (
+    <ol className="mx-auto mt-12 grid max-w-4xl gap-3 sm:grid-cols-3">
+      {hr.home.steps.map((s, i) => (
+        <li key={s.title} className="flex gap-4 rounded-2xl bg-card/60 p-4 ring-1 ring-border/60 sm:flex-col sm:gap-2 sm:p-5">
+          <span className="font-heading text-3xl italic leading-none text-mint-400">{i + 1}</span>
+          <div>
+            <h3 className="font-sans text-[15px] font-semibold text-cocoa-900">{s.title}</h3>
+            <p className="mt-0.5 text-sm text-cocoa-500">{s.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+async function Deals() {
+  const deals = await getTodaysDeals(10);
+  return (
+    <Strip>
+      {deals.map((p) => (
+        <ProductCard key={p.itemId} product={p} source="search" />
+      ))}
+    </Strip>
+  );
+}
+
+function DealsSkeleton() {
+  return (
+    <Strip>
+      {Array.from({ length: 5 }, (_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
+    </Strip>
   );
 }
