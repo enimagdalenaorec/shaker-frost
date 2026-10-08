@@ -45,8 +45,8 @@ export function AddButton({
         type="button"
         onClick={onClick}
         className={cn(
-          "btn h-9 px-3.5 text-sm",
-          done ? "bg-pistachio" : "btn-guava",
+          "btn h-9 px-4 text-sm",
+          done ? "btn-pistachio" : "btn-guava",
           className,
         )}
       >
@@ -62,8 +62,8 @@ export function AddButton({
       onClick={onClick}
       aria-label={`${hr.product.add}: ${product.name}`}
       className={cn(
-        "btn size-9 shrink-0 shadow-[0_3px_0_var(--ink)] hover:shadow-[0_4px_0_var(--ink)]",
-        done ? "bg-pistachio" : "btn-guava",
+        "btn blob-round size-9 shrink-0",
+        done ? "btn-pistachio" : "btn-guava",
         className,
       )}
     >

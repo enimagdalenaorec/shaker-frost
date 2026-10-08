@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { Heart } from "lucide-react";
+import { Heart, Leaf } from "lucide-react";
 import { Character } from "@/components/brand/sprites";
 import { currentUserId, serverDb } from "@/lib/db/server";
 import { GoogleSignInButton } from "@/components/auth/auth-button";
 import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
 import { plural } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Recepti" };
 
@@ -31,7 +32,7 @@ async function MyRecipes() {
   const db = await serverDb();
   const { data } = await db
     .from("recipes")
-    .select("id, title, source_name, dish_category, created_at, saved_at, recipe_ingredients(status)")
+    .select("id, title, source_name, dish_category, created_at, saved_at, art_url, recipe_ingredients(status)")
     .eq("user_id", uid)
     .eq("status", "done")
     .order("created_at", { ascending: false })
@@ -66,8 +67,9 @@ async function MyRecipes() {
               <Link
                 key={r.id}
                 href={`/recept/${r.id}`}
-                className="flex min-h-32 flex-col justify-between rounded-[22px] border-[1.5px] border-ink/40 bg-pistachio p-4 text-ink shadow-[8px_9px_0_rgb(64_52_66/0.07)] transition-transform hover:-translate-y-1 hover:-rotate-[0.5deg]"
+                className="pebble relative flex min-h-32 flex-col justify-between bg-pistachio p-4 text-ink shadow-soft transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:-rotate-[0.5deg] hover:shadow-lift"
               >
+                {r.art_url && <DishThumb url={r.art_url} className="absolute -right-2 -top-4 size-24 rotate-6" />}
                 <span className="micro font-bold text-ink/70">
                   {r.swaps} {plural(r.swaps, "zamjena", "zamjene", "zamjena")}
                 </span>
@@ -81,18 +83,21 @@ async function MyRecipes() {
       <section className="mt-7">
         <h2 className="micro mb-2.5 font-bold text-rind">Povijest</h2>
         <ul className="grid gap-2.5">
-          {recipes.map((r) => (
-            <li key={r.id} className="flex items-center gap-3 overflow-hidden rounded-[18px] border-[1.5px] border-l-8 border-ink/25 border-l-guava bg-cream py-1 pl-4 pr-2">
-              <Link href={`/recept/${r.id}`} className="min-w-0 flex-1 py-2.5">
-                <p className="flex items-center gap-1.5 truncate text-[16px] font-extrabold text-ink">
-                  {r.saved_at && <Heart className="size-3.5 shrink-0 fill-apricot-500 text-apricot-500" />}
-                  <span className="truncate">{r.title}</span>
-                </p>
-                <p className="mt-0.5 text-xs font-semibold text-rind">
-                  {[r.source_name, `${r.swaps} ${plural(r.swaps, "zamjena", "zamjene", "zamjena")}`, new Date(r.created_at).toLocaleDateString("hr-HR")]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
+          {recipes.map((r, n) => (
+            <li key={r.id} className="pebble-sm flex items-center gap-2 bg-paper py-1 pl-2 pr-2 shadow-soft">
+              <Link href={`/recept/${r.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-1">
+                <DishThumb url={r.art_url} className={cn("size-14", n % 2 ? "rotate-3" : "-rotate-3")} />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 truncate text-[16px] font-extrabold text-ink">
+                    {r.saved_at && <Heart className="size-3.5 shrink-0 fill-apricot-500 text-apricot-500" />}
+                    <span className="truncate">{r.title}</span>
+                  </p>
+                  <p className="mt-0.5 text-xs font-semibold text-rind">
+                    {[r.source_name, `${r.swaps} ${plural(r.swaps, "zamjena", "zamjene", "zamjena")}`, new Date(r.created_at).toLocaleDateString("hr-HR")]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </div>
               </Link>
               <DeleteRecipeButton recipeId={r.id} />
             </li>
@@ -103,12 +108,24 @@ async function MyRecipes() {
   );
 }
 
+/** The dish illustration as a small sticker; a soft leaf blob for recipes drawn before illustrations existed. */
+function DishThumb({ url, className }: { url: string | null; className?: string }) {
+  if (!url)
+    return (
+      <span className={cn("blob blob-round blob-fill-pistachio-pale grid shrink-0 scale-[0.8] place-items-center text-rind", className)} aria-hidden>
+        <Leaf className="size-5" />
+      </span>
+    );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt="" loading="lazy" className={cn("character shrink-0 object-contain", className)} />;
+}
+
 function LoggedOut() {
   return (
-    <div className="card-ink relative mt-6 overflow-visible bg-blush p-6">
+    <div className="pebble-lg relative mt-6 bg-blush p-6">
       <Character id="carrot" className="character absolute -top-8 right-5 w-12 rotate-12" />
       <p className="font-heading text-[1.7rem] font-black leading-tight text-ink">Tvoji recepti, košarica i favoriti na svakom uređaju.</p>
-      <GoogleSignInButton next="/recepti" className="mt-5 w-full" />
+      <GoogleSignInButton next="/recepti" className="blob-pill mt-5 w-full blob-fill-white hover:blob-fill-pistachio-light" />
     </div>
   );
 }

@@ -77,4 +77,24 @@ export const PROMPTS = {
     user: (p: { title: string; steps: string[]; swaps: string }) =>
       [`RECEPT: ${p.title}`, "ZAMJENE:", p.swaps, "KORACI:", ...p.steps.map((s, i) => `${i + 1}. ${s}`)].join("\n"),
   },
+
+  // Dish illustration for the image model, in English (it follows style instructions best in English).
+  // The style matches the team's illustrations (public/illustrations), which are sent as references.
+  art: {
+    version: "art-v1",
+    prompt: (p: { dish: string; ingredients: string[] }, withReferences: boolean) =>
+      [
+        withReferences
+          ? "Draw a NEW illustration in exactly the same style as the reference images (same cut-paper technique, texture, dot eyes and palette); do not copy their subjects."
+          : null,
+        "A single small food illustration for a vegan recipe app.",
+        `Subject: the finished dish "${p.dish}" (a Croatian recipe), as it is served. Its ingredients, for context only: ${p.ingredients.slice(0, 12).join("; ").slice(0, 500)}.`,
+        "Show the vegan version: no meat, eggs or dairy visible.",
+        "Style: flat cut-paper collage, matte paper texture with softly torn edges, no outlines, no text or letters, simple rounded shapes, a few paper layers for depth. The food has a tiny cute face: just two small black dot eyes, no mouth.",
+        "Palette: warm and muted, natural food colours leaning to guava pink, pistachio green, ochre and soft cream; nothing neon.",
+        "Composition: one centred subject (on a simple plate, in a pot or on a board if it suits the dish), three-quarter view, generous empty margin, transparent background, no table, no props, no cast shadow.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+  },
 } as const;

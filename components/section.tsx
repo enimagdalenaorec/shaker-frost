@@ -33,7 +33,7 @@ export function Section({
 /** Horizontal, snap-scrolling strip that bleeds to the screen edge on mobile. */
 export function Strip({ children }: { children: React.ReactNode }) {
   return (
-    <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 pt-1 scrollbar-none sm:-mx-6 sm:scroll-px-6 sm:px-6">
+    <div className="-mx-4 -mb-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-7 pt-2 scrollbar-none sm:-mx-6 sm:scroll-px-6 sm:px-6">
       {children}
     </div>
   );

@@ -59,7 +59,7 @@ export function Basket() {
     <div className="pb-24">
       <div className="flex items-center justify-between gap-4">
         <h1 className="title-bar text-[2.6rem] leading-none text-ink">{hr.basket.title}</h1>
-        <span className="micro rounded-full border-[1.5px] border-ink px-2.5 py-1 font-bold text-ink">Popis / {items.length}</span>
+        <span className="micro blob blob-fill-oat-200 px-3 py-1 font-bold text-ink">Popis / {items.length}</span>
       </div>
       <div className="mt-1 flex justify-end">
         <button type="button" onClick={() => basketStore.clear()} className="text-xs font-extrabold text-rind underline-offset-4 hover:text-ink hover:underline">
@@ -67,7 +67,7 @@ export function Basket() {
         </button>
       </div>
 
-      <div className="mt-3 rounded-[22px] border-[1.5px] border-ink/25 bg-paper p-3">
+      <div className="pebble mt-3 bg-paper p-3 shadow-soft">
       <p className="micro mb-2 text-rind">Način slaganja</p>
       <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Način slaganja">
         {(Object.keys(hr.basket.strategies) as Strategy[]).map((s) => {
@@ -81,8 +81,8 @@ export function Basket() {
               aria-checked={active}
               onClick={() => setStrategy(s)}
               className={cn(
-                "flex h-11 items-center justify-center gap-1.5 rounded-full border-[1.5px] text-[12px] font-extrabold transition-colors sm:text-sm",
-                active ? "border-ink bg-ink text-cream" : "border-ink/40 text-ink hover:border-ink",
+                "blob flex h-11 items-center justify-center gap-1.5 text-[12px] font-extrabold transition-colors sm:blob-pill sm:text-sm",
+                active ? "blob-fill-ink text-cream" : "blob-fill-oat-200 text-ink hover:blob-fill-pistachio-light",
               )}
             >
               <Icon className="hidden size-4 min-[400px]:block" />
@@ -104,8 +104,8 @@ export function Basket() {
                   setOrder(DEFAULT_ORDER[m]);
                 }}
                 className={cn(
-                  "h-8 shrink-0 rounded-full border-[1.5px] px-3 text-xs font-extrabold transition-colors",
-                  metric === m ? "border-ink bg-pistachio text-ink" : "border-ink/35 text-ink hover:border-ink",
+                  "blob h-8 shrink-0 px-3.5 text-xs font-extrabold text-ink",
+                  metric === m ? "blob-fill-pistachio" : "blob-fill-oat-200 hover:blob-fill-pistachio-light",
                 )}
               >
                 {hr.nutrition[m]}
@@ -115,7 +115,7 @@ export function Basket() {
           <button
             type="button"
             onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
-            className="grid size-8 shrink-0 place-items-center rounded-full border-[1.5px] border-ink bg-cream text-ink"
+            className="blob blob-round blob-fill-oat-200 grid size-8 shrink-0 place-items-center text-ink hover:blob-fill-pistachio-light"
             aria-label={hr.basket.order[order]}
             title={hr.basket.order[order]}
           >
@@ -128,8 +128,8 @@ export function Basket() {
       <div className={cn("transition-opacity", loading && view && "opacity-50")}>
         {!view ? (
           <div className="mt-4 space-y-2.5">
-            <div className="h-40 animate-pulse rounded-[22px] border-[1.5px] border-ink/15 bg-cream" />
-            <div className="h-28 animate-pulse rounded-[22px] border-[1.5px] border-ink/15 bg-cream" />
+            <div className="pebble h-40 animate-pulse bg-paper/70" />
+            <div className="pebble h-28 animate-pulse bg-paper/70" />
           </div>
         ) : (
           <>
@@ -140,7 +140,7 @@ export function Basket() {
               ))}
             </div>
             {view.unpriced.length > 0 && (
-              <div className="mt-3 rounded-[22px] border-[1.5px] border-dashed border-ink/35 px-4 py-3">
+              <div className="pebble mt-3 bg-oat-200/60 px-4 py-3">
                 <p className="micro text-rind">{hr.basket.unpriced}</p>
                 <ul className="mt-1.5 space-y-1 text-sm font-semibold text-ink">
                   {view.unpriced.map((u) => (
@@ -164,18 +164,18 @@ export function Basket() {
 
 function Notice({ view }: { view: BasketView }) {
   if (view.strategy !== "one_store") return null;
-  const pill = "mt-3 inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink px-3 py-1.5 text-xs font-extrabold text-ink";
-  if (view.scattered) return <p className={cn(pill, "bg-ochre-light")}>{hr.basket.scattered}</p>;
+  const pill = "blob mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-extrabold text-ink";
+  if (view.scattered) return <p className={cn(pill, "blob-fill-ochre-light")}>{hr.basket.scattered}</p>;
   if (view.groups.length === 1) {
     return (
-      <p className={cn(pill, "bg-pistachio")}>
+      <p className={cn(pill, "blob-fill-pistachio")}>
         <Check className="size-3.5" /> {hr.basket.allInOne(view.groups[0].chainName)}
       </p>
     );
   }
   const b = view.bestSingleChain;
   return b ? (
-    <p className={cn(pill, "bg-paper")} title={b.missing.join(", ")}>
+    <p className={cn(pill, "blob-fill-oat-200")} title={b.missing.join(", ")}>
       {hr.basket.missingIn(b.chainName, b.missing.length)}
     </p>
   ) : null;
@@ -187,7 +187,7 @@ function ChainGroupCard({ group, strategy, metric }: { group: BasketView["groups
     : group.storesWithAll === "all" ? hr.basket.allStores
     : group.storesWithAll.map((s) => s.address).filter(Boolean).join(" · ") || "—";
   return (
-    <section className="rounded-[22px] border-[1.5px] border-ink/45 bg-cream px-4 pb-1 pt-3.5 shadow-[10px_11px_0_rgb(64_52_66/0.08)]">
+    <section className="pebble bg-paper px-4 pb-1 pt-3.5 shadow-soft">
       <header className="flex items-center justify-between gap-3 pb-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
           <ChainBadge code={group.chainCode} name={group.chainName} kind={group.chainKind} size="md" />
@@ -195,7 +195,7 @@ function ChainGroupCard({ group, strategy, metric }: { group: BasketView["groups
         </div>
         <span className="tabular font-heading text-xl font-black text-ink">{formatPrice(group.subtotal)}</span>
       </header>
-      <ul className="divide-y divide-ink/15 border-t border-ink/25">
+      <ul className="divide-y divide-ink/[0.08] border-t border-ink/10">
         {group.lines.map((l) => (
           <BasketLine key={l.basketItemId} line={l} strategy={strategy} metric={metric} />
         ))}
@@ -224,7 +224,7 @@ function BasketLine({ line: l, strategy, metric }: { line: LineView; strategy: S
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {!isSwap && <Stepper value={l.packages} onChange={(n) => basketStore.setPackages(l.basketItemId, n)} />}
           {strategy === "nutrition" && (
-            <span className="tabular rounded-full border border-ink/40 bg-pistachio-pale px-2 py-0.5 text-[11px] font-extrabold text-ink">
+            <span className="blob blob-fill-pistachio-pale tabular px-2.5 py-0.5 text-[11px] font-extrabold text-ink">
               {nutrient == null ? hr.nutrition.unknown : `${fmt(nutrient)} ${UNIT[metric]}`}
               <span className="font-semibold text-rind"> /100 g</span>
             </span>
@@ -250,7 +250,7 @@ function BasketLine({ line: l, strategy, metric }: { line: LineView; strategy: S
 
 function Stepper({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
-    <div className="inline-flex h-7 items-center rounded-full border-[1.5px] border-ink bg-paper">
+    <div className="blob blob-fill-oat-200 inline-flex h-7 items-center px-0.5">
       <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} className="grid size-6 place-items-center text-ink disabled:opacity-30" aria-label="Manje">
         <Minus className="size-3.5" />
       </button>
@@ -266,7 +266,7 @@ function Summary({ view, strategy, metric }: { view: BasketView; strategy: Strat
   const n = view.nutritionSummary[metric];
   return (
     <div className="fixed inset-x-3 bottom-[5.25rem] z-30 sm:inset-x-0 sm:bottom-5">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 rounded-[22px] border-2 border-ink bg-ink px-5 py-3.5 text-cream shadow-[0_6px_0_rgb(64_52_66/0.25)] sm:mx-6 md:mx-auto">
+      <div className="blob blob-pill blob-float blob-fill-ink mx-auto flex max-w-3xl items-center justify-between gap-3 py-3.5 pl-7 pr-5 text-cream sm:mx-6 sm:blob-long md:mx-auto">
         <div>
           <p className="micro text-cream/70">
             {hr.basket.total} · {hr.basket.stores(view.groups.length)}
@@ -281,7 +281,7 @@ function Summary({ view, strategy, metric }: { view: BasketView; strategy: Strat
             </span>
           </p>
         ) : view.saving > 0 ? (
-          <span className="tabular rounded-full border-[1.5px] border-cream/40 bg-ochre px-3 py-1.5 text-sm font-black text-ink">{hr.basket.saving(formatPrice(view.saving))}</span>
+          <span className="blob blob-fill-ochre tabular px-3.5 py-1.5 text-sm font-black text-ink">{hr.basket.saving(formatPrice(view.saving))}</span>
         ) : null}
       </div>
     </div>

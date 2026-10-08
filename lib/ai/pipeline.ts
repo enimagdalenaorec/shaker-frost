@@ -1,5 +1,6 @@
 import "server-only";
 import { adminDb } from "@/lib/db/admin";
+import { artEnabled, drawDishArt, type ArtResult } from "./dish-art";
 import { generateJson, type Source } from "./llm";
 import { PROMPTS } from "./prompts";
 import { Analysis, Choice, Research, Rewrite } from "./schemas";
@@ -8,6 +9,7 @@ import { ingestExample, ingestText, ingestUrl, type RawRecipe } from "@/lib/reci
 // The veganization pipeline (CLAUDE.md §8):
 // ingest → analyze → research (cached) → alternatives → offers ∥ rewrite → save.
 // Facts (products, prices) come from the DB; the model only judges and explains.
+// In the background, from ingest on: the dish illustration (lib/ai/dish-art.ts).
 
 export type StageName = "ingest" | "analyze" | "research" | "alternatives" | "offers" | "rewrite" | "save";
 export type PipelineEvent =
@@ -17,11 +19,17 @@ export type PipelineEvent =
   | { type: "error"; stage?: StageName; message: string };
 
 export type PipelineInput = {
-  url?: string; text?: string; example?: string; excludeTags?: string[]; userId?: string | null;
+  url?: string;
+  text?: string;
+  example?: string;
+  excludeTags?: string[];
+  userId?: string | null;
   /** No reuse at all: skip the 24 h same-URL result and the research cache (evals, prompt changes). */
   fresh?: boolean;
-  /** Runs work after the response (the route passes Next's after()); without it the work runs inline. */
+  /** Runs the step rewrite after the response (the route passes Next's after()); without it, inline. */
   defer?: (task: () => Promise<void>) => void;
+  /** Receives work that outlives the run (the dish illustration); the caller keeps it alive, e.g. with after(). */
+  background?: (task: Promise<ArtResult>) => void;
 };
 
 type StepLog = { stage: StageName; ms: number; model?: string; prompt_version?: string; input?: unknown; output?: unknown; tokensIn?: number; tokensOut?: number };
@@ -30,7 +38,7 @@ const FACET_KEYS = ["okus", "zasladeno", "namjena", "oblik"] as const;
 /** okus value for "no flavour": also matches products that list no flavour at all (lib/catalog/basket-candidates.ts) */
 const PLAIN = "bez okusa / natur";
 
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+export const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
 export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEvent) => void): Promise<string | null> {
   // after "done" the client has left and the stream may be closed: events are best effort
@@ -47,6 +55,7 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
   let recipeId: string | null = null;
   let runId: string | null = null;
   let current: StageName = "ingest";
+  const drawArt = Boolean(input.background) && artEnabled();
 
   async function stage<T>(name: StageName, fn: () => Promise<{ value: T; summary: string; detail?: unknown; log?: Omit<StepLog, "stage" | "ms"> }>) {
     current = name;
@@ -105,6 +114,7 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
         servings_original: raw.servings,
         servings_target: raw.servings,
         status: "processing",
+        art_status: drawArt ? "pending" : null,
       })
       .select("id")
       .single();
@@ -112,6 +122,13 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
     recipeId = rec.id;
     const { data: run } = await db.from("agent_runs").insert({ recipe_id: recipeId, user_id: input.userId ?? null, provider: "gemini" }).select("id").single();
     runId = run?.id ?? null;
+
+    // the dish illustration is drawn alongside the run and finishes after it; it never fails the run
+    if (drawArt) {
+      const art = drawDishArt({ recipeId, runId, key: norm(raw.title) || recipeId, dish: raw.title, ingredients: raw.ingredients })
+        .catch((): ArtResult => ({ status: "error", url: null, cached: false, ms: 0 }));
+      input.background!(art);
+    }
 
     // 1 ── analyze ──────────────────────────────────────────────────────────────────────────
     const { data: vocabRows } = await db.from("ingredients").select("slug, name_hr, aliases, grams_per_piece");

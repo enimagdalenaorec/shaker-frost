@@ -12,6 +12,7 @@ import { formatPrice, formatSize, formatUnitPrice } from "@/lib/format";
 import { basketStore } from "@/lib/basket/local-store";
 import { hr } from "@/lib/i18n/hr";
 import { ChainBadge } from "@/components/catalog/chain-badge";
+import { DishArt } from "./dish-art";
 import type { AlternativeView, IngredientView, RecipeView } from "@/lib/recipe/load";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -96,18 +97,21 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
         )}
         {recipe.dishCategory && <span className="text-ink/40">· {recipe.dishCategory}</span>}
       </div>
-      <h1 className="mt-1.5 text-[2.6rem] leading-[0.95] text-ink sm:text-6xl">{recipe.title}</h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="mt-1.5 min-w-0 text-[2.6rem] leading-[0.95] text-ink sm:text-6xl">{recipe.title}</h1>
+        <DishArt recipeId={recipe.id} title={recipe.title} initialUrl={recipe.artUrl} initialStatus={recipe.artStatus} className="-mt-6 -mr-2 sm:-mt-10" />
+      </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
         <Stat value={risky.length} label={risky.length === 1 ? "zamjena" : "zamjene"} tone="bg-pistachio" />
-        <Stat value={recipe.ingredients.length} label="sastojaka" tone="bg-paper" />
-        <Stat value={recipe.servings ?? "–"} label="porcija" tone="bg-paper" />
+        <Stat value={recipe.ingredients.length} label="sastojaka" tone="bg-paper shadow-soft" />
+        <Stat value={recipe.servings ?? "–"} label="porcija" tone="bg-paper shadow-soft" />
       </div>
 
       <RecipeActions recipe={recipe} />
 
       {!risky.length && (
-        <p className="mt-6 rounded-[20px] border-[1.5px] border-ink bg-pistachio p-4 text-sm font-extrabold text-ink">Ovaj recept je već veganski.</p>
+        <p className="pebble mt-6 bg-pistachio p-4 text-sm font-extrabold text-ink">Ovaj recept je već veganski.</p>
       )}
 
       {/* swaps */}
@@ -129,14 +133,14 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
       )}
 
       {check.length > 0 && (
-        <div className="mt-3 rounded-[20px] border-[1.5px] border-ink bg-ochre-light px-4 py-3 text-sm text-ink">
+        <div className="pebble mt-3 bg-ochre-light px-4 py-3 text-sm text-ink">
           <p className="font-black">Provjeri deklaraciju</p>
           <p className="mt-0.5">{check.map((c) => c.name).join(", ")}</p>
         </div>
       )}
 
       {recipe.tip && (
-        <p className="mt-3 flex gap-2.5 rounded-[16px] bg-ochre p-4 text-sm font-bold text-ink">
+        <p className="pebble mt-3 flex gap-2.5 bg-ochre p-4 text-sm font-bold text-ink">
           <Lightbulb className="mt-0.5 size-4 shrink-0" /> {recipe.tip}
         </p>
       )}
@@ -148,7 +152,7 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
           {recipe.ingredients.map((i) => {
             const swap = chosen.find((c) => c.ingredient.id === i.id);
             return (
-              <li key={i.id} className={cn("flex items-baseline justify-between gap-3 rounded-[12px] px-3.5 py-2.5 text-[15px] font-semibold", swap ? "bg-pistachio-pale" : "bg-paper")}>
+              <li key={i.id} className={cn("pebble-sm flex items-baseline justify-between gap-3 px-4 py-2.5 text-[15px] font-semibold", swap ? "bg-pistachio-pale" : "bg-paper")}>
                 {swap ? (
                   <span className="min-w-0">
                     <span className="font-extrabold text-ink">{swap.alt.label}</span>
@@ -177,13 +181,13 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
             {recipe.steps.map((s) => (
               <li
                 key={s.n}
-                className={cn("flex gap-3 rounded-[18px] p-4 text-[15px] leading-relaxed", s.changed ? "border-[1.5px] border-ink bg-pistachio-pale" : "border-[1.5px] border-ink/20 bg-paper")}
+                className={cn("pebble flex gap-3 p-4 text-[15px] leading-relaxed", s.changed ? "bg-pistachio-pale" : "bg-paper")}
               >
-                <span className={cn("grid size-7 shrink-0 place-items-center rounded-full border-[1.5px] border-ink font-heading text-sm font-black", s.changed ? "bg-guava" : "bg-cream")}>{s.n}</span>
+                <span className={cn("blob blob-round grid size-7 shrink-0 place-items-center font-heading text-sm font-black text-ink", s.changed ? "blob-fill-guava" : "blob-fill-oat-200")}>{s.n}</span>
                 <p className="font-semibold text-ink">
                   {s.text_hr}
                   {s.changed && (
-                    <span className="role-tag ml-2 inline-flex translate-y-[-1px] items-center gap-1 align-middle">
+                    <span className="blob role-tag ml-2 inline-flex translate-y-[-1px] items-center gap-1 align-middle">
                       <Sparkles className="size-2.5" /> vegansko
                     </span>
                   )}
@@ -218,12 +222,12 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
           <button
             type="button"
             onClick={addAll}
-            className="btn btn-guava mx-auto flex h-14 w-full max-w-2xl justify-between px-5 sm:mx-6 md:mx-auto"
+            className="btn btn-guava blob-pill blob-float mx-auto flex h-14 w-full max-w-2xl justify-between pl-7 pr-5 sm:mx-6 sm:blob-long md:mx-auto"
           >
             <span className="flex items-center gap-2.5 font-black">
               <ShoppingBasket className="size-5" /> Dodaj sve u košaricu
             </span>
-            <span className="tabular rounded-full bg-ink px-2.5 py-0.5 text-sm font-black text-cream">{shoppable.length}</span>
+            <span className="blob blob-round blob-fill-ink tabular grid size-8 place-items-center text-sm font-black text-cream">{shoppable.length}</span>
           </button>
         </div>
       )}
@@ -274,7 +278,7 @@ function RecipeActions({ recipe }: { recipe: RecipeView }) {
         onClick={toggleSave}
         disabled={busy}
         className={cn(
-          "btn h-11 text-sm",
+          "btn h-11 text-sm sm:blob-pill",
           isSaved ? "btn-guava" : "btn-paper",
         )}
       >
@@ -284,7 +288,7 @@ function RecipeActions({ recipe }: { recipe: RecipeView }) {
       <button
         type="button"
         onClick={share}
-        className="btn btn-paper h-11 text-sm"
+        className="btn btn-paper h-11 text-sm sm:blob-pill"
       >
         <Share2 className="size-4" /> Podijeli
       </button>
@@ -294,7 +298,7 @@ function RecipeActions({ recipe }: { recipe: RecipeView }) {
 
 function Stat({ value, label, tone }: { value: number | string; label: string; tone: string }) {
   return (
-    <div className={cn("rounded-[20px] border-[1.5px] border-ink px-3.5 py-2.5", tone)}>
+    <div className={cn("pebble px-4 py-3", tone)}>
       <p className="tabular font-heading text-[2rem] font-black leading-none text-guava-deep">{value}</p>
       <p className="mt-1 text-xs font-extrabold text-ink">{label}</p>
     </div>
@@ -319,13 +323,13 @@ function SwapCard({
   const need = qty(alt.requiredQty, alt.requiredUnit);
 
   return (
-    <article className="overflow-hidden rounded-[22px] border-[1.5px] border-ink/40 bg-cream shadow-[8px_9px_0_rgb(64_52_66/0.07)]">
+    <article className="pebble overflow-hidden bg-paper shadow-soft">
       <div className="px-4 pb-3 pt-4">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className={cn("rounded-full border border-ink/40 px-2 py-0.5 font-extrabold line-through decoration-2", i.status === "depends" ? "bg-ochre-light text-ink" : "bg-guava-light text-ink")}>
+          <span className={cn("blob px-2.5 py-0.5 font-extrabold text-ink line-through decoration-2", i.status === "depends" ? "blob-fill-ochre-light" : "blob-fill-guava-light")}>
             {i.name}
           </span>
-          {role && <span className="role-tag">{role}</span>}
+          {role && <span className="blob role-tag">{role}</span>}
           {i.quantity != null && <span className="tabular font-bold text-rind">{qty(i.quantity, i.unit)}</span>}
         </div>
         <div className="mt-2 flex items-end justify-between gap-3">
@@ -344,8 +348,8 @@ function SwapCard({
                 type="button"
                 onClick={() => onSelect(a.id)}
                 className={cn(
-                  "h-8 shrink-0 rounded-full px-3 text-xs font-bold transition-colors",
-                  a.id === alt.id ? "bg-cocoa-900 text-oat-50" : "bg-oat-200/70 text-cocoa-500 hover:text-cocoa-900",
+                  "blob h-8 shrink-0 px-3.5 text-xs font-bold transition-colors",
+                  a.id === alt.id ? "blob-fill-ink text-oat-50" : "blob-fill-oat-200 text-cocoa-500 hover:text-cocoa-900",
                 )}
               >
                 {a.label}
@@ -361,7 +365,7 @@ function SwapCard({
       </div>
 
       {alt.conceptId && alt.products.length > 0 ? (
-        <div className="border-t border-dashed border-ink/30 bg-paper px-4 pb-3.5 pt-3">
+        <div className="bg-oat-200/45 px-4 pb-4 pt-3">
           <div className="micro flex items-center justify-between font-bold text-rind">
             <span className="inline-flex items-center gap-1">
               <Store className="size-3.5" /> {hr.search.count(alt.products.length)}
@@ -390,7 +394,7 @@ function SwapCard({
               toast.success(`${alt.label} u košarici`, { description: "Trgovinu biramo u košarici, prema načinu slaganja." });
             }}
             className={cn(
-              "btn mt-3 h-11 w-full text-sm",
+              "btn blob-pill mt-3 h-11 w-full text-sm sm:blob-long",
               added === alt.id ? "btn-pistachio" : "btn-guava",
             )}
           >
@@ -399,7 +403,7 @@ function SwapCard({
           </button>
         </div>
       ) : (
-        <p className="flex items-center gap-2 border-t border-dashed border-ink/30 bg-paper px-4 py-3 text-xs font-bold text-rind">
+        <p className="flex items-center gap-2 bg-oat-200/45 px-4 py-3 text-xs font-bold text-rind">
           <Home className="size-4 text-ink" /> Bez kupnje: najčešće već imaš kod kuće
         </p>
       )}

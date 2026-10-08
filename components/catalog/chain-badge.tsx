@@ -52,8 +52,8 @@ export function ChainBadge({
       <span className={cn("inline-flex shrink-0 items-center gap-1", className)} title={name}>
         <span
           className={cn(
-            "inline-flex items-center justify-center rounded-[7px] bg-white ring-1 ring-ink/15",
-            size === "sm" ? "h-[22px] min-w-[44px] px-1.5" : "h-8 min-w-[64px] px-2",
+            "blob blob-fill-white inline-flex items-center justify-center",
+            size === "sm" ? "h-[22px] min-w-[46px] px-2" : "h-8 min-w-[68px] px-3",
           )}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

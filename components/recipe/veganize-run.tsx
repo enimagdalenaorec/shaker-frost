@@ -25,7 +25,18 @@ type AnalyzeDetail = { ingredients: { index: number; name: string; status: strin
 type AltDetail = { items: { name?: string; alternatives: { label: string }[] }[] };
 type IngestDetail = { title: string; source: string | null };
 
+/**
+ * With Cache Components a visited route stays mounted (hidden by <Activity>), state and refs included, so a
+ * second "Veganiziraj" would show the previous run and never start a new one. Every fresh navigation
+ * (bfcacheId) and every other recipe (search params) gets its own run; browser back/forward keeps the old one.
+ */
 export function VeganizeRun() {
+  const params = useSearchParams();
+  const { bfcacheId } = useRouter();
+  return <Run key={`${bfcacheId}|${params.toString()}`} />;
+}
+
+function Run() {
   const params = useSearchParams();
   const router = useRouter();
   const started = useRef(false);
@@ -33,6 +44,7 @@ export function VeganizeRun() {
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(true);
+  const [doneId, setDoneId] = useState<string | null>(null);
 
   const url = params.get("url");
   const example = params.get("primjer");
@@ -72,7 +84,7 @@ export function VeganizeRun() {
               }));
             } else if (e.type === "done") {
               rememberLocalRecipe(e.recipeId);
-              router.replace(`/recept/${e.recipeId}`);
+              setDoneId(e.recipeId);
             } else if (e.type === "error") {
               if (e.stage) setStages((s) => ({ ...s, [e.stage!]: { status: "error" } }));
               setError(e.message);
@@ -86,6 +98,12 @@ export function VeganizeRun() {
       }
     })();
   }, [example, params, router, url]);
+
+  // Open the result. Effects only run while this route is visible, so a run that finishes after the
+  // user moved on never pulls them back to it (they find it under Recepti, or here via browser back).
+  useEffect(() => {
+    if (doneId) router.replace(`/recept/${doneId}`);
+  }, [doneId, router]);
 
   // elapsed-time counter, independent of the (run-once) pipeline effect
   useEffect(() => {
@@ -105,7 +123,7 @@ export function VeganizeRun() {
           <p className="micro font-bold text-rind">{ingest?.source ?? "Veganiziram"}</p>
           <h1 className="mt-1.5 text-[2.4rem] leading-[0.95] text-ink">{title}</h1>
         </div>
-        <span className={cn("tabular mt-1 shrink-0 rounded-full border-[1.5px] border-ink px-2.5 py-1 font-heading text-sm font-black text-ink", running ? "bg-ochre" : "bg-paper")}>
+        <span className={cn("blob tabular mt-1 shrink-0 px-3.5 py-1 font-heading text-sm font-black text-ink", running ? "blob-fill-ochre" : "blob-fill-oat-200")}>
           {elapsed} s
         </span>
       </div>
@@ -117,11 +135,11 @@ export function VeganizeRun() {
         </div>
       )}
 
-      <ol className="card-ink mt-4 overflow-hidden">
+      <ol className="pebble mt-4 overflow-hidden bg-paper shadow-soft">
         {STAGES.map((st, i) => {
           const s = stages[st.id] ?? { status: "waiting" };
           return (
-            <li key={st.id} className={cn("relative px-4 py-3.5", i > 0 && "border-t border-ink/15")}>
+            <li key={st.id} className={cn("relative px-4 py-3.5", i > 0 && "border-t border-ink/[0.07]")}>
               <div className="flex items-center gap-3">
                 <StageDot status={s.status} />
                 <span className={cn("flex-1 text-[15px] font-extrabold", s.status === "waiting" ? "text-ink/35" : "text-ink")}>{st.label}</span>
@@ -139,11 +157,11 @@ export function VeganizeRun() {
       </ol>
 
       {error && (
-        <div className="mt-4 rounded-[20px] border-[1.5px] border-ink bg-guava-light p-4">
+        <div className="pebble mt-4 bg-guava-light p-4">
           <p className="flex items-start gap-2 text-sm font-extrabold text-ink">
             <CircleAlert className="mt-0.5 size-4 shrink-0" /> {friendly(error)}
           </p>
-          <Link href="/" className="btn btn-paper mt-3 h-10 px-4 text-sm">
+          <Link href="/" className="btn mt-3 h-10 px-5 text-sm blob-fill-white hover:blob-fill-pistachio-light">
             Pokušaj ponovno <ArrowRight className="size-4" />
           </Link>
         </div>
@@ -155,7 +173,7 @@ export function VeganizeRun() {
 function StageDot({ status }: { status: StageState["status"] }) {
   if (status === "done")
     return (
-      <span className="grid size-6 place-items-center rounded-full border-[1.5px] border-ink bg-pistachio text-ink">
+      <span className="blob blob-round blob-fill-pistachio grid size-6 place-items-center text-ink">
         <Check className="size-3.5" strokeWidth={3} />
       </span>
     );
@@ -163,11 +181,11 @@ function StageDot({ status }: { status: StageState["status"] }) {
     return (
       <span className="relative grid size-6 place-items-center">
         <span className="absolute inset-0 animate-ping rounded-full bg-guava/50" />
-        <span className="size-3 rounded-full border-[1.5px] border-ink bg-guava" />
+        <span className="blob blob-round blob-fill-guava size-3.5" />
       </span>
     );
-  if (status === "error") return <span className="grid size-6 place-items-center rounded-full bg-clay-600 text-white">!</span>;
-  return <span className="size-6 rounded-full border-2 border-dashed border-ink/25" />;
+  if (status === "error") return <span className="blob blob-round blob-fill-clay-600 grid size-6 place-items-center text-white">!</span>;
+  return <span className="blob blob-round blob-fill-oat-200 size-6" />;
 }
 
 function StageDetail({ stage, detail }: { stage: StageName; detail: unknown }) {
@@ -178,7 +196,7 @@ function StageDetail({ stage, detail }: { stage: StageName; detail: unknown }) {
     return (
       <div className="mt-2 flex flex-wrap gap-1.5">
         {risky.map((i) => (
-          <span key={i.index} className={cn("rounded-full border-[1.5px] border-ink px-2.5 py-0.5 text-xs font-extrabold text-ink", i.status === "depends" ? "bg-ochre-light" : "bg-guava-light")}>
+          <span key={i.index} className={cn("blob px-3 py-0.5 text-xs font-extrabold text-ink", i.status === "depends" ? "blob-fill-ochre-light" : "blob-fill-guava-light")}>
             {i.name}
           </span>
         ))}

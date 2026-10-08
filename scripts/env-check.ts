@@ -25,6 +25,8 @@ const checks: Check[] = [
   { name: "OPENAI_API_KEY", required: false },
   { name: "OPENAI_MODEL_STRONG", required: false },
   { name: "OPENAI_MODEL_FAST", required: false },
+  { name: "OPENAI_IMAGE_MODEL", required: false },
+  { name: "OPENAI_IMAGE_QUALITY", required: false, valid: (v) => (["low", "medium", "high", "xhigh", "max", "auto"].includes(v) ? null : "use low, medium, high, xhigh, max or auto") },
   { name: "LLM_MODEL_FAST", required: false },
   { name: "LLM_MODEL_STRONG", required: false },
 ];

@@ -72,13 +72,16 @@ export function SmartInput({
     const t = value.trim();
     if (!t) return ref.current?.focus();
     startTransition(() => {
+      // the home page stays mounted (hidden) after navigating, so clear the field for the next recipe
       if (mode === "recipe-url") {
         router.push(`/recept/novi?url=${encodeURIComponent(/^https?:\/\//i.test(t) ? t : `https://${t}`)}`);
+        setValue("");
       } else if (mode === "recipe-text") {
         try {
           sessionStorage.setItem(PENDING_TEXT_KEY, t);
         } catch {}
         router.push("/recept/novi?izvor=tekst");
+        setValue("");
       } else {
         router.push(`/trazi?q=${encodeURIComponent(t)}`);
       }
@@ -94,20 +97,17 @@ export function SmartInput({
         submit();
       }}
       className={cn(
-        "flex gap-2 transition-shadow",
-        hero ? "flex-col sm:flex-row sm:items-end" : "items-end",
-        hero
-          ? "rounded-[28px] border-[2.5px] border-ink bg-paper p-2.5 shadow-[8px_8px_0_var(--ink)] focus-within:ring-4 focus-within:ring-pistachio"
-          : "rounded-full border-2 border-ink bg-paper py-1.5 pl-4 pr-1.5 shadow-[0_6px_0_var(--ink)] focus-within:ring-4 focus-within:ring-pistachio",
+        "blob blob-float flex gap-2 blob-fill-paper focus-within:blob-fill-[#fffdf8]",
+        hero ? "flex-col p-3 sm:flex-row sm:items-end sm:py-2.5 sm:pl-4 sm:pr-3 sm:blob-long" : "blob-pill items-end py-1.5 pl-4 pr-2 sm:blob-long",
         className,
       )}
     >
       <div className="flex min-w-0 flex-1 items-end gap-2">
       <span
         className={cn(
-          "grid shrink-0 place-items-center rounded-full transition-colors",
+          "blob blob-round grid shrink-0 place-items-center transition-colors",
           hero ? "mb-0.5 size-12" : "size-9",
-          isRecipe ? "bg-pistachio text-ink" : "text-rind",
+          isRecipe ? "blob-fill-pistachio text-ink" : "text-rind",
         )}
         aria-hidden
       >
@@ -143,8 +143,8 @@ export function SmartInput({
         aria-label={isRecipe ? hr.smartInput.veganize : hr.smartInput.search}
         className={cn(
           hero
-            ? "btn btn-guava h-12 w-full px-5 text-base sm:w-auto"
-            : "grid size-10 shrink-0 place-items-center rounded-full bg-ink text-cream transition-colors hover:bg-rind",
+            ? "btn btn-guava blob-pill h-12 w-full px-6 text-base sm:w-auto sm:blob-ref"
+            : "btn btn-ink blob-round size-10 shrink-0",
         )}
       >
         {pending ? <Loader2 className="size-5 animate-spin" /> : !hero ? <ArrowRight className="size-5" /> : isRecipe || mode === "empty" ? <Sparkles className="size-4" /> : null}

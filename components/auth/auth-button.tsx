@@ -60,7 +60,7 @@ export function AuthButton() {
       <button
         type="button"
         onClick={() => signInWithGoogle()}
-        className="btn btn-ink h-9 px-3.5 text-[13px] shadow-[0_3px_0_rgb(64_52_66/0.35)] hover:shadow-[0_4px_0_rgb(64_52_66/0.35)]"
+        className="btn btn-ink h-9 px-4 text-[13px]"
       >
         <GoogleMark className="size-3.5" />
         Prijava
@@ -81,18 +81,18 @@ export function AuthButton() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="Račun"
-        className="grid size-9 place-items-center overflow-hidden rounded-full border-2 border-ink bg-pistachio text-xs font-black text-ink"
+        className="blob blob-round blob-fill-pistachio grid size-9 place-items-center text-xs font-black text-ink"
       >
         {user.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={user.avatarUrl} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
+          <img src={user.avatarUrl} alt="" className="blob-clip size-full object-cover" referrerPolicy="no-referrer" />
         ) : (
           initials
         )}
       </button>
       {open && (
-        <div className="card-ink absolute right-0 top-12 z-50 w-56 overflow-hidden !rounded-[20px]">
-          <div className="border-b border-cocoa-900/[0.06] px-4 py-3">
+        <div className="pebble absolute right-0 top-12 z-50 w-56 overflow-hidden bg-paper py-1 shadow-lift">
+          <div className="border-b border-ink/[0.06] px-4 py-3">
             <p className="truncate text-sm font-bold text-cocoa-900">{user.name}</p>
             {user.email && <p className="truncate text-xs text-cocoa-400">{user.email}</p>}
           </div>

@@ -60,8 +60,8 @@ function Lead() {
       <p className="mt-5 text-[15px] font-semibold leading-snug text-rind">{hr.home.hint}</p>
       <ol className="mt-3 flex flex-wrap gap-2">
         {hr.home.steps.map((s, i) => (
-          <li key={s} className="flex items-center gap-2 rounded-full border-[1.5px] border-ink bg-paper py-1.5 pl-1.5 pr-3.5 text-sm font-bold text-ink">
-            <b className="grid size-6 place-items-center rounded-full border-[1.5px] border-ink bg-guava text-xs font-black">{i + 1}</b>
+          <li key={s} className="blob blob-pill blob-fill-oat-200 flex items-center gap-2 py-1.5 pl-1.5 pr-4 text-sm font-bold text-ink">
+            <b className="blob blob-round blob-fill-guava grid size-6 place-items-center text-xs font-black">{i + 1}</b>
             {s}
           </li>
         ))}
@@ -71,12 +71,12 @@ function Lead() {
 }
 
 const SHEET_STYLE = [
-  "bg-paper -rotate-[2.5deg]",
-  "bg-cream rotate-[1.5deg]",
-  "bg-pistachio -rotate-[1deg]",
+  "blob-fill-blush -rotate-[2.5deg]",
+  "blob-fill-smoke-light rotate-[1.5deg]",
+  "blob-fill-pistachio -rotate-[1deg]",
 ];
 
-/** Example recipes as the team's rotated paper "sheets". */
+/** Example recipes as soft, slightly rotated blobs. */
 function Sheets() {
   return (
     <Strip>
@@ -85,11 +85,11 @@ function Sheets() {
           key={r.slug}
           href={r.href}
           className={cn(
-            "relative flex h-48 w-56 shrink-0 snap-start flex-col border border-ink/40 p-4 shadow-[9px_12px_0_rgb(64_52_66/0.07)] transition-transform duration-300 hover:z-10 hover:-translate-y-2 hover:rotate-0 sm:h-56 sm:w-auto sm:flex-1",
+            "blob blob-float flex h-48 w-56 shrink-0 snap-start flex-col px-6 py-6 transition-transform duration-300 hover:z-10 hover:-translate-y-2 hover:rotate-0 sm:h-56 sm:w-auto sm:flex-1",
             SHEET_STYLE[i],
           )}
         >
-          <span className="micro block border-b border-current pb-2 text-ink">
+          <span className="micro block text-ink/70">
             0{i + 1} / {r.source}
           </span>
           <span className="mt-3 font-heading text-[1.9rem] font-black leading-none text-ink">{r.label}</span>
