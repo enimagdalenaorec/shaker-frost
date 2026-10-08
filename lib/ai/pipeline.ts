@@ -393,6 +393,7 @@ async function finishRun(
     .from("agent_runs")
     .update({
       status, finished_at: new Date().toISOString(), total_ms: ms,
+      provider: logs.some((l) => l.model?.startsWith("openai:")) ? "gemini+openai" : "gemini",
       tokens_in: logs.reduce((s, l) => s + (l.tokensIn ?? 0), 0), tokens_out: logs.reduce((s, l) => s + (l.tokensOut ?? 0), 0),
     })
     .eq("id", runId);

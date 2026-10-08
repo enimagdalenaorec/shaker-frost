@@ -2,6 +2,7 @@ import "server-only";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { z } from "zod";
 import { MODEL_CHAINS, type Tier } from "./models";
+import { openaiConfigured, openaiJson } from "./openai";
 
 // The ONLY file that talks to an LLM provider (CLAUDE.md §2). Everything returns zod-validated data.
 
@@ -50,8 +51,37 @@ function statusOf(err: unknown): number {
   return code ? Number(code) : 0;
 }
 
-/** Structured generation with hedged model fallback, a repair retry and optional web grounding. */
-export function generateJson<T>(opts: Opts<T>): Promise<LlmResult<T>> {
+/**
+ * Structured generation: the Gemini chain first (hedged), then OpenAI as a last-resort backup
+ * when every Gemini model failed (quota, overload, timeout) and OPENAI_API_KEY is set.
+ * LLM_FORCE_FALLBACK=openai skips Gemini (to test the backup path).
+ */
+export async function generateJson<T>(opts: Opts<T>): Promise<LlmResult<T>> {
+  const forceOpenai = process.env.LLM_FORCE_FALLBACK === "openai";
+  if (!forceOpenai) {
+    try {
+      return await generateWithGemini(opts);
+    } catch (err) {
+      if (!openaiConfigured()) throw err;
+      console.warn(`[llm] Gemini failed, falling back to OpenAI: ${(err as Error).message.slice(0, 160)}`);
+    }
+  }
+  if (!openaiConfigured()) throw new LlmError("OpenAI fallback nije konfiguriran (OPENAI_API_KEY).");
+  const started = Date.now();
+  const r = await openaiJson({
+    schema: opts.schema,
+    jsonSchema: toJsonSchema(opts.schema),
+    system: opts.system,
+    user: opts.user,
+    tier: opts.tier,
+    temperature: opts.temperature,
+    timeoutMs: LAST_TIMEOUT_MS,
+  });
+  return { ...r, ms: Date.now() - started, grounded: false, sources: [] };
+}
+
+/** The Gemini chain with hedged fallback, a repair retry and optional web grounding. */
+function generateWithGemini<T>(opts: Opts<T>): Promise<LlmResult<T>> {
   const models = MODEL_CHAINS[opts.tier];
   const schema = toJsonSchema(opts.schema);
   const errors: string[] = [];
