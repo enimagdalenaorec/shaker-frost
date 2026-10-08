@@ -1,0 +1,27 @@
+# secrets — never commit
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# deps / build
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# data files (large, licensed, or private)
+/data/
+*.parquet
+c_products*.csv
+
+# misc
+.DS_Store
+.vercel
+*.log
+
+# testing / certs
+/coverage
+*.pem
