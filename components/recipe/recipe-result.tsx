@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, ChevronDown, Home, Lightbulb, ShoppingBasket, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Home, Lightbulb, Plus, ShoppingBasket, Sparkles, Store } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatSize } from "@/lib/format";
+import { formatPrice, formatSize } from "@/lib/format";
 import { basketStore } from "@/lib/basket/local-store";
-import { AddButton } from "@/components/catalog/add-button";
+import { hr } from "@/lib/i18n/hr";
 import { ChainBadge } from "@/components/catalog/chain-badge";
-import { PriceTag } from "@/components/catalog/price-tag";
 import { ProductIcon } from "@/components/catalog/product-icon";
 import type { AlternativeView, IngredientView, RecipeView } from "@/lib/recipe/load";
 
@@ -20,6 +19,23 @@ const ROLE_LABEL: Record<string, string> = {
 
 const qty = (q: number | null, unit: string | null) =>
   q == null ? null : unit === "kom" ? `${q} kom` : formatSize(q, unit) ?? `${q} ${unit ?? ""}`;
+
+/** The basket gets the alternative ("chia"); the product and shop are chosen there per sort mode. */
+function addSwap(recipeId: string, ingredient: IngredientView, alt: AlternativeView) {
+  basketStore.add(
+    {
+      kind: "concept",
+      conceptId: alt.conceptId!,
+      facets: alt.facets,
+      label: alt.label,
+      forIngredient: ingredient.name,
+      requiredQty: alt.requiredQty,
+      requiredUnit: (alt.requiredUnit as "g" | "ml" | null) ?? null,
+      recipeId,
+    },
+    "recipe",
+  );
+}
 
 export function RecipeResult({ recipe }: { recipe: RecipeView }) {
   const risky = recipe.ingredients.filter((i) => i.status !== "vegan" && i.alternatives.length);
@@ -35,20 +51,7 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
 
   const addAll = () => {
     const before = basketStore.snapshot();
-    for (const { ingredient, alt } of shoppable) {
-      basketStore.add(
-        {
-          kind: "concept",
-          conceptId: alt.conceptId!,
-          facets: alt.facets,
-          label: ingredient.name,
-          requiredQty: alt.requiredQty,
-          requiredUnit: (alt.requiredUnit as "g" | "ml" | null) ?? null,
-          recipeId: recipe.id,
-        },
-        "recipe",
-      );
-    }
+    for (const { ingredient, alt } of shoppable) addSwap(recipe.id, ingredient, alt);
     toast.success(`Dodano u košaricu: ${shoppable.length}`, {
       action: { label: "Poništi", onClick: () => basketStore.restore(before) },
     });
@@ -96,7 +99,13 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
           <h2 className="mb-3 text-xl font-bold text-cocoa-900">Zamjene</h2>
           <div className="space-y-3">
             {risky.map((i) => (
-              <SwapCard key={i.id} ingredient={i} selectedId={selected[i.id]} onSelect={(id) => setSelected((s) => ({ ...s, [i.id]: id }))} />
+              <SwapCard
+                key={i.id}
+                recipeId={recipe.id}
+                ingredient={i}
+                selectedId={selected[i.id]}
+                onSelect={(id) => setSelected((s) => ({ ...s, [i.id]: id }))}
+              />
             ))}
           </div>
         </section>
@@ -209,8 +218,19 @@ function Stat({ value, label, tone }: { value: number | string; label: string; t
   );
 }
 
-function SwapCard({ ingredient: i, selectedId, onSelect }: { ingredient: IngredientView; selectedId: string; onSelect: (id: string) => void }) {
+function SwapCard({
+  recipeId,
+  ingredient: i,
+  selectedId,
+  onSelect,
+}: {
+  recipeId: string;
+  ingredient: IngredientView;
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
   const [why, setWhy] = useState(false);
+  const [added, setAdded] = useState<string | null>(null);
   const alt: AlternativeView = i.alternatives.find((a) => a.id === selectedId) ?? i.alternatives[0];
   const role = i.role ? ROLE_LABEL[i.role] : "";
   const need = qty(alt.requiredQty, alt.requiredUnit);
@@ -258,22 +278,41 @@ function SwapCard({ ingredient: i, selectedId, onSelect }: { ingredient: Ingredi
       </div>
 
       {alt.conceptId && alt.products.length > 0 ? (
-        <ul className="divide-y divide-cocoa-900/[0.05] border-t border-cocoa-900/[0.05] bg-oat-50/60">
-          {alt.products.slice(0, 3).map((p) => (
-            <li key={p.itemId} className="flex items-center gap-3 px-3 py-2">
-              <ProductIcon group={p.conceptGroup} name={p.name} className="size-10 rounded-xl" iconClassName="size-4" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold text-cocoa-900">{p.name}</p>
-                <div className="flex items-center gap-1.5">
-                  <ChainBadge code={p.chainCode} name={p.chainName} kind={p.chainKind} />
-                  {p.nChains > 1 && <span className="tabular rounded-full bg-oat-200 px-1.5 text-[10px] font-bold text-cocoa-500">+{p.nChains - 1}</span>}
-                </div>
-              </div>
-              <PriceTag price={p.price} regularPrice={p.regularPrice} isAkcija={p.isAkcija} size="sm" />
-              <AddButton product={p} source="recipe" className="size-8" />
-            </li>
-          ))}
-        </ul>
+        <div className="border-t border-cocoa-900/[0.05] bg-oat-50/60 px-4 pb-3 pt-2.5">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-cocoa-400">
+            <span className="inline-flex items-center gap-1">
+              <Store className="size-3.5" /> {hr.search.count(alt.products.length)}
+            </span>
+            <span className="tabular normal-case tracking-normal">od {formatPrice(Math.min(...alt.products.map((p) => p.price)))}</span>
+          </div>
+          <ul className="mt-1.5 space-y-1">
+            {alt.products.slice(0, 3).map((p) => (
+              <li key={p.itemId} className="flex items-center gap-2.5 text-[13px]">
+                <ProductIcon group={p.conceptGroup} name={p.name} className="size-7 rounded-lg" iconClassName="size-3.5" />
+                <span className="min-w-0 flex-1 truncate text-cocoa-700">{p.name}</span>
+                <ChainBadge code={p.chainCode} name={p.chainName} kind={p.chainKind} className="shrink-0" />
+                <span className={cn("tabular w-14 shrink-0 text-right font-bold", p.isAkcija ? "text-apricot-700" : "text-cocoa-900")}>
+                  {formatPrice(p.price)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => {
+              addSwap(recipeId, i, alt);
+              setAdded(alt.id);
+              toast.success(`${alt.label} u košarici`, { description: "Trgovinu biramo u košarici, prema načinu slaganja." });
+            }}
+            className={cn(
+              "mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-bold transition-colors",
+              added === alt.id ? "bg-mint-100 text-mint-700" : "bg-cocoa-900 text-oat-50 hover:bg-cocoa-700",
+            )}
+          >
+            {added === alt.id ? <Check className="size-4" /> : <Plus className="size-4" />}
+            {added === alt.id ? "U košarici" : `Dodaj: ${alt.label}`}
+          </button>
+        </div>
       ) : (
         <p className="flex items-center gap-2 border-t border-cocoa-900/[0.05] bg-oat-50/60 px-4 py-3 text-xs font-semibold text-cocoa-500">
           <Home className="size-4 text-mint-600" /> Bez kupnje: najčešće već imaš kod kuće

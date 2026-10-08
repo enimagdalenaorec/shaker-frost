@@ -87,12 +87,14 @@ insert into substitution_rules (ingredient_slug, role, concept_id, prefer, ratio
   ('krem_sir',   'any', 'biljno_kiselo_vrhnje','{}',                     1,   'Gusta biljna krema kao namaz.', 1),
   -- jaja
   ('jaje', 'binder',    'laneno_sjeme',    '{}',                 0.18, '1 jaje = 1 žlica mljevenog lana + 3 žlice vode, odstajati 5 min.', 1),
-  ('jaje', 'binder',    'zamjena_za_jaja', '{}',                 0.18, 'Gotova zamjena za jaja, prema uputi na pakiranju.', 2),
+  ('jaje', 'binder',    'chia_sjemenke',   '{}',                 0.18, '1 jaje = 1 žlica chia sjemenki + 3 žlice vode, 10 min do gela. Veže, ali ne diže.', 2),
+  ('jaje', 'binder',    'zamjena_za_jaja', '{}',                 0.18, 'Gotova zamjena za jaja, prema uputi na pakiranju.', 3),
   ('jaje', 'leavening', 'zamjena_za_jaja', '{}',                 0.18, 'Za dizanje: zamjena za jaja + malo više praška za pecivo.', 1),
   ('jaje', 'leavening', 'laneno_sjeme',    '{}',                 0.18, 'Lan veže, ali slabije diže; dodaj prašak za pecivo.', 2),
   ('jaje', 'base',      'tofu',            '{"okus":"bez okusa"}', 1,  'Za kajganu i omlet: izmrvljeni tofu s kurkumom i crnom soli.', 1),
   ('jaje', 'any',       'zamjena_za_jaja', '{}',                 0.18, 'Gotova zamjena za jaja.', 1),
   ('jaje', 'any',       'laneno_sjeme',    '{}',                 0.18, '1 jaje = 1 žlica mljevenog lana + 3 žlice vode.', 2),
+  ('jaje', 'any',       'chia_sjemenke',   '{}',                 0.18, '1 jaje = 1 žlica chia sjemenki + 3 žlice vode.', 3),
   -- meso
   ('mljeveno_meso', 'any',   'mljevena_biljna_zamjena', '{}',                   1,    'Biljno mljeveno 1:1, ne treba ga dugo pirjati.', 1),
   ('mljeveno_meso', 'any',   'sojine_ljuskice',         '{}',                   0.35, 'Suhe sojine ljuskice namočene u temeljcu: 100 g suhih ≈ 300 g mesa.', 2),

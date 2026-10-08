@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, Coins, HeartPulse, Minus, Plus, ShoppingBasket, Store, X } from "lucide-react";
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, Coins, HeartPulse, Minus, Plus, ShoppingBasket, Sparkles, Store, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPrice, formatSize, nameHasSize } from "@/lib/format";
 import { hr } from "@/lib/i18n/hr";
@@ -208,19 +208,22 @@ function BasketLine({ line: l, strategy, metric }: { line: LineView; strategy: S
   const o = l.offer;
   const size = nameHasSize(o.name, formatSize(o.netQty, o.unit)) ? null : formatSize(o.netQty, o.unit);
   const nutrient = o.nutrition[metric];
-  const meta = [l.kind === "concept" ? `za: ${l.label}` : null, size].filter(Boolean).join(" · ");
+  const isSwap = l.kind === "concept";
+  const meta = isSwap ? [l.forIngredient ? `za: ${l.forIngredient}` : null, hr.basket.packages(l.packages)].filter(Boolean).join(" · ") : size;
   return (
     <li className="flex items-center gap-3 px-3 py-2.5">
       <ProductIcon group={o.conceptGroup ?? null} name={o.name} className="size-12 rounded-[14px]" iconClassName="size-5" />
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 text-[14px] font-semibold leading-tight text-cocoa-900">{o.name}</p>
+        <p className="line-clamp-2 text-[14px] font-semibold leading-tight text-cocoa-900">{isSwap ? l.label : o.name}</p>
         {meta && <p className="mt-0.5 text-xs text-cocoa-400">{meta}</p>}
+        {isSwap && (
+          <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-mint-700" title="Odabrano prema načinu slaganja">
+            <Sparkles className="size-3 shrink-0" />
+            <span className="truncate">{o.name}</span>
+          </p>
+        )}
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          {l.kind === "product" ? (
-            <Stepper value={l.packages} onChange={(n) => basketStore.setPackages(l.basketItemId, n)} />
-          ) : (
-            <span className="text-xs font-medium text-cocoa-500">{hr.basket.packages(l.packages)}</span>
-          )}
+          {!isSwap && <Stepper value={l.packages} onChange={(n) => basketStore.setPackages(l.basketItemId, n)} />}
           {strategy === "nutrition" && (
             <span className="tabular rounded-full bg-mint-50 px-2 py-0.5 text-[11px] font-bold text-mint-700">
               {nutrient == null ? hr.nutrition.unknown : `${fmt(nutrient)} ${UNIT[metric]}`}

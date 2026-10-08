@@ -10,6 +10,7 @@ export async function POST(request: Request) {
   const { items, strategy, metric, order, excludeTags } = parsed.data;
 
   const basketItems = await loadBasketItems(items, excludeTags);
+  const inputById = new Map(items.map((i) => [i.id, i]));
   const result = optimizeBasket(basketItems, { strategy, metric, order });
 
   const view: BasketView = {
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
         basketItemId: l.item.id,
         kind: l.item.kind,
         label: l.item.label,
+        forIngredient: inputById.get(l.item.id)?.forIngredient ?? null,
         offer: l.offer,
         packages: l.packages,
         lineCost: l.lineCost,

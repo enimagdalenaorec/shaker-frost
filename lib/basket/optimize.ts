@@ -39,18 +39,24 @@ export function costOf(item: BasketItem, offer: Offer): Omit<Line, "item" | "off
 }
 
 /**
- * Offers allowed for an item: not "provjeri", the pin respected, and for concept items only the
- * best facet-matching tier (the AI's facet choice for this dish beats a cheaper but wrong product).
+ * Offers allowed for an item: not "provjeri", the pin respected, and (when `strictFacets`) for concept
+ * items only the best facet-matching tier: the AI's facet choice for the dish beats a cheaper but wrong
+ * product. "one_store" passes strictFacets=false and treats facets as a preference inside each store,
+ * because fewer shop visits is what the user asked for.
  */
-export function eligibleOffers(item: BasketItem): Offer[] {
+export function eligibleOffers(item: BasketItem, strictFacets = true): Offer[] {
   let offers = item.candidates.filter((o) => !o.provjeri);
   if (item.pinnedItemId) offers = offers.filter((o) => o.itemId === item.pinnedItemId);
-  if (item.kind === "concept" && offers.length) {
+  if (strictFacets && item.kind === "concept" && offers.length) {
     const best = Math.max(...offers.map((o) => o.facetScore ?? 0));
     offers = offers.filter((o) => (o.facetScore ?? 0) === best);
   }
   return offers;
 }
+
+/** Best facet match first, then cheapest: how one_store picks within the chosen shops. */
+const byFacetThenCost = (item: BasketItem) => (a: Offer, b: Offer) =>
+  (b.facetScore ?? 0) - (a.facetScore ?? 0) || byCost(item)(a, b);
 
 const byCost = (item: BasketItem) => (a: Offer, b: Offer) =>
   costOf(item, a).lineCost - costOf(item, b).lineCost ||
@@ -93,7 +99,7 @@ export function optimizeBasket(items: BasketItem[], opts: OptimizeOptions): Opti
   const unpriced: { item: BasketItem; reason: UnpricedReason }[] = [];
   const priced: { item: BasketItem; offers: Offer[] }[] = [];
   for (const item of items) {
-    const offers = eligibleOffers(item);
+    const offers = eligibleOffers(item, strategy !== "one_store");
     if (offers.length) priced.push({ item, offers });
     else unpriced.push({ item, reason: item.candidates.length ? "only_provjeri" : "no_offers" });
   }
@@ -119,7 +125,7 @@ export function optimizeBasket(items: BasketItem[], opts: OptimizeOptions): Opti
     for (const { item, offers } of priced) {
       const perChain = new Map<string, Offer>();
       for (const chain of new Set(offers.map((o) => o.chainCode))) {
-        perChain.set(chain, cheapestIn(item, offers.filter((o) => o.chainCode === chain))!);
+        perChain.set(chain, [...offers.filter((o) => o.chainCode === chain)].sort(byFacetThenCost(item))[0]);
       }
       offers.forEach((o) => chainNames.set(o.chainCode, o.chainName));
       bestByChain.set(item.id, perChain);
@@ -135,7 +141,7 @@ export function optimizeBasket(items: BasketItem[], opts: OptimizeOptions): Opti
         let best: Offer | undefined;
         for (const c of subset) {
           const o = perChain.get(c);
-          if (o && (!best || costOf(item, o).lineCost < costOf(item, best).lineCost)) best = o;
+          if (o && (!best || byFacetThenCost(item)(o, best) < 0)) best = o;
         }
         if (best) {
           picks.set(item.id, best);

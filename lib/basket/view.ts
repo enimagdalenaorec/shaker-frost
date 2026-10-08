@@ -13,6 +13,7 @@ export const BasketItemInput = z.object({
   requiredUnit: z.enum(["g", "ml", "kom"]).nullable().optional(),
   packages: z.number().int().min(1).default(1),
   pinnedItemId: z.string().nullable().optional(),
+  forIngredient: z.string().optional(),
 });
 
 export const OptimizeRequest = z.object({
@@ -28,6 +29,7 @@ export type LineView = {
   basketItemId: string;
   kind: "product" | "concept";
   label: string;
+  forIngredient: string | null;
   offer: Offer;
   packages: number;
   lineCost: number;

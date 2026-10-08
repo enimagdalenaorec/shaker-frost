@@ -18,6 +18,8 @@ export type LocalBasketItem = {
   packages: number;
   pinnedItemId?: string | null;
   recipeId?: string;
+  /** concept items: the recipe ingredient this replaces ("jaje") */
+  forIngredient?: string;
   addedAt: number;
 };
 

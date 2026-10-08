@@ -117,6 +117,22 @@ describe("one_store", () => {
     expect(r.bestSingleChain?.missing).toHaveLength(3);
   });
 
+  it("relaxes the AI facet preference to save a shop visit, but keeps it within the shops", () => {
+    const milk = concept("mlijeko", [
+      offer({ itemId: "unsweetened", chainCode: "lidl", price: 1.2, facetScore: 2 }),
+      offer({ itemId: "sweetened", chainCode: "konzum", price: 2.0, facetScore: 0 }),
+      offer({ itemId: "unsweetened-k", chainCode: "konzum", price: 2.5, facetScore: 2 }),
+    ]);
+    const flax = concept("lan", [offer({ itemId: "flax", chainCode: "konzum", price: 1.9 })]);
+    const r = optimizeBasket([milk, flax], { strategy: "one_store" });
+    expect(r.groups.map((g) => g.chainCode)).toEqual(["konzum"]);
+    // inside Konzum the better facet match still wins over the cheaper one
+    expect(r.groups[0].lines.find((l) => l.item.label === "mlijeko")?.offer.itemId).toBe("unsweetened-k");
+
+    const strict = optimizeBasket([milk, flax], { strategy: "cheapest" });
+    expect(strict.groups.flatMap((g) => g.lines.map((l) => l.offer.itemId))).toContain("unsweetened");
+  });
+
   it("lists the stores that carry all chosen products", () => {
     const milk = concept("mlijeko", [
       offer({ itemId: "m", chainCode: "konzum", price: 2, isChainwide: false, storeId: "konzum:1", storeAddress: "Ilica 1" }),

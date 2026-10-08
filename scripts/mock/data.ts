@@ -47,6 +47,7 @@ export const CONCEPTS: Record<string, [name: string, parent: string, group: stri
   prehrambeni_kvasac: ["prehrambeni kvasac", "dodaci jelima", "ostale biljne zamjene"],
   zamjena_za_jaja: ["zamjena za jaja", "vezivna sredstva", "zamjene za jaja i vezivo"],
   laneno_sjeme: ["mljeveno laneno sjeme", "sjemenke", "zamjene za jaja i vezivo"],
+  chia_sjemenke: ["chia sjemenke", "sjemenke", "zamjene za jaja i vezivo"],
   tjestenina_bez_jaja: ["tjestenina bez jaja", "tjestenina", "brašno, žitarice i tjestenina"],
   agavin_sirup: ["agavin sirup", "zaslađivači", "ostale biljne zamjene"],
   veganska_majoneza: ["veganska majoneza", "umaci", "ostale biljne zamjene"],
@@ -212,6 +213,19 @@ export const PRODUCTS: MockProduct[] = [
   { id: "2000000000356", name: "dmBio Laneno sjeme mljeveno 200 g", brand: "dmBio", concept: "laneno_sjeme", size: 200, unit: "g",
     facets: { oblik: "mljeveno" }, eko: true, base: 1.65,
     chains: ["dm"], n: [520, 41, 4, 2, 1.5, 24, 0.1, 27], search: "laneno sjeme | lan | bio" },
+
+  { id: "2000000000455", name: "Nutrigold Chia sjemenke 250 g", brand: "Nutrigold", concept: "chia_sjemenke", size: 250, unit: "g",
+    facets: { oblik: "cijelo" }, base: 2.99,
+    chains: ["konzum", "spar", "kaufland"], akcija: { spar: 20 }, n: [486, 31, 3.3, 8, 0, 17, 0.02, 34], search: "chia sjemenke | chia | sjemenke" },
+  { id: "2000000000462", name: "Crownfield Chia sjemenke 200 g", brand: "Crownfield", concept: "chia_sjemenke", size: 200, unit: "g",
+    facets: { oblik: "cijelo" }, base: 1.79,
+    chains: ["lidl"], n: [490, 31, 3.4, 7.7, 0, 16.5, 0.02, 34], search: "chia sjemenke | chia" },
+  { id: "2000000000479", name: "dmBio Chia sjemenke 200 g", brand: "dmBio", concept: "chia_sjemenke", size: 200, unit: "g",
+    facets: { oblik: "cijelo" }, eko: true, base: 2.45,
+    chains: ["dm"], n: [490, 31, 3.3, 8, 0, 17, 0.02, 34], search: "chia sjemenke | chia | bio" },
+  { id: "tzh:60114", name: "Bio chia sjemenke 500 g", brand: "Tvornica zdrave hrane", concept: "chia_sjemenke", size: 500, unit: "g",
+    facets: { oblik: "cijelo" }, eko: true, base: 5.49,
+    chains: ["tzh"], n: [490, 31, 3.3, 8, 0, 17, 0.02, 34], search: "chia sjemenke | chia | bio", url: "https://www.tvornicazdravehrane.com/" },
 
   // --- ostalo ---------------------------------------------------------------------------------
   { id: "2000000000363", name: "Barilla Spaghetti n.5 500 g", brand: "Barilla", concept: "tjestenina_bez_jaja", size: 500, unit: "g",

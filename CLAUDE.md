@@ -352,7 +352,8 @@ Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later
 - An offer for (item, chain): price = the min over that chain's offers (store-level or `:all`), plus the list of stores carrying it.
 - `packages = ceil(required_qty / net_qty)`, `line_cost = packages × price`, `used_cost = required_qty / net_qty × price` (shown as "iskorišteno").
 - Totals exclude `provjeri` offers. **Unknown package size → assume 1 package**, flagged "pakiranje nepoznato" (`sizeKnown: false`, no "iskorišteno"). The same concept + facets from several recipes merge into one line.
-- For concept items, only the **best facet-matching tier** is eligible: the AI's facet choice for the dish beats a cheaper but wrong product, e.g. vanilla milk in sarma.
+- **Recipe swaps enter the basket as the alternative (concept), never as a fixed product.** "Dodaj: Chia sjemenke" stores `{kind: 'concept', conceptId, facets, forIngredient: 'jaje', requiredQty}`; the basket picks the product **and** the shop per sort mode. The basket shows "Chia sjemenke · za: jaje" plus the current pick. Products on the recipe screen are only a price preview.
+- Facet preferences (e.g. unsweetened, smoked) are **strict** in `cheapest` / `nutrition`: only the best facet-matching tier is eligible. In `one_store` they are **soft**: fewer shop visits wins, then the best facet match inside the chosen shops (tested).
 - **Two kinds of items:**
   - **concept** items (from recipes): the candidates are all offers of all products in the concept, facet-ranked;
   - **product** items (from search or often-bought): the candidates are only that product's offers, `line_cost = packages × price`.
