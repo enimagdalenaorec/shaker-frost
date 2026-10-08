@@ -29,6 +29,15 @@ const noThinking = new Set<string>();
 // Structured extraction/choice needs little deliberation; default (dynamic) thinking costs 5–20 s.
 const THINKING: Record<Tier, ThinkingLevel> = { strong: ThinkingLevel.LOW, fast: ThinkingLevel.MINIMAL };
 
+// Shared free capacity is erratic (the same call takes 1 s or 100 s). So we hedge: if a model has not
+// answered after HEDGE_MS, the next model in the chain starts in parallel and the first valid answer wins.
+// A failed model (429/503/404/timeout) hands over immediately.
+const HEDGE_MS: Record<Tier, number> = { strong: 6_000, fast: 3_500 };
+const TIMEOUT_MS: Record<Tier, number> = { strong: 20_000, fast: 12_000 };
+const LAST_TIMEOUT_MS = 30_000;
+
+type Opts<T> = { schema: z.ZodType<T>; system: string; user: string; tier: Tier; temperature?: number; search?: boolean };
+
 function toJsonSchema(schema: z.ZodType): unknown {
   const json = z.toJSONSchema(schema, { target: "draft-7" }) as Record<string, unknown>;
   delete json.$schema;
@@ -41,82 +50,110 @@ function statusOf(err: unknown): number {
   return code ? Number(code) : 0;
 }
 
-/**
- * Structured generation with model fallback, one repair retry on invalid JSON,
- * and optional web grounding that silently degrades to model knowledge.
- */
-export async function generateJson<T>(opts: {
-  schema: z.ZodType<T>;
-  system: string;
-  user: string;
-  tier: Tier;
-  temperature?: number;
-  search?: boolean;
-}): Promise<LlmResult<T>> {
-  const responseJsonSchema = toJsonSchema(opts.schema);
-  let wantSearch = Boolean(opts.search) && Date.now() > searchBlockedUntil;
+/** Structured generation with hedged model fallback, a repair retry and optional web grounding. */
+export function generateJson<T>(opts: Opts<T>): Promise<LlmResult<T>> {
+  const models = MODEL_CHAINS[opts.tier];
+  const schema = toJsonSchema(opts.schema);
   const errors: string[] = [];
 
-  for (const model of MODEL_CHAINS[opts.tier]) {
-    let user = opts.user;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const started = Date.now();
-      try {
-        const res = await ai().models.generateContent({
-          model,
-          contents: user,
-          config: {
-            systemInstruction: opts.system,
-            temperature: opts.temperature ?? 0.2,
-            ...(noThinking.has(model) ? {} : { thinkingConfig: { thinkingLevel: THINKING[opts.tier] } }),
-            ...(wantSearch
-              ? { tools: [{ googleSearch: {} }] }
-              : { responseMimeType: "application/json", responseJsonSchema }),
-          },
-        });
-        const text = res.text ?? "";
-        const raw = wantSearch ? extractJson(text) : text;
-        const parsed = opts.schema.safeParse(JSON.parse(raw));
-        if (!parsed.success) {
-          // one repair round with the validation error
-          user = `${opts.user}\n\nPrethodni odgovor nije prošao validaciju: ${parsed.error.message.slice(0, 600)}\nVrati ispravan JSON.`;
-          errors.push(`${model}: invalid JSON shape`);
-          continue;
+  return new Promise((resolve, reject) => {
+    let next = 0;
+    let running = 0;
+    let settled = false;
+
+    const launch = () => {
+      if (settled) return;
+      if (next >= models.length) {
+        if (running === 0) {
+          settled = true;
+          reject(new LlmError(`Svi modeli su zauzeti ili nedostupni (${errors.join("; ")})`));
         }
-        const chunks = res.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
-        return {
-          data: parsed.data,
-          model,
-          ms: Date.now() - started,
-          tokensIn: res.usageMetadata?.promptTokenCount ?? 0,
-          tokensOut: res.usageMetadata?.candidatesTokenCount ?? 0,
-          grounded: wantSearch && chunks.length > 0,
-          sources: chunks
-            .map((c) => c.web)
-            .filter((w): w is { uri: string; title?: string } => Boolean(w?.uri))
-            .map((w) => ({ title: w.title ?? null, url: w.uri })),
-        };
-      } catch (err) {
-        const status = statusOf(err);
-        errors.push(`${model}: ${status || (err as Error).message.slice(0, 80)}`);
-        if (status === 400 && /thinking/i.test((err as Error).message) && !noThinking.has(model)) {
-          noThinking.add(model);
-          attempt--;
-          continue;
-        }
-        if (wantSearch && status === 429) {
-          // grounding not available on this key: fall back to model knowledge everywhere
-          searchBlockedUntil = Date.now() + 10 * 60_000;
-          wantSearch = false;
-          attempt--;
-          continue;
-        }
-        if (err instanceof SyntaxError) continue; // malformed JSON: retry once on the same model
-        break; // 429 / 503 / 404 / other: next model in the chain
+        return;
       }
+      const model = models[next++];
+      const isLast = next === models.length;
+      running++;
+      const hedge = isLast ? null : setTimeout(launch, HEDGE_MS[opts.tier]);
+      tryModel(model, opts, schema, isLast ? LAST_TIMEOUT_MS : TIMEOUT_MS[opts.tier])
+        .then((result) => {
+          if (hedge) clearTimeout(hedge);
+          if (!settled) {
+            settled = true;
+            resolve(result);
+          }
+        })
+        .catch((err: Error) => {
+          if (hedge) clearTimeout(hedge);
+          errors.push(`${model}: ${err.message.slice(0, 80)}`);
+          running--;
+          launch();
+        });
+    };
+    launch();
+  });
+}
+
+/** One model: up to two attempts (JSON repair / search fallback). Throws so the chain can move on. */
+async function tryModel<T>(model: string, opts: Opts<T>, responseJsonSchema: unknown, timeoutMs: number): Promise<LlmResult<T>> {
+  let wantSearch = Boolean(opts.search) && Date.now() > searchBlockedUntil;
+  let user = opts.user;
+  let lastError: unknown = null;
+  const deadline = Date.now() + timeoutMs;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const started = Date.now();
+    try {
+      const res = await ai().models.generateContent({
+        model,
+        contents: user,
+        config: {
+          systemInstruction: opts.system,
+          temperature: opts.temperature ?? 0.2,
+          abortSignal: AbortSignal.timeout(Math.max(1_000, deadline - Date.now())),
+          ...(noThinking.has(model) ? {} : { thinkingConfig: { thinkingLevel: THINKING[opts.tier] } }),
+          ...(wantSearch ? { tools: [{ googleSearch: {} }] } : { responseMimeType: "application/json", responseJsonSchema }),
+        },
+      });
+      const text = res.text ?? "";
+      const parsed = opts.schema.safeParse(JSON.parse(wantSearch ? extractJson(text) : text));
+      if (!parsed.success) {
+        user = `${opts.user}\n\nPrethodni odgovor nije prošao validaciju: ${parsed.error.message.slice(0, 600)}\nVrati ispravan JSON.`;
+        lastError = new Error("invalid JSON shape");
+        continue;
+      }
+      const chunks = res.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
+      return {
+        data: parsed.data,
+        model,
+        ms: Date.now() - started,
+        tokensIn: res.usageMetadata?.promptTokenCount ?? 0,
+        tokensOut: res.usageMetadata?.candidatesTokenCount ?? 0,
+        grounded: wantSearch && chunks.length > 0,
+        sources: chunks
+          .map((c) => c.web)
+          .filter((w): w is { uri: string; title?: string } => Boolean(w?.uri))
+          .map((w) => ({ title: w.title ?? null, url: w.uri })),
+      };
+    } catch (err) {
+      lastError = err;
+      const status = statusOf(err);
+      if (wantSearch && status === 429) {
+        // grounding is not available on this key: use model knowledge (for every call, for a while)
+        searchBlockedUntil = Date.now() + 10 * 60_000;
+        wantSearch = false;
+        attempt--;
+        continue;
+      }
+      if (status === 400 && /thinking/i.test((err as Error).message) && !noThinking.has(model)) {
+        noThinking.add(model);
+        attempt--;
+        continue;
+      }
+      if (err instanceof SyntaxError) continue; // malformed JSON: one more try on the same model
+      break; // 429 / 503 / 404 / timeout: let the chain move on
     }
   }
-  throw new LlmError(`Svi modeli su zauzeti ili nedostupni (${errors.join("; ")})`);
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 /** With search tools the model can't use JSON mode, so the JSON is embedded in prose. */

@@ -27,7 +27,7 @@ export default function HomePage() {
           {EXAMPLE_RECIPES.map((r) => (
             <Link
               key={r.slug}
-              href={`/recept/novi?primjer=${r.slug}`}
+              href={r.href}
               className={cn(
                 "group relative flex h-28 flex-col justify-between rounded-[20px] p-3.5 transition-transform active:scale-[0.97] sm:h-32 sm:p-5",
                 r.tone,

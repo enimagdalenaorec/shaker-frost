@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <SiteHeader />
         <div className="flex-1 pb-28 sm:pb-16">{children}</div>
-        <TabBar />
+        <Suspense fallback={null}>
+          <TabBar />
+        </Suspense>
         <Toaster position="top-center" theme="light" />
       </body>
     </html>

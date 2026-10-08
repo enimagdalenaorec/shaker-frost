@@ -321,36 +321,29 @@ Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later
 
 ---
 
-## 8. AI pipeline
+## 8. AI pipeline (built: `lib/ai/pipeline.ts`, run from the terminal with `npm run veganize -- sarma|<url>`)
 
-`POST /api/veganize` with body `{ url?, text?, servings_target?, exclude_tags? }` returns an **SSE stream** of `{stage, status, payload}`. Every stage writes `agent_steps`.
+`POST /api/veganize` with body `{ url? | text? | example?, excludeTags? }` returns an SSE stream of `PipelineEvent`s. `/recept/novi` renders them live as stage cards, then redirects to `/recept/<id>`, which loads the saved result plus live offers.
 
-### Stage 0: Ingest (stop at the first tier that yields ingredients + steps)
+| # | Stage | How | Typical time |
+|---|---|---|---|
+| 0 | **ingest** (`lib/recipe/ingest.ts`) | `recepti.index.hr` → its API `recepti-api.index.hr/api/services/app/Recipe/Get?Id=<number from URL>`. Any other URL → schema.org `Recipe` JSON-LD (coolinarika and most recipe sites; HTML entities decoded). No JSON-LD → page text → LLM extraction. Pasted text → LLM extraction. Example chips → saved real pages in `fixtures/recipes/*.json` (work offline) | 0–3 s |
+| 1 | **analyze** (strong) | Per ingredient: `name_hr`, `slug` (from the `ingredients` vocabulary), quantity in g/ml/kom, **role** (binder / leavening / base / smoky / frying / flavour / baking / creaminess / sweet / liquid / any) and **status** (vegan / not_vegan / **depends**), plus a reason and a confidence. Also the dish category | 2–4 s |
+| 2 | **research** (fast, cached) | One call for all risky ingredients plus the dish. Cached per `slug|role|dish category` (`substitution_research`) and per dish (`dish_research`), so repeats cost about 0.1 s. Tries Google Search grounding; **our free-tier key refuses it**, so it silently uses model knowledge (`method='ai'`). A billed key or OpenAI makes it web-grounded with sources, with no code change | 0.1–3 s |
+| 3 | **alternatives** (strong) | Candidates from `v_rules` plus the facet values that actually exist per concept, plus the research notes. 1–3 alternatives per ingredient. **Ids and facet values are validated against the DB**; `concept_id=null` is allowed (e.g. "mineralna voda", "izostavi"), shown as "bez kupnje". The global concept list is sent only when some ingredient has no rule | 3–6 s |
+| 4 | **offers** ∥ **rewrite** | `get_offers` SQL (no LLM) ∥ steps rewritten with the swaps (fast), changed steps flagged | 1–2 s |
+| 5 | **save** | `recipes`, `recipe_ingredients`, `ingredient_alternatives`, `agent_runs`, `agent_steps` | 0.3 s |
 
-| Tier | When | How |
-|---|---|---|
-| A. JSON-LD | schema.org `Recipe` in the HTML. ✅ **coolinarika.com verified** | Parse `ld+json` (handle `@graph` and arrays) |
-| B. Site API | `recepti.index.hr` (client-side app; data from `https://recepti-api.index.hr/api`) | ❓ find the recipe endpoint in the browser's Network tab |
-| C. HTML → LLM | Other sites, no JSON-LD | Readable text → `generateJson`. Label "Recept izvučen pomoću AI-ja, može sadržavati greške" |
-| D. Web | Fetch blocked, empty or JS-only; or C failed | `researchJson` with the URL + title, returns the recipe + source URLs. Same label |
-| E. Paste | Everything else | Text → C |
+**Measured end to end:** 8–12 s typical, about 20 s when the free tier is congested.
 
-### Stages 1–4
+**LLM wrapper (`lib/ai/llm.ts`), learned the hard way on our key:**
+- The key is **free tier**: Pro models have no quota, search grounding gets 429, and quotas are **per model**.
+- **Model chains** (`lib/ai/models.ts`): strong = 3.5-flash-lite → 3.1-flash-lite → 3.5-flash → flash-latest; fast = 3.1-flash-lite → flash-lite-latest → 3.5-flash-lite. `gemini-3.5-flash` swings between 4 s and 100 s, so it is a fallback, not the lead.
+- **Hedged calls:** if a model has not answered after 6 s (strong) or 3.5 s (fast), the next model starts in parallel and the first valid answer wins. Errors hand over immediately.
+- **Thinking level** LOW (strong) / MINIMAL (fast): this cut the run from about 23 s to about 9 s.
+- JSON-schema output from zod (`z.toJSONSchema`), validated with zod, plus one repair retry.
 
-| # | Stage | How | Tier | Target |
-|---|---|---|---|---|
-| 1 | **Extract & classify** | One call. Input: lines + title + steps + the `ingredients` vocabulary. Output per line: `name_hr, ingredient_slug \| null, quantity (in g/ml/kom, converting žlica/šalica/prstohvat itself), quantity_estimated, role, is_vegan, reason_hr, confidence` | strong | 5–10 s |
-| 2 | **Choose alternatives** | SQL loads candidates from `v_rules` + the facet values present per concept. **One** call for the whole recipe picks the top 2–3 concepts per ingredient **and the facets that fit the dish**, with `reasoning_hr`, ratio and confidence. Only candidate ids and existing facet values are allowed; if nothing fits, another concept from the same `group_name` (lower confidence) | strong | 8–15 s |
-| 3 | **Offers** | `get_offers(...)`: pure SQL. `required_qty = quantity × ratio × servings_target / servings_original` | none | < 1 s |
-| 4 | **Rewrite recipe** | Rewrites the steps with the replacements; marks changed steps. **Runs in parallel with 3** | fast | 5–10 s |
-
-**Target < 30 s** on tier A/B.
-
-**Exclusion chips** (no chat): **bez soje**, **bez glutena**, **bez orašastih plodova**. Toggling one re-runs only stages 2–4, filtering products by `tags`.
-
-**Prompt rules:** prompts live in `lib/ai/prompts/*.ts` (`{ version, system, buildUser }`, version logged); low temperature; every output has `reasoning_hr` + `confidence`, and the UI shows both; the model chooses only among ids and enum values we pass in; user-facing text in Croatian. Cache stages 0+1 by a hash of (URL or text) + prompt version, so the example chips are instant.
-
----
+**Prompts** live in `lib/ai/prompts.ts` (versioned, logged in `agent_steps.prompt_version`). Croatian output; the model only chooses among ids and values we pass in.
 
 ## 9. Basket optimisation (`lib/basket/optimize.ts`, pure, tested)
 
@@ -499,4 +492,4 @@ The core loop, search and "Često u košarici" are never cut.
 1. ❓ Gemini rate limits on our key (free tier?). This decides the fast/strong models per stage.
 2. ❓ The current `c_products.csv` file for Plan A (not in ~/Downloads yet; only the column description is).
 3. ❓ Teammate: allergen tags feasible? A `store_city` column? Agree to the §4.2 format?
-4. ❓ The `recepti-api.index.hr` recipe endpoint.
+4. ✅ index.hr endpoint found: `Recipe/Get?Id=<id>`.
