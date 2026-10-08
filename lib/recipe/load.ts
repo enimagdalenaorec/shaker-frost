@@ -1,7 +1,12 @@
 import "server-only";
 import { adminDb } from "@/lib/db/admin";
+import { facetMatches } from "@/lib/catalog/facets";
 
 // Loads a saved veganization result + live product offers for every suggested alternative.
+
+/** €/kg or €/l; unknown size sorts last */
+const perKg = (o: { unit_price_per_kg_l?: number | string | null }) =>
+  o.unit_price_per_kg_l == null ? Number.POSITIVE_INFINITY : Number(o.unit_price_per_kg_l);
 
 export type ProductOption = {
   itemId: string;
@@ -17,6 +22,7 @@ export type ProductOption = {
   discountPct: number;
   netQty: number | null;
   unit: string | null;
+  unitPrice: number | null;
   nChains: number;
   provjeri: boolean;
 };
@@ -89,7 +95,7 @@ export async function loadRecipe(id: string): Promise<RecipeView | null> {
     const rows = (offers ?? []).filter((o) => o.concept_id === conceptId && !o.provjeri);
     const byItem = new Map<string, { best: (typeof rows)[number]; chains: Set<string>; score: number }>();
     for (const o of rows) {
-      const score = Object.entries(facets).filter(([k, v]) => (o as Record<string, unknown>)[k] === v).length;
+      const score = Object.entries(facets).filter(([k, v]) => facetMatches(o as Record<string, unknown>, k, v)).length;
       const cur = byItem.get(o.item_id!);
       if (!cur) byItem.set(o.item_id!, { best: o, chains: new Set([o.chain_code!]), score });
       else {
@@ -97,13 +103,14 @@ export async function loadRecipe(id: string): Promise<RecipeView | null> {
         if (Number(o.price) < Number(cur.best.price)) cur.best = o;
       }
     }
+    // best facet match first, then the normalised price (€/kg, €/l): a 400 g tofu at 2.99 beats 200 g at 1.99
     return [...byItem.values()]
-      .sort((a, b) => b.score - a.score || Number(a.best.price) - Number(b.best.price))
+      .sort((a, b) => b.score - a.score || perKg(a.best) - perKg(b.best) || Number(a.best.price) - Number(b.best.price))
       .slice(0, 4)
       .map(({ best: o, chains }) => ({
         itemId: o.item_id!, name: o.name!, brand: o.brand, conceptGroup: o.concept_group, chainCode: o.chain_code!, chainName: o.chain_name!,
         chainKind: o.chain_kind ?? "store", price: Number(o.price), regularPrice: num(o.regular_price), isAkcija: Boolean(o.is_akcija),
-        discountPct: o.discount_pct ?? 0, netQty: num(o.net_qty), unit: o.size_unit, nChains: chains.size, provjeri: Boolean(o.provjeri),
+        discountPct: o.discount_pct ?? 0, netQty: num(o.net_qty), unit: o.size_unit, unitPrice: num(o.unit_price_per_kg_l), nChains: chains.size, provjeri: Boolean(o.provjeri),
       }));
   };
 

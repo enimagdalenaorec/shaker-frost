@@ -62,6 +62,18 @@ describe("cheapest", () => {
     expect(r.unpriced.map((u) => u.reason)).toEqual(["only_provjeri", "no_offers"]);
   });
 
+  it("compares €/kg, not the package price, when the recipe amount is unknown", () => {
+    const item: BasketItem = {
+      id: "tofu", kind: "concept", label: "tofu", requiredQty: null, requiredUnit: "g",
+      candidates: [
+        offer({ itemId: "small", chainCode: "lidl", price: 1.99, netQty: 200, unit: "g" }), // 9.95 €/kg
+        offer({ itemId: "big", chainCode: "spar", price: 2.99, netQty: 400, unit: "g" }), // 7.48 €/kg
+      ],
+    };
+    const r = optimizeBasket([item], { strategy: "cheapest" });
+    expect(r.groups[0].lines[0].offer.itemId).toBe("big");
+  });
+
   it("respects the AI facet choice before price", () => {
     const milk = concept("mlijeko", [
       offer({ itemId: "vanilla", chainCode: "lidl", price: 1.0, facetScore: 0 }),

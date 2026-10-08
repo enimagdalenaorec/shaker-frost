@@ -93,6 +93,7 @@ Browser ─▶│ UI: Recept · Košarica · Moji recepti · Prijava (sheet)    
 - **Facets are lists** (`atr_okus`, `atr_zasladenost`, `atr_namjena`, `atr_oblik_obrada`): a product can be `mljeveno` *and* `integralno`. The okus value **`bez okusa / natur` also matches products with no flavour listed** (most plain products).
 - **Prices: one row per product × chain, no per-store rows, no history.** `price` = the **minimum**: the cheapest current Zagreb store of the chain (akcija included), which the basket pays; `price_avg` = the **average** over the chain's Zagreb stores. `regular_price`, `akcija`, **`prilika`** (≥ 5 % below that store's monthly median, from the handoff) and `pct_vs_median` describe the cheapest store (`cheapest_store_id` / `cheapest_store_address`); `n_stores` / `n_stores_akcija` / `n_stores_prilika` say how widespread they are ("akcija u 12/30 trgovina"). Stale prices are dropped; Kaufland's national price lists (non-Zagreb stores) are dropped. Web shops (biobio, tzh) keep their one price.
 - **Store ids** stay in the contract as `<chain>:all` (chain-wide) and `<shop>:online`; `store_address` is NULL.
+- **Price sorting is normalised: €/kg or €/l** (`unit_price_per_kg_l` = price / (pakiranje_kolicina × pakiranje_komada) × 1000). The handoff lacks a package size for 24 % of priced products, so the exporter fills it from the sellers' own fields (`size_text`, a size inside `unit`, per-kg pricing of loose produce = 1 kg) and then the name; 95 % of priced products have a €/kg. Without a size a product sorts last.
 - **Allergen tags** (`soja`, `gluten`, `orasi`) are derived by the exporter from name + concept keywords (the handoff has no allergen column).
 - **Images:** none in the handoff; the UI falls back to a chain-coloured initial badge and a concept icon.
 - Data quality is the teammate's job; the app only guards against crashes (NULL-safe, no division by zero).
@@ -253,7 +254,8 @@ v_offers   (item_id, chain_code, chain_name, chain_kind, chain_logo_url,
             cheapest_store_id, cheapest_store_address)                 -- one row per product × chain
 rpc get_offers(p_concept_ids text[], p_exclude_tags text[])
             -- every offer of every product in the concepts OR THEIR DESCENDANTS; concept_id in the result is
-            -- the REQUESTED id. Facet matching happens in lib/catalog/basket-candidates.ts
+            -- the REQUESTED id; ordered by €/kg (unknown size last), then price.
+            -- Facet matching: lib/catalog/facets.ts
 rpc get_offers_for_items(p_item_ids text[])
 v_best_offers (item_id, chain_code, chain_name, price, price_avg, regular_price, is_akcija, discount_pct,
                is_prilika, pct_vs_median, cheapest_store_address, unit_price_per_kg_l,
@@ -332,7 +334,7 @@ The synthetic mock catalog (`scripts/mock/`, `fixtures/catalog_mock.csv`) was re
 
 **Strategies:**
 1. **one_store:** every subset of 1–3 chains (~22 chains incl. web shops → ≤ 1,793 subsets, trivial). Cost = the cheapest covering offer per item within the subset. Minimise (number of chains, cost). For the chosen chain(s), list **the Zagreb stores that carry all assigned items** (with `:all` = every store). Always show the best single chain and its missing items. If ≤ 3 chains can't cover everything: fall back to cheapest + "Proizvodi su raspršeni po trgovinama". Web shops are labelled "online".
-2. **cheapest:** the minimum `line_cost` per item; tie-break by unit price.
+2. **cheapest:** the minimum `line_cost` per item; tie-break by unit price. **When the recipe amount is unknown, compare €/kg first** (one package would always favour the smallest pack).
 3. **nutrition:** the best offer per item by the chosen metric and direction; NULL last; tie-break by cost. Plus a basket nutrition summary for the quantities used.
 
 Zamijeni pins an item. Output: grouped by chain, subtotals, total, and the saving vs. the most expensive option.
@@ -356,7 +358,7 @@ Header on every page: logo · basket icon with item count · Prijava / profile.
    - empty result: "Nema rezultata za 'x'", plus a trigram "Jeste li mislili…" suggestion.
 3. **Recept** (`/recept/[id]`, streamed after Veganiziraj):
    - exclusion chips and live stage cards;
-   - the ingredient list (non-vegan highlighted) → alternative cards (facets, ratio, reasoning, confidence) → product rows (chain badge/logo, price, akcija + struck-through regular price, 8 nutrition values with source badge, Provjeri list, store link);
+   - the ingredient list (non-vegan highlighted) → alternative cards (facets, ratio, reasoning, confidence) → product rows sorted by facet match, then **€/kg** (chain badge/logo, €/kg, price, akcija + struck-through regular price, 8 nutrition values with source badge, Provjeri list, store link);
    - the veganised steps;
    - **Dodaj u košaricu**; **Spremi recept** (→ login sheet for guests).
 4. **Košarica** (`/kosarica`):

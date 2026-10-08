@@ -58,10 +58,17 @@ export function eligibleOffers(item: BasketItem, strictFacets = true): Offer[] {
 const byFacetThenCost = (item: BasketItem) => (a: Offer, b: Offer) =>
   (b.facetScore ?? 0) - (a.facetScore ?? 0) || byCost(item)(a, b);
 
+/**
+ * Cheapest for what the item needs. With a known amount that is the line cost (packages × price); without one
+ * a single package would always favour the smallest pack, so compare the normalised price (€/kg, €/l) instead.
+ */
 const byCost = (item: BasketItem) => (a: Offer, b: Offer) =>
-  costOf(item, a).lineCost - costOf(item, b).lineCost ||
-  unitPrice(a) - unitPrice(b) ||
+  (needKnown(item)
+    ? costOf(item, a).lineCost - costOf(item, b).lineCost || unitPrice(a) - unitPrice(b)
+    : unitPrice(a) - unitPrice(b) || a.price - b.price) ||
   a.itemId.localeCompare(b.itemId);
+
+const needKnown = (item: BasketItem) => item.kind === "product" || (item.requiredQty ?? 0) > 0;
 
 function unitPrice(o: Offer): number {
   return o.netQty && o.netQty > 0 ? o.price / o.netQty : Number.POSITIVE_INFINITY;

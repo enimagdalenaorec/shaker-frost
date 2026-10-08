@@ -7,7 +7,7 @@ import { setRecipeSaved } from "@/app/actions/user";
 import { setPendingAction, signInWithGoogle, useAuth } from "@/lib/auth/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatPrice, formatSize } from "@/lib/format";
+import { formatPrice, formatSize, formatUnitPrice } from "@/lib/format";
 import { basketStore } from "@/lib/basket/local-store";
 import { hr } from "@/lib/i18n/hr";
 import { ChainBadge } from "@/components/catalog/chain-badge";
@@ -354,6 +354,9 @@ function SwapCard({
               <li key={p.itemId} className="flex items-center gap-2.5 text-[13px]">
                 <ChainBadge code={p.chainCode} name={p.chainName} kind={p.chainKind} className="shrink-0" />
                 <span className="min-w-0 flex-1 truncate font-semibold text-ink">{p.name}</span>
+                {formatUnitPrice(p.unitPrice, p.unit) && (
+                  <span className="tabular shrink-0 text-[11px] font-bold text-rind">{formatUnitPrice(p.unitPrice, p.unit)}</span>
+                )}
                 <span className={cn("tabular w-14 shrink-0 text-right font-heading text-[15px] font-black", p.isAkcija ? "text-guava-deep" : "text-ink")}>
                   {formatPrice(p.price)}
                 </span>

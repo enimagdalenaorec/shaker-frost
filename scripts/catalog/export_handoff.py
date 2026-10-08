@@ -81,6 +81,39 @@ union all by name
 select *, coalesce(regular_price > price or akcija_price is not null, false) as akcija from shop_rows
 """)
 
+# ── package sizes the handoff is missing ───────────────────────────────────────────────────────
+# Needed for €/kg sorting. Taken from the sellers' own fields, in this order: size_text ("200g"), a size inside
+# unit ("500g", "ca. 1kg", "0,7l"), per-kg / per-l pricing (unit "kg" → quantity kg, default 1 kg: loose
+# produce), then the product name ("Pivo 0,5l"). Most common answer per product wins.
+c.sql(r"""
+create temp table size_fill as
+with parsed as (
+  select product_key, size_text, unit, quantity, name,
+         regexp_extract(lower(replace(coalesce(size_text, ''), ',', '.')), '(\d+(?:\.\d+)?)\s*(kg|g|ml|cl|dl|l)\b', ['v', 'u']) as st,
+         regexp_extract(lower(replace(coalesce(unit, ''), ',', '.')), '(\d+(?:\.\d+)?)\s*(kg|g|ml|cl|dl|l)\b', ['v', 'u']) as un,
+         regexp_extract(lower(replace(coalesce(name, ''), ',', '.')), '(\d+(?:\.\d+)?)\s*(kg|g|ml|cl|dl|l)\b', ['v', 'u']) as nm,
+         try_cast(replace(trim(coalesce(quantity, '')), ',', '.') as double) as q
+  from 'offers.parquet'
+  where product_key in (select product_key from c_products where pakiranje_kolicina is null)
+), picked as (
+  select product_key,
+         case when st.v <> '' then st when un.v <> '' then un
+              when lower(trim(unit)) in ('kg', 'l') then {'v': case when q between 0.05 and 5 then q::varchar else '1' end, 'u': lower(trim(unit))}
+              when nm.v <> '' then nm end as p,
+         case when st.v <> '' or un.v <> '' or lower(trim(unit)) in ('kg', 'l') then 'trgovina' when nm.v <> '' then 'naziv' end as src
+  from parsed
+), norm as (
+  select product_key, src,
+         try_cast(p.v as double) * case p.u when 'kg' then 1000 when 'l' then 1000 when 'dl' then 100 when 'cl' then 10 else 1 end as qty,
+         case when p.u in ('kg', 'g') then 'g' else 'ml' end as unit
+  from picked where p is not null
+)
+select product_key, mode(qty) as qty, mode(unit) as unit, mode(src) as src
+from norm where qty > 0 and qty <= 50000
+group by 1
+""")
+print("package sizes filled:", c.sql("select src, count(*) from size_fill group by 1").fetchall())
+
 # ── products ────────────────────────────────────────────────────────────────────────────────
 c.sql(r"""
 create temp table c_products_out as
@@ -103,7 +136,8 @@ select
   to_json(coalesce(atr_oblik_obrada, []))::varchar as atr_oblik_obrada,
   to_json(coalesce(atr_namjena, []))::varchar as atr_namjena,
   to_json(coalesce(atr_porijeklo, []))::varchar as atr_porijeklo,
-  pakiranje_kolicina, pakiranje_jedinica,
+  coalesce(pakiranje_kolicina, f.qty) as pakiranje_kolicina,
+  coalesce(pakiranje_jedinica, f.unit) as pakiranje_jedinica,
   coalesce(pakiranje_komada, 1)::int as pakiranje_komada,
   -- allergen tags from keywords (the handoff has no allergen column)
   to_json(list_filter([
@@ -114,6 +148,7 @@ select
   ], x -> x is not null))::varchar as tags,
   array_to_string(list_distinct(list_concat(coalesce(names, []), [std_naziv, concept_naziv])), ' | ') as search_text
 from c_products
+left join size_fill f using (product_key)
 """)
 
 # ── concepts ────────────────────────────────────────────────────────────────────────────────

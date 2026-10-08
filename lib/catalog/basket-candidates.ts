@@ -1,5 +1,6 @@
 import "server-only";
 import { publicDb } from "@/lib/db/public";
+import { facetMatches } from "@/lib/catalog/facets";
 import type { BasketItem, Offer, Unit } from "@/lib/basket/types";
 import type { z } from "zod";
 import type { BasketItemInput } from "@/lib/basket/view";
@@ -8,14 +9,7 @@ type Input = z.output<typeof BasketItemInput>;
 type Row = Record<string, unknown>;
 
 const FACET_KEYS = ["okus", "zasladeno", "namjena", "oblik"] as const;
-const PLAIN = "bez okusa / natur";
 const num = (v: unknown) => (v == null ? null : Number(v));
-
-/** Product facets are lists; "bez okusa / natur" also matches a product that lists no flavour at all. */
-function facetMatches(r: Row, key: string, want: string): boolean {
-  const have = Array.isArray(r[key]) ? (r[key] as string[]) : r[key] == null ? [] : [String(r[key])];
-  return have.includes(want) || (key === "okus" && want === PLAIN && have.length === 0);
-}
 
 function toOffer(r: Row, facets?: Record<string, string>): Offer {
   return {
