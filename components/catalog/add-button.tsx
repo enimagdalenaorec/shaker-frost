@@ -45,8 +45,8 @@ export function AddButton({
         type="button"
         onClick={onClick}
         className={cn(
-          "inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-all",
-          done ? "bg-mint-100 text-mint-700" : "bg-mint-600 text-oat-50 hover:bg-mint-700 active:scale-95",
+          "btn h-9 px-3.5 text-sm",
+          done ? "bg-pistachio" : "btn-guava",
           className,
         )}
       >
@@ -62,8 +62,8 @@ export function AddButton({
       onClick={onClick}
       aria-label={`${hr.product.add}: ${product.name}`}
       className={cn(
-        "grid size-9 shrink-0 place-items-center rounded-full transition-all",
-        done ? "bg-mint-100 text-mint-700" : "bg-mint-600 text-oat-50 shadow-soft hover:bg-mint-700 active:scale-90",
+        "btn size-9 shrink-0 shadow-[0_3px_0_var(--ink)] hover:shadow-[0_4px_0_var(--ink)]",
+        done ? "bg-pistachio" : "btn-guava",
         className,
       )}
     >

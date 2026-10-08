@@ -29,7 +29,7 @@ export function GoogleSignInButton({ next, className, label = "Prijava s Googleo
         signInWithGoogle(next).catch(() => setBusy(false));
       }}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2.5 rounded-full bg-oat-50 px-5 text-sm font-bold text-cocoa-900 ring-1 ring-cocoa-900/10 transition-colors hover:bg-white disabled:opacity-60",
+        "btn btn-paper h-12 px-5 text-[15px]",
         className,
       )}
     >
@@ -60,7 +60,7 @@ export function AuthButton() {
       <button
         type="button"
         onClick={() => signInWithGoogle()}
-        className="inline-flex h-9 items-center gap-2 rounded-full bg-oat-50 px-3.5 text-[13px] font-bold text-cocoa-900 ring-1 ring-cocoa-900/10 transition-colors hover:bg-white"
+        className="btn btn-ink h-9 px-3.5 text-[13px] shadow-[0_3px_0_rgb(64_52_66/0.35)] hover:shadow-[0_4px_0_rgb(64_52_66/0.35)]"
       >
         <GoogleMark className="size-3.5" />
         Prijava
@@ -81,7 +81,7 @@ export function AuthButton() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="Račun"
-        className="grid size-9 place-items-center overflow-hidden rounded-full bg-mint-600 text-xs font-bold text-oat-50 ring-2 ring-oat-50"
+        className="grid size-9 place-items-center overflow-hidden rounded-full border-2 border-ink bg-pistachio text-xs font-black text-ink"
       >
         {user.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -91,7 +91,7 @@ export function AuthButton() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-2xl bg-oat-50 shadow-lift ring-1 ring-cocoa-900/10">
+        <div className="card-ink absolute right-0 top-12 z-50 w-56 overflow-hidden !rounded-[20px]">
           <div className="border-b border-cocoa-900/[0.06] px-4 py-3">
             <p className="truncate text-sm font-bold text-cocoa-900">{user.name}</p>
             {user.email && <p className="truncate text-xs text-cocoa-400">{user.email}</p>}

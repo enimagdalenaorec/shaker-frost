@@ -19,7 +19,7 @@ function CountDot({ count, className }: { count: number; className?: string }) {
   return (
     <span
       className={cn(
-        "tabular grid min-w-[18px] place-items-center rounded-full bg-apricot-500 px-1 text-[10px] font-bold leading-[18px] text-white ring-2 ring-oat-50",
+        "tabular grid min-w-[18px] place-items-center rounded-full border-[1.5px] border-ink bg-guava px-1 text-[10px] font-black leading-[15px] text-ink",
         className,
       )}
     >
@@ -34,7 +34,7 @@ export function TabBar() {
   const count = useBasketCount();
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 sm:hidden" aria-label="Glavna navigacija">
-      <ul className="grid grid-cols-4 rounded-[22px] bg-cocoa-900 p-1.5 shadow-lift">
+      <ul className="grid grid-cols-4 rounded-[24px] border-2 border-ink bg-ink p-1.5 shadow-[0_6px_0_rgb(64_52_66/0.25)]">
         {TABS.map(({ href, label, Icon, match }) => {
           const active = match(path);
           return (
@@ -42,8 +42,8 @@ export function TabBar() {
               <Link
                 href={href}
                 className={cn(
-                  "relative flex h-12 items-center justify-center gap-2 rounded-2xl text-[13px] font-semibold transition-colors",
-                  active ? "bg-oat-50 text-cocoa-900" : "text-oat-300 hover:text-oat-50",
+                  "relative flex h-12 items-center justify-center gap-1.5 rounded-[18px] text-[13px] font-black transition-colors",
+                  active ? "bg-pistachio text-ink" : "text-cream/70 hover:text-cream",
                 )}
               >
                 <span className="relative">
@@ -73,8 +73,8 @@ export function NavLinks() {
             key={href}
             href={href}
             className={cn(
-              "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
-              active ? "bg-cocoa-900 text-oat-50" : "text-cocoa-700 hover:bg-oat-200",
+              "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-extrabold text-ink transition-colors",
+              active ? "bg-pistachio" : "hover:bg-ink/[0.07]",
             )}
           >
             <Icon className="size-4" />

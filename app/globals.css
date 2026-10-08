@@ -5,54 +5,75 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * veganizir.ai design tokens: "mint & oat".
- * Warm oat-cream surfaces, soft sage-mint primary, cocoa ink, apricot for akcija.
- * Swap these values when the brand identity arrives; components only use the tokens.
+ * veganizir.ai design tokens: the team's visual identity (ported from the Lovable design).
+ * Cream paper, aubergine ink, guava / pistachio / ochre / smoke accents, olive "rind" for quiet text.
+ * Older token names (mint, oat, cocoa, apricot, honey, clay) are kept and re-mapped so every
+ * component picks up the identity; new code should prefer the brand names (ink, guava, pistachio …).
  */
 :root {
-  /* palette */
-  --mint-50: #f1f8f4;
-  --mint-100: #e3f1e9;
-  --mint-200: #c8e4d5;
-  --mint-300: #a3d1bb;
-  --mint-400: #7fb9a2;
-  --mint-500: #5a9c84;
-  --mint-600: #3f7d68;
-  --mint-700: #2f6453;
-  --mint-800: #244c40;
+  /* brand */
+  --cream: #f4f0e8;
+  --paper: #f8f5ee;
+  --ink: #403442;
+  --guava: #d77f72;
+  --guava-deep: #c2655a;
+  --guava-light: #f2c6be;
+  --blush: #f3d9d2;
+  --pistachio: #b8c7a8;
+  --pistachio-light: #d6e0cb;
+  --pistachio-pale: #e3ead9;
+  --ochre: #e4c879;
+  --ochre-light: #f7e3a6;
+  --smoke: #afc3d1;
+  --smoke-light: #d3e0ea;
+  --rind: #667257;
 
-  --oat-50: #fcfaf6;
-  --oat-100: #f7f3ec;
-  --oat-200: #efe8dc;
-  --oat-300: #e4d9c8;
-  --oat-400: #cdbca4;
+  /* greens → pistachio / rind */
+  --mint-50: #eef2e9;
+  --mint-100: var(--pistachio-pale);
+  --mint-200: var(--pistachio-light);
+  --mint-300: var(--pistachio);
+  --mint-400: #9fb08d;
+  --mint-500: #7f9468;
+  --mint-600: var(--rind);
+  --mint-700: #525c46;
+  --mint-800: #3d4535;
 
-  --cocoa-300: #b8a698;
-  --cocoa-400: #9c897b;
-  --cocoa-500: #7d6b5f;
-  --cocoa-700: #4d3f37;
-  --cocoa-900: #2e2622;
+  /* neutrals → cream / paper */
+  --oat-50: var(--paper);
+  --oat-100: var(--cream);
+  --oat-200: #ebe5d9;
+  --oat-300: #ddd5c6;
+  --oat-400: #c9bfae;
 
-  --apricot-50: #fdf3ec;
-  --apricot-100: #fbe6d7;
-  --apricot-500: #e08a55;
-  --apricot-700: #b25c2c;
+  /* text → ink */
+  --cocoa-300: #b3a9b2;
+  --cocoa-400: #8a7d8b;
+  --cocoa-500: #6c5e6e;
+  --cocoa-700: #54465a;
+  --cocoa-900: var(--ink);
 
-  --honey-100: #f8efd6;
-  --honey-700: #8a661b;
+  /* akcija → guava */
+  --apricot-50: #f8ece7;
+  --apricot-100: var(--blush);
+  --apricot-500: var(--guava);
+  --apricot-700: var(--guava-deep);
 
-  --clay-100: #f6e4de;
-  --clay-600: #b0533f;
+  --honey-100: var(--ochre-light);
+  --honey-700: #85691f;
+
+  --clay-100: var(--guava-light);
+  --clay-600: #b04f40;
 
   /* semantic (shadcn) */
-  --background: var(--oat-100);
+  --background: var(--cream);
   --foreground: var(--cocoa-900);
   --card: var(--oat-50);
   --card-foreground: var(--cocoa-900);
   --popover: var(--oat-50);
   --popover-foreground: var(--cocoa-900);
-  --primary: var(--mint-600);
-  --primary-foreground: #fbfaf6;
+  --primary: var(--ink);
+  --primary-foreground: var(--cream);
   --secondary: var(--mint-100);
   --secondary-foreground: var(--mint-800);
   --muted: var(--oat-200);
@@ -60,10 +81,10 @@
   --accent: var(--mint-50);
   --accent-foreground: var(--mint-800);
   --destructive: var(--clay-600);
-  --border: #e6ddd0;
-  --input: #ddd2c2;
-  --ring: var(--mint-400);
-  --radius: 0.875rem;
+  --border: rgb(64 52 66 / 0.18);
+  --input: rgb(64 52 66 / 0.3);
+  --ring: var(--guava);
+  --radius: 1rem;
 
   --chart-1: var(--mint-600);
   --chart-2: var(--apricot-500);
@@ -79,16 +100,34 @@
   --sidebar-border: var(--border);
   --sidebar-ring: var(--mint-400);
 
-  --shadow-soft: 0 1px 2px rgb(46 38 34 / 0.04), 0 4px 16px -4px rgb(46 38 34 / 0.06);
-  --shadow-lift: 0 2px 4px rgb(46 38 34 / 0.05), 0 12px 32px -8px rgb(46 38 34 / 0.12);
+  --shadow-soft: 6px 7px 0 rgb(64 52 66 / 0.07);
+  --shadow-lift: 8px 9px 0 rgb(64 52 66 / 0.12);
+  --shadow-ink: 4px 4px 0 var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-figtree);
-  --font-heading: var(--font-bricolage);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-nunito);
+  --font-heading: var(--font-grandstander);
+  --font-mono: var(--font-space-mono);
+
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-guava: var(--guava);
+  --color-guava-deep: var(--guava-deep);
+  --color-guava-light: var(--guava-light);
+  --color-blush: var(--blush);
+  --color-pistachio: var(--pistachio);
+  --color-pistachio-light: var(--pistachio-light);
+  --color-pistachio-pale: var(--pistachio-pale);
+  --color-ochre: var(--ochre);
+  --color-ochre-light: var(--ochre-light);
+  --color-smoke: var(--smoke);
+  --color-smoke-light: var(--smoke-light);
+  --color-rind: var(--rind);
+  --shadow-ink: var(--shadow-ink);
 
   --color-mint-50: var(--mint-50);
   --color-mint-100: var(--mint-100);
@@ -170,18 +209,134 @@
   body {
     @apply bg-background text-foreground;
   }
+  body {
+    letter-spacing: 0.005em;
+  }
   h1,
   h2,
   h3 {
     @apply font-heading;
-    letter-spacing: -0.025em;
+    font-weight: 900;
+    letter-spacing: 0.005em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--guava);
+    outline-offset: 3px;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   ::selection {
-    background: var(--mint-200);
+    background: var(--guava-light);
+  }
+}
+
+@layer components {
+  /* small uppercase mono label */
+  .micro {
+    font-family: var(--font-space-mono), ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1.5;
+  }
+  /* pill buttons with an ink outline that lift on hover and press on click */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink);
+    font-weight: 900;
+    color: var(--ink);
+    transition: transform 0.15s, box-shadow 0.15s, background-color 0.2s;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--ink);
+  }
+  .btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--ink);
+  }
+  .btn:disabled {
+    opacity: 0.6;
+    transform: none;
+  }
+  .btn-guava { background: var(--guava); }
+  .btn-guava:hover { background: #e58f82; }
+  .btn-paper { background: var(--paper); }
+  .btn-paper:hover { background: var(--pistachio); }
+  .btn-pistachio { background: var(--pistachio); }
+  .btn-pistachio:hover { background: #a5b992; }
+  .btn-ink { background: var(--ink); color: var(--cream); }
+  .btn-ink:hover { background: var(--rind); }
+  /* cards */
+  .card-ink {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 26px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .card-soft {
+    background: var(--paper);
+    border: 1.5px solid rgb(64 52 66 / 0.28);
+    border-radius: 22px;
+    box-shadow: 6px 7px 0 rgb(64 52 66 / 0.06);
+  }
+  /* outlined pill chip */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    font-size: 13px;
+    font-weight: 800;
+    background: var(--pistachio);
+    color: var(--ink);
+  }
+  .chip-ghost { background: transparent; }
+  /* ingredient role, e.g. VEZIVO */
+  .role-tag {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-space-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  /* section title with the guava underline bar */
+  .title-bar::after {
+    content: "";
+    display: block;
+    width: 52px;
+    height: 5px;
+    border-radius: 5px;
+    background: var(--guava);
+    margin-top: 8px;
+  }
+  /* the food characters */
+  .character {
+    overflow: visible;
+    filter: drop-shadow(3px 6px 0 rgb(64 52 66 / 0.09));
+  }
+  @keyframes bob {
+    50% { transform: translateY(-8px) rotate(-3deg); }
+  }
+  .bob { animation: bob 1.4s ease-in-out infinite; }
+  @keyframes tick { to { transform: translateX(-50%); } }
+  .ticker-track { animation: tick 40s linear infinite; }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    .bob, .ticker-track { animation: none; }
   }
 }
 
