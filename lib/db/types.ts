@@ -61,28 +61,28 @@ isOneToOne: false
                   ]
                 },"basket_history": {
                   Row: {
-                    "added_at": string,"concept_id": string | null,"facets": NonNullable<Json>,"id": number,"item_id": string | null,"kind": string,"source": string,"user_id": string
+                    "added_at": string,"concept_id": string | null,"facets": NonNullable<Json>,"id": number,"item_id": string | null,"kind": string,"label": string | null,"source": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "added_at"?: string,"concept_id"?: string | null,"facets"?: NonNullable<Json>,"id"?: number,"item_id"?: string | null,"kind": string,"source": string,"user_id": string
+                    "added_at"?: string,"concept_id"?: string | null,"facets"?: NonNullable<Json>,"id"?: number,"item_id"?: string | null,"kind": string,"label"?: string | null,"source": string,"user_id": string
                   }
                   Update: {
-                    "added_at"?: string,"concept_id"?: string | null,"facets"?: NonNullable<Json>,"id"?: number,"item_id"?: string | null,"kind"?: string,"source"?: string,"user_id"?: string
+                    "added_at"?: string,"concept_id"?: string | null,"facets"?: NonNullable<Json>,"id"?: number,"item_id"?: string | null,"kind"?: string,"label"?: string | null,"source"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
                   ]
                 },"basket_items": {
                   Row: {
-                    "alternative_id": string | null,"basket_id": string,"concept_id": string | null,"created_at": string,"facets": NonNullable<Json>,"id": string,"item_id": string | null,"kind": string,"packages": number,"pinned_item_id": string | null,"recipe_id": string | null,"required_qty": number | null,"required_unit": string | null
+                    "alternative_id": string | null,"basket_id": string,"concept_id": string | null,"created_at": string,"facets": NonNullable<Json>,"for_ingredient": string | null,"id": string,"item_id": string | null,"kind": string,"label": string | null,"packages": number,"pinned_item_id": string | null,"recipe_id": string | null,"required_qty": number | null,"required_unit": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "alternative_id"?: string | null,"basket_id": string,"concept_id"?: string | null,"created_at"?: string,"facets"?: NonNullable<Json>,"id"?: string,"item_id"?: string | null,"kind": string,"packages"?: number,"pinned_item_id"?: string | null,"recipe_id"?: string | null,"required_qty"?: number | null,"required_unit"?: string | null
+                    "alternative_id"?: string | null,"basket_id": string,"concept_id"?: string | null,"created_at"?: string,"facets"?: NonNullable<Json>,"for_ingredient"?: string | null,"id"?: string,"item_id"?: string | null,"kind": string,"label"?: string | null,"packages"?: number,"pinned_item_id"?: string | null,"recipe_id"?: string | null,"required_qty"?: number | null,"required_unit"?: string | null
                   }
                   Update: {
-                    "alternative_id"?: string | null,"basket_id"?: string,"concept_id"?: string | null,"created_at"?: string,"facets"?: NonNullable<Json>,"id"?: string,"item_id"?: string | null,"kind"?: string,"packages"?: number,"pinned_item_id"?: string | null,"recipe_id"?: string | null,"required_qty"?: number | null,"required_unit"?: string | null
+                    "alternative_id"?: string | null,"basket_id"?: string,"concept_id"?: string | null,"created_at"?: string,"facets"?: NonNullable<Json>,"for_ingredient"?: string | null,"id"?: string,"item_id"?: string | null,"kind"?: string,"label"?: string | null,"packages"?: number,"pinned_item_id"?: string | null,"recipe_id"?: string | null,"required_qty"?: number | null,"required_unit"?: string | null
                   }
                   Relationships: [
                     {

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Home, Lightbulb, Plus, ShoppingBasket, Sparkles, Store } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Home, Lightbulb, Plus, Share2, ShoppingBasket, Sparkles, Store } from "lucide-react";
+import { setRecipeSaved } from "@/app/actions/user";
+import { setPendingAction, signInWithGoogle, useAuth } from "@/lib/auth/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatPrice, formatSize } from "@/lib/format";
@@ -88,6 +90,8 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
         <Stat value={recipe.ingredients.length} label="sastojaka" tone="bg-oat-50 text-cocoa-900 ring-1 ring-cocoa-900/[0.06]" />
         <Stat value={recipe.servings ?? "–"} label="porcija" tone="bg-oat-50 text-cocoa-900 ring-1 ring-cocoa-900/[0.06]" />
       </div>
+
+      <RecipeActions recipe={recipe} />
 
       {!risky.length && (
         <p className="mt-6 rounded-[20px] bg-mint-100 p-4 text-sm font-semibold text-mint-800">Ovaj recept je već veganski.</p>
@@ -205,6 +209,67 @@ export function RecipeResult({ recipe }: { recipe: RecipeView }) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function RecipeActions({ recipe }: { recipe: RecipeView }) {
+  const { user } = useAuth();
+  const [saved, setSaved] = useState(Boolean(recipe.savedAt));
+  const [busy, setBusy] = useState(false);
+  const isSaved = saved && (!user || !recipe.ownerId || recipe.ownerId === user.id);
+
+  const toggleSave = async () => {
+    if (!user) {
+      // finish the save automatically after the Google round-trip
+      setPendingAction({ type: "save-recipe", recipeId: recipe.id });
+      toast("Prijavi se da spremiš recept", { description: "Nakon prijave recept se sprema automatski." });
+      await signInWithGoogle(`/recept/${recipe.id}`);
+      return;
+    }
+    setBusy(true);
+    const r = await setRecipeSaved(recipe.id, !isSaved);
+    setBusy(false);
+    if (r.ok) {
+      setSaved(!isSaved);
+      toast.success(isSaved ? "Uklonjeno iz spremljenih" : "Recept spremljen", { description: isSaved ? undefined : "Pronađi ga pod Recepti." });
+    } else toast.error("Spremanje nije uspjelo");
+  };
+
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: recipe.title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link kopiran");
+      }
+    } catch {
+      // user closed the share sheet
+    }
+  };
+
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        onClick={toggleSave}
+        disabled={busy}
+        className={cn(
+          "flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-bold transition-colors disabled:opacity-60",
+          isSaved ? "bg-apricot-100 text-apricot-700" : "bg-oat-50 text-cocoa-900 ring-1 ring-cocoa-900/[0.08] hover:bg-white",
+        )}
+      >
+        <Heart className={cn("size-4", isSaved && "fill-current")} />
+        {isSaved ? "Spremljeno" : "Spremi"}
+      </button>
+      <button
+        type="button"
+        onClick={share}
+        className="flex h-11 items-center justify-center gap-2 rounded-2xl bg-oat-50 text-sm font-bold text-cocoa-900 ring-1 ring-cocoa-900/[0.08] transition-colors hover:bg-white"
+      >
+        <Share2 className="size-4" /> Podijeli
+      </button>
     </div>
   );
 }

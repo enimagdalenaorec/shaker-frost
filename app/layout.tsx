@@ -4,6 +4,7 @@ import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
 import { TabBar } from "@/components/tab-bar";
+import { AuthSync } from "@/components/auth/auth-sync";
 import "./globals.css";
 
 const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin", "latin-ext"], display: "swap" });
@@ -29,6 +30,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="flex-1 pb-28 sm:pb-16">{children}</div>
         <Suspense fallback={null}>
           <TabBar />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AuthSync />
         </Suspense>
         <Toaster position="top-center" theme="light" />
       </body>

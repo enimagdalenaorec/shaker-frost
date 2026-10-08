@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBasket } from "lucide-react";
+import { BookOpen, Home, Search, ShoppingBasket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBasketCount } from "@/lib/basket/local-store";
 import { hr } from "@/lib/i18n/hr";
 
 const TABS = [
-  { href: "/", label: hr.nav.home, Icon: Home, match: (p: string) => p === "/" || p.startsWith("/recept") },
+  { href: "/", label: hr.nav.home, Icon: Home, match: (p: string) => p === "/" || (p.startsWith("/recept") && !p.startsWith("/recepti")) },
   { href: "/trazi", label: hr.nav.search, Icon: Search, match: (p: string) => p.startsWith("/trazi") },
+  { href: "/recepti", label: hr.nav.myRecipes, Icon: BookOpen, match: (p: string) => p.startsWith("/recepti") },
   { href: "/kosarica", label: hr.nav.basket, Icon: ShoppingBasket, match: (p: string) => p.startsWith("/kosarica") },
 ] as const;
 
@@ -33,7 +34,7 @@ export function TabBar() {
   const count = useBasketCount();
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 sm:hidden" aria-label="Glavna navigacija">
-      <ul className="grid grid-cols-3 rounded-[22px] bg-cocoa-900 p-1.5 shadow-lift">
+      <ul className="grid grid-cols-4 rounded-[22px] bg-cocoa-900 p-1.5 shadow-lift">
         {TABS.map(({ href, label, Icon, match }) => {
           const active = match(path);
           return (

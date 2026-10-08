@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { runPipeline, type PipelineEvent } from "@/lib/ai/pipeline";
+import { currentUserId } from "@/lib/db/server";
 
 export const maxDuration = 90;
 
@@ -17,11 +18,12 @@ export async function POST(request: Request) {
   const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Neispravan zahtjev" }, { status: 400 });
 
+  const userId = await currentUserId();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (e: PipelineEvent) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(e)}\n\n`));
-      await runPipeline(parsed.data, send);
+      await runPipeline({ ...parsed.data, userId }, send);
       controller.close();
     },
   });

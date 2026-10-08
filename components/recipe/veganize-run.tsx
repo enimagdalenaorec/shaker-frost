@@ -7,6 +7,7 @@ import { ArrowRight, Check, CircleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PENDING_TEXT_KEY } from "@/components/smart-input";
 import { EXAMPLE_RECIPES } from "@/lib/examples";
+import { rememberLocalRecipe } from "@/lib/auth/client";
 import type { PipelineEvent, StageName } from "@/lib/ai/pipeline";
 
 const STAGES: { id: StageName; label: string }[] = [
@@ -69,6 +70,7 @@ export function VeganizeRun() {
                 [e.stage]: e.status === "start" ? { status: "running" } : { status: "done", ms: e.ms, summary: e.summary, detail: e.detail },
               }));
             } else if (e.type === "done") {
+              rememberLocalRecipe(e.recipeId);
               router.replace(`/recept/${e.recipeId}`);
             } else if (e.type === "error") {
               if (e.stage) setStages((s) => ({ ...s, [e.stage!]: { status: "error" } }));

@@ -82,6 +82,7 @@ const keyOf = (e: { kind: string; itemId?: string; conceptId?: string; facets?: 
 
 export const basketStore = {
   snapshot: () => load(),
+  subscribe: (listener: () => void) => subscribe(listener),
 
   add(item: Omit<LocalBasketItem, "id" | "addedAt" | "packages"> & { packages?: number }, source: HistoryEntry["source"]) {
     const s = load();

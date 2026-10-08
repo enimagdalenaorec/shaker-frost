@@ -63,6 +63,8 @@ export type RecipeView = {
   sources: { title: string | null; url: string }[];
   ingredients: IngredientView[];
   createdAt: string;
+  ownerId: string | null;
+  savedAt: string | null;
 };
 
 const num = (v: unknown) => (v == null ? null : Number(v));
@@ -142,5 +144,7 @@ export async function loadRecipe(id: string): Promise<RecipeView | null> {
     sources: (r.sources as RecipeView["sources"]) ?? [],
     ingredients,
     createdAt: r.created_at,
+    ownerId: r.user_id,
+    savedAt: r.saved_at,
   };
 }
