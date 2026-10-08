@@ -147,6 +147,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"dish_research": {
+                  Row: {
+                    "created_at": string,"dish": string,"key": string,"method": string,"model": string | null,"notes_hr": string,"sources": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"dish": string,"key": string,"method": string,"model"?: string | null,"notes_hr": string,"sources"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "created_at"?: string,"dish"?: string,"key"?: string,"method"?: string,"model"?: string | null,"notes_hr"?: string,"sources"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"import_rows": {
                   Row: {
                     "barcode": string | null,"brand": string | null,"carbohydrates": string | null,"chain_logo_url": string | null,"concept": string | null,"concept_confidence": string | null,"concept_group": string | null,"concept_id": string | null,"concept_parent": string | null,"eko": string | null,"energy_kcal": string | null,"fat": string | null,"fiber": string | null,"image_url": string | null,"item_id": string | null,"name": string | null,"namjena": string | null,"nutrition_source": string | null,"oblik": string | null,"obogaceno": string | null,"okus": string | null,"pack_count": string | null,"price": string | null,"price_date": string | null,"product_url": string | null,"proteins": string | null,"provjeri": string | null,"regular_price": string | null,"salt": string | null,"saturated_fat": string | null,"search_text": string | null,"size_unit": string | null,"size_value": string | null,"store_address": string | null,"store_chain": string | null,"store_city": string | null,"store_id": string | null,"sugars": string | null,"tags": string | null,"vegan_evidence": string | null,"vegan_status": string | null,"zasladeno": string | null
@@ -163,14 +177,14 @@ isOneToOne: false
                   ]
                 },"ingredient_alternatives": {
                   Row: {
-                    "concept_id": string | null,"confidence": number | null,"facets": NonNullable<Json>,"has_products": boolean,"id": string,"is_selected": boolean,"rank": number,"ratio": number | null,"reasoning_hr": string | null,"recipe_ingredient_id": string,"required_qty": number | null,"required_unit": string | null
+                    "concept_id": string | null,"confidence": number | null,"facets": NonNullable<Json>,"has_products": boolean,"id": string,"is_selected": boolean,"label_hr": string | null,"rank": number,"ratio": number | null,"reasoning_hr": string | null,"recipe_ingredient_id": string,"required_qty": number | null,"required_unit": string | null,"source_urls": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "concept_id"?: string | null,"confidence"?: number | null,"facets"?: NonNullable<Json>,"has_products"?: boolean,"id"?: string,"is_selected"?: boolean,"rank": number,"ratio"?: number | null,"reasoning_hr"?: string | null,"recipe_ingredient_id": string,"required_qty"?: number | null,"required_unit"?: string | null
+                    "concept_id"?: string | null,"confidence"?: number | null,"facets"?: NonNullable<Json>,"has_products"?: boolean,"id"?: string,"is_selected"?: boolean,"label_hr"?: string | null,"rank": number,"ratio"?: number | null,"reasoning_hr"?: string | null,"recipe_ingredient_id": string,"required_qty"?: number | null,"required_unit"?: string | null,"source_urls"?: NonNullable<Json>
                   }
                   Update: {
-                    "concept_id"?: string | null,"confidence"?: number | null,"facets"?: NonNullable<Json>,"has_products"?: boolean,"id"?: string,"is_selected"?: boolean,"rank"?: number,"ratio"?: number | null,"reasoning_hr"?: string | null,"recipe_ingredient_id"?: string,"required_qty"?: number | null,"required_unit"?: string | null
+                    "concept_id"?: string | null,"confidence"?: number | null,"facets"?: NonNullable<Json>,"has_products"?: boolean,"id"?: string,"is_selected"?: boolean,"label_hr"?: string | null,"rank"?: number,"ratio"?: number | null,"reasoning_hr"?: string | null,"recipe_ingredient_id"?: string,"required_qty"?: number | null,"required_unit"?: string | null,"source_urls"?: NonNullable<Json>
                   }
                   Relationships: [
                     {
@@ -281,14 +295,14 @@ isOneToOne: false
                   ]
                 },"recipe_ingredients": {
                   Row: {
-                    "confidence": number | null,"id": string,"ingredient_slug": string | null,"is_vegan": boolean | null,"name_hr": string | null,"position": number,"quantity": number | null,"quantity_estimated": boolean,"raw_text": string,"reason_hr": string | null,"recipe_id": string,"role": string | null,"unit": string | null
+                    "confidence": number | null,"id": string,"ingredient_slug": string | null,"is_vegan": boolean | null,"name_hr": string | null,"position": number,"quantity": number | null,"quantity_estimated": boolean,"raw_text": string,"reason_hr": string | null,"recipe_id": string,"role": string | null,"status": string | null,"unit": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "confidence"?: number | null,"id"?: string,"ingredient_slug"?: string | null,"is_vegan"?: boolean | null,"name_hr"?: string | null,"position": number,"quantity"?: number | null,"quantity_estimated"?: boolean,"raw_text": string,"reason_hr"?: string | null,"recipe_id": string,"role"?: string | null,"unit"?: string | null
+                    "confidence"?: number | null,"id"?: string,"ingredient_slug"?: string | null,"is_vegan"?: boolean | null,"name_hr"?: string | null,"position": number,"quantity"?: number | null,"quantity_estimated"?: boolean,"raw_text": string,"reason_hr"?: string | null,"recipe_id": string,"role"?: string | null,"status"?: string | null,"unit"?: string | null
                   }
                   Update: {
-                    "confidence"?: number | null,"id"?: string,"ingredient_slug"?: string | null,"is_vegan"?: boolean | null,"name_hr"?: string | null,"position"?: number,"quantity"?: number | null,"quantity_estimated"?: boolean,"raw_text"?: string,"reason_hr"?: string | null,"recipe_id"?: string,"role"?: string | null,"unit"?: string | null
+                    "confidence"?: number | null,"id"?: string,"ingredient_slug"?: string | null,"is_vegan"?: boolean | null,"name_hr"?: string | null,"position"?: number,"quantity"?: number | null,"quantity_estimated"?: boolean,"raw_text"?: string,"reason_hr"?: string | null,"recipe_id"?: string,"role"?: string | null,"status"?: string | null,"unit"?: string | null
                   }
                   Relationships: [
                     {
@@ -301,14 +315,14 @@ isOneToOne: false
                   ]
                 },"recipes": {
                   Row: {
-                    "created_at": string,"id": string,"ingest_method": string | null,"raw_text": string,"saved_at": string | null,"servings_original": number | null,"servings_target": number | null,"source_kind": string,"source_url": string | null,"status": string,"title": string | null,"user_id": string | null,"veganized_steps": Json | null
+                    "created_at": string,"dish_category": string | null,"dish_notes_hr": string | null,"id": string,"image_url": string | null,"ingest_method": string | null,"raw_text": string,"saved_at": string | null,"servings_original": number | null,"servings_target": number | null,"source_kind": string,"source_name": string | null,"source_url": string | null,"sources": NonNullable<Json>,"status": string,"tip_hr": string | null,"title": string | null,"user_id": string | null,"veganized_steps": Json | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"ingest_method"?: string | null,"raw_text": string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind": string,"source_url"?: string | null,"status"?: string,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
+                    "created_at"?: string,"dish_category"?: string | null,"dish_notes_hr"?: string | null,"id"?: string,"image_url"?: string | null,"ingest_method"?: string | null,"raw_text": string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind": string,"source_name"?: string | null,"source_url"?: string | null,"sources"?: NonNullable<Json>,"status"?: string,"tip_hr"?: string | null,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"ingest_method"?: string | null,"raw_text"?: string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind"?: string,"source_url"?: string | null,"status"?: string,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
+                    "created_at"?: string,"dish_category"?: string | null,"dish_notes_hr"?: string | null,"id"?: string,"image_url"?: string | null,"ingest_method"?: string | null,"raw_text"?: string,"saved_at"?: string | null,"servings_original"?: number | null,"servings_target"?: number | null,"source_kind"?: string,"source_name"?: string | null,"source_url"?: string | null,"sources"?: NonNullable<Json>,"status"?: string,"tip_hr"?: string | null,"title"?: string | null,"user_id"?: string | null,"veganized_steps"?: Json | null
                   }
                   Relationships: [
                     
@@ -332,6 +346,20 @@ isOneToOne: false
       referencedRelation: "chains"
       referencedColumns: ["code"]
     }
+                  ]
+                },"substitution_research": {
+                  Row: {
+                    "created_at": string,"dish_category": string,"ingredient": string,"key": string,"method": string,"model": string | null,"notes_hr": string,"role": string,"sources": NonNullable<Json>,"suggestions": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"dish_category": string,"ingredient": string,"key": string,"method": string,"model"?: string | null,"notes_hr": string,"role": string,"sources"?: NonNullable<Json>,"suggestions"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "created_at"?: string,"dish_category"?: string,"ingredient"?: string,"key"?: string,"method"?: string,"model"?: string | null,"notes_hr"?: string,"role"?: string,"sources"?: NonNullable<Json>,"suggestions"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
                   ]
                 },"substitution_rules": {
                   Row: {

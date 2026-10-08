@@ -15,7 +15,9 @@
     "llm:models": "tsx scripts/gemini-models.ts",
     "mock:build": "tsx scripts/mock/build.ts",
     "seed:knowledge": "tsx scripts/seed-knowledge.ts",
-    "validate:catalog": "tsx scripts/validate-catalog.ts"
+    "validate:catalog": "tsx scripts/validate-catalog.ts",
+    "llm:probe": "tsx scripts/llm-probe.ts",
+    "veganize": "tsx --conditions=react-server scripts/veganize.ts"
   },
   "dependencies": {
     "@google/genai": "^2.28.0",
@@ -31,6 +33,7 @@
     "radix-ui": "^1.7.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
     "shadcn": "^4.21.4",
     "sonner": "^2.0.8",
     "tw-animate-css": "^1.4.0",

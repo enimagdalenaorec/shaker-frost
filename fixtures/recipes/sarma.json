@@ -1,0 +1,70 @@
+{
+ "url": "https://www.coolinarika.com/recept/sarma-5e9cb432-63b9-11eb-bb34-0242ac12003e",
+ "jsonld": {
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "aggregateRating": {
+   "itemReviewed": 1,
+   "ratingCount": 1,
+   "ratingValue": 1,
+   "reviewCount": 1
+  },
+  "author": "Coolinarika",
+  "inLanguage": "Croatian",
+  "keywords": [
+   "Sarma",
+   "GLAVNA JELA",
+   "kiseli kupus",
+   "nesto-sa-zlicom",
+   "GLAVNA JELA",
+   "dobra-kuharica",
+   "GLAVNA JELA",
+   "Sarma",
+   "GLAVNA JELA"
+  ],
+  "mainEntityOfPage": {
+   "@id": "https://www.coolinarika.com/recepti/sarma-5e9cb432-63b9-11eb-bb34-0242ac12003e",
+   "@type": "WebPage"
+  },
+  "name": "Sarma",
+  "prepTime": "PT180M",
+  "recipeIngredient": [
+   "1 kg miješanog mljevenog mesa",
+   "0,5 kg suhih rebrica",
+   "0,75 kg rezanog kiselog kupusa",
+   "12 - 15 većih listova kiselog kupusa",
+   "pola ljutkaste kobasice",
+   "2 šake riže",
+   "1 šaka heljde",
+   "0,5 l Pasirane rajčice Podravka",
+   "5 žličica slatke crvene paprike",
+   "nekoliko listova lovora",
+   "mljeveni crni papar",
+   "sol"
+  ],
+  "recipeInstructions": [
+   {
+    "@type": "HowToStep",
+    "text": "U većoj posudi izmiješati mljeveno meso, rižu, heljdu, sitno nasjeckanu kobasicu, 1 žličicu crvene paprike, sol i papar.",
+    "id": "korak-1-1"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "U dovoljno veliki lonac (6-8 litara) na dno staviti narezani kiseli kupus oko centimetra visine i listiće lovora. U sredinu staviti suha rebarca. U isprane listove kupusa (isprati samo ako su jako kiseli ili slani) umotati nadjev tako da se krajeve ugura u smotuljke, da bi sarmice ostale cijele.",
+    "id": "korak-1-2"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "Sarmice slagati oko rebarca, a poslije i na rebra. Dodati četiri žličice crvene paprike, rajčicu i prekriti sa ostatkom rezanog kupusa. Doliti vode dva centimetra iznad površine kupusa.",
+    "id": "korak-1-3"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "Kuhati najmanje 2 sata na laganoj vatri.",
+    "id": "korak-1-4"
+   }
+  ],
+  "recipeYield": "6",
+  "yield": "6"
+ }
+}

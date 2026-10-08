@@ -1,0 +1,51 @@
+{
+ "url": "https://www.coolinarika.com/recept/palacinke-bbbb92a4-63c4-11eb-aee8-0242ac12008b",
+ "jsonld": {
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "aggregateRating": {
+   "itemReviewed": 2,
+   "ratingCount": 2,
+   "ratingValue": 2,
+   "reviewCount": 2
+  },
+  "author": "Coolinarika",
+  "description": "Brzi a tako ukusni, cim se ispeku odmah nestanu:).",
+  "image": "https://piovariations.cdn.podravka.net/public/optimized/original/bbbc02c0-63c4-11eb-b539-0242ac12008b.webp",
+  "inLanguage": "Croatian",
+  "keywords": [
+   "palačinke",
+   "palachinke",
+   "palačinke",
+   "palačinke"
+  ],
+  "mainEntityOfPage": {
+   "@id": "https://www.coolinarika.com/recepti/palacinke-bbbb92a4-63c4-11eb-aee8-0242ac12008b",
+   "@type": "WebPage"
+  },
+  "name": "Palacinke",
+  "nutrition": {
+   "@type": "NutritionInformation",
+   "servingSize": "Mozete palacinke premazati sa cime god volite, mi volimo sa nutelom i pospemo malo oraha i mmmmmmmmm."
+  },
+  "prepTime": "PT30M",
+  "recipeIngredient": [
+   "1 Zlicica secera",
+   "2 Kavene salice brasna",
+   "3 Kavene salice mlijeka",
+   "2 Jaja",
+   "1/2 Zlicice soli",
+   "Ulje za prziti palacinke"
+  ],
+  "recipeInstructions": [
+   {
+    "@type": "HowToStep",
+    "text": "U mlijeko umiksajte, jaja, brasno, secer i sol. Podmazite tavu i grabilicom razlijte smjesu po tavi. Pecite sa obe strane palacinke dok ne dobiju lijepu zazarenu boju.",
+    "id": "korak-1-1"
+   }
+  ],
+  "recipeYield": "4",
+  "thumbnailUrl": "https://piovariations.cdn.podravka.net/public/optimized/original/bbbc02c0-63c4-11eb-b539-0242ac12008b.webp",
+  "yield": "4"
+ }
+}

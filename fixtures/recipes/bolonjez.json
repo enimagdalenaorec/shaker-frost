@@ -1,0 +1,77 @@
+{
+ "url": "https://www.coolinarika.com/recept/spageti-bolognese-e953beda-63bf-11eb-b480-0242ac120081",
+ "jsonld": {
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "aggregateRating": {
+   "itemReviewed": 4,
+   "ratingCount": 4,
+   "ratingValue": 4,
+   "reviewCount": 4
+  },
+  "author": "Coolinarika",
+  "description": "Ovako to ja radim…",
+  "image": "https://piovariations.cdn.podravka.net/public/optimized/original/ec79dce8-63bf-11eb-9cb4-0242ac120082.webp",
+  "inLanguage": "Croatian",
+  "keywords": [
+   "meso-mljeveno",
+   "Pašta",
+   "Pašta",
+   "viva Italija",
+   "tjestenina...",
+   "meso",
+   "Mljeveno meso",
+   "tjestenina...",
+   "Mljeveno meso",
+   "favorit",
+   "tjestenina...",
+   "Glavno jelo*"
+  ],
+  "mainEntityOfPage": {
+   "@id": "https://www.coolinarika.com/recepti/spageti-bolognese-e953beda-63bf-11eb-b480-0242ac120081",
+   "@type": "WebPage"
+  },
+  "name": "Špageti Bolognese",
+  "recipeIngredient": [
+   "40 dag mljevenog junećeg mesa",
+   "1 glavica crvenog luka",
+   "1 mrkva",
+   "1 peršin",
+   "komadić celera",
+   "2 dcl pasirane rajčice",
+   "2 režnja češnjaka",
+   "sol, papar",
+   "vegeta mediteran",
+   "bosiljak, origano",
+   "lovor"
+  ],
+  "recipeInstructions": [
+   {
+    "@type": "HowToStep",
+    "text": "Mljeveno meso popržiti na malo ulja",
+    "id": "korak-1-1"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "Dodati začine i lovorov list",
+    "id": "korak-1-2"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "Povrće samljeti štapnim mikserom (viva braun multiquick)",
+    "id": "korak-1-3"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "Dodati mesu, zaliti rajčicom i prokuhati",
+    "id": "korak-1-4"
+   },
+   {
+    "@type": "HowToStep",
+    "text": "Po želji dodati žlicu brašna i malo vode",
+    "id": "korak-1-5"
+   }
+  ],
+  "thumbnailUrl": "https://piovariations.cdn.podravka.net/public/optimized/original/ec79dce8-63bf-11eb-9cb4-0242ac120082.webp"
+ }
+}
