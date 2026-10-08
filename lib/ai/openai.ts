@@ -45,10 +45,13 @@ export async function openaiJson<T>(opts: {
     { role: "system", content: opts.system },
     { role: "user", content: opts.user },
   ];
+  // GPT-5-family models reason before answering; structured extraction needs little of it.
+  const effort = opts.tier === "strong" ? "low" : "minimal";
   const strict: Body = {
     model,
     messages,
     temperature: opts.temperature ?? 0.2,
+    reasoning_effort: effort,
     response_format: { type: "json_schema", json_schema: { name: "result", schema: opts.jsonSchema, strict: true } },
   };
   const loose: Body = {
@@ -58,26 +61,30 @@ export async function openaiJson<T>(opts: {
       { role: "user", content: opts.user },
     ],
     temperature: opts.temperature ?? 0.2,
+    reasoning_effort: effort,
     response_format: { type: "json_object" },
   };
 
+  // A 400 about an unsupported parameter (temperature, reasoning_effort) drops that parameter;
+  // a 400 about the schema switches from strict schema to JSON mode. Dropped params stay dropped.
+  const dropped = new Set<string>();
+  const without = (b: Body) => Object.fromEntries(Object.entries(b).filter(([k]) => !dropped.has(k)));
   let res;
   let body = strict;
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      res = await call(body, opts.timeoutMs);
+      res = await call(without(body), opts.timeoutMs);
       break;
     } catch (err) {
       const e = err as Error & { status?: number };
       if (e.status !== 400) throw e;
-      if (/temperature/i.test(e.message) && "temperature" in body) {
-        const { temperature: _drop, ...rest } = body;
-        body = rest;
+      const param = ["temperature", "reasoning_effort"].find((p) => e.message.includes(p) && !dropped.has(p));
+      if (param) {
+        dropped.add(param);
         continue;
       }
-      if (body.response_format && (body.response_format as { type: string }).type === "json_schema") {
-        const { temperature: _t, ...looseRest } = loose;
-        body = "temperature" in body ? loose : looseRest;
+      if (body === strict) {
+        body = loose;
         continue;
       }
       throw e;

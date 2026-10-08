@@ -342,6 +342,7 @@ Either way: `pnpm load:catalog fixtures/catalog_mock.csv`. **The real data later
 - **Hedged calls:** if a model has not answered after 6 s (strong) or 3.5 s (fast), the next model starts in parallel and the first valid answer wins. Errors hand over immediately.
 - **Thinking level** LOW (strong) / MINIMAL (fast): this cut the run from about 23 s to about 9 s.
 - JSON-schema output from zod (`z.toJSONSchema`), validated with zod, plus one repair retry.
+- **OpenAI is the last-resort backup** (`lib/ai/openai.ts`). It is used only when every Gemini model failed and `OPENAI_API_KEY` is set. Default model is `gpt-5.4-mini` (measured: 16.6 s per recipe, vs 29 s for `gpt-5.5`). Calls use a strict JSON schema with `reasoning_effort` low/minimal; unsupported params are dropped automatically, and a rejected schema falls back to JSON mode. Test with `LLM_FORCE_FALLBACK=openai npm run veganize -- palacinke`. Runs that used it log `provider = 'gemini+openai'`.
 
 **Prompts** live in `lib/ai/prompts.ts` (versioned, logged in `agent_steps.prompt_version`). Croatian output; the model only chooses among ids and values we pass in.
 
