@@ -362,7 +362,10 @@ export async function runPipeline(input: PipelineInput, rawEmit: (e: PipelineEve
 
     const offerStats = await stage("offers", async () => {
         if (!chosenConcepts.length) return { value: new Map<string, number>(), summary: "Nije potrebno" };
-        const { data } = await db.rpc("get_offers", { p_concept_ids: chosenConcepts, p_exclude_tags: input.excludeTags ?? [] });
+        // only what the counts need: full rows carry ~60 columns (evidence JSON, concept paths) and dominate the time
+        const { data } = await db
+          .rpc("get_offers", { p_concept_ids: chosenConcepts, p_exclude_tags: input.excludeTags ?? [] })
+          .select("item_id, chain_code, concept_id");
         const perConcept = new Map<string, number>();
         const products = new Set<string>();
         const chains = new Set<string>();

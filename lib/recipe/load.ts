@@ -89,7 +89,13 @@ export async function loadRecipe(id: string): Promise<RecipeView | null> {
 
   // live offers for all suggested concepts
   const conceptIds = [...new Set((alts ?? []).map((a) => a.concept_id).filter(Boolean) as string[])];
-  const { data: offers } = conceptIds.length ? await db.rpc("get_offers", { p_concept_ids: conceptIds, p_exclude_tags: [] }) : { data: [] };
+  const { data: offers } = conceptIds.length
+    ? await db
+        .rpc("get_offers", { p_concept_ids: conceptIds, p_exclude_tags: [] })
+        .select(
+          "item_id, concept_id, concept_group, name, brand, provjeri, okus, zasladeno, namjena, oblik, chain_code, chain_name, chain_kind, price, regular_price, is_akcija, discount_pct, net_qty, size_unit, unit_price_per_kg_l",
+        )
+    : { data: [] };
 
   const productsFor = (conceptId: string, facets: Record<string, string>): ProductOption[] => {
     const rows = (offers ?? []).filter((o) => o.concept_id === conceptId && !o.provjeri);
